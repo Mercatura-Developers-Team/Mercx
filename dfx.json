@@ -1,0 +1,39 @@
+{
+  "canisters": {
+    
+    "mercx_backend": {
+      "candid": "src/mercx_backend/mercx_backend.did",
+      "package": "mercx_backend",
+      "type": "rust",
+      "dependencies": [
+        "icrc1_ledger_canister"
+      ]
+
+    },
+    "icrc1_ledger_canister": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/94fd38099f0e63950eb5d5673b7b9d23780ace2d/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/94fd38099f0e63950eb5d5673b7b9d23780ace2d/canisters/ic-icrc1-ledger.wasm.gz",
+      "specified_id": "mxzaz-hqaaa-aaaar-qaada-cai"
+    } ,
+
+    "mercx_frontend": {
+      "dependencies": [
+        "mercx_backend"
+      ],
+      "source": [
+        "src/mercx_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "mercx_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

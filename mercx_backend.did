@@ -1,0 +1,56 @@
+type Account = record { owner : principal; subaccount : opt blob };
+type Approve = record {
+  fee : opt nat;
+  from : Account;
+  memo : opt blob;
+  created_at_time : opt nat64;
+  amount : nat;
+  expected_allowance : opt nat;
+  expires_at : opt nat64;
+  spender : Account;
+};
+type Burn = record {
+  from : Account;
+  memo : opt blob;
+  created_at_time : opt nat64;
+  amount : nat;
+  spender : opt Account;
+};
+type Mint = record {
+  to : Account;
+  memo : opt blob;
+  created_at_time : opt nat64;
+  amount : nat;
+};
+type Result = variant { Ok : TransactionResponse; Err : text };
+type Result_1 = variant { Ok : nat; Err : text };
+type Transaction = record {
+  burn : opt Burn;
+  kind : text;
+  mint : opt Mint;
+  approve : opt Approve;
+  timestamp : nat64;
+  transfer : opt Transfer;
+};
+type TransactionResponse = record {
+  first_index : nat;
+  log_length : nat;
+  transactions : vec Transaction;
+};
+type Transfer = record {
+  to : Account;
+  fee : opt nat;
+  from : Account;
+  memo : opt blob;
+  created_at_time : opt nat64;
+  amount : nat;
+  spender : opt Account;
+};
+type TransferArgs = record { to_account : Account; amount : nat };
+service : {
+  check_balance : (Account) -> (nat);
+  get_logo_url : () -> (text);
+  get_token_name : () -> (text);
+  get_transactions : (nat, nat) -> (Result);
+  transfer : (TransferArgs) -> (Result_1);
+}
