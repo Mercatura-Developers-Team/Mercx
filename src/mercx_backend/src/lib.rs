@@ -18,6 +18,9 @@ async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
         &args.amount,
         &args.to_account,
     );
+    
+    let caller_principal = ic_cdk::caller();
+    ic_cdk::println!("Caller Principal: {}", caller_principal.to_text()); 
 
     let transfer_args: TransferArg = TransferArg {
         // can be used to distinguish between transactions

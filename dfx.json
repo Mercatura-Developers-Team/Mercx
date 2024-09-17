@@ -19,7 +19,8 @@
 
     "mercx_frontend": {
       "dependencies": [
-        "mercx_backend"
+        "mercx_backend",
+        "icrc1_ledger_canister"
       ],
       "source": [
         "src/mercx_frontend/dist"

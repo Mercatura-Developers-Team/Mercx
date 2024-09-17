@@ -1,12 +1,35 @@
 import { useState, useEffect } from "react";
 import { mercx_backend } from "declarations/mercx_backend";
 import { Principal } from "@dfinity/principal"; // Import Principal
+//import { AuthClient } from "@dfinity/auth-client";
 
 function App() {
   const [tokenName, setTokenName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [balance, setBalance] = useState(0n); // Keep balance as BigInt
   const [transactions, setTransactions] = useState([]); // Initialize as empty array
+
+
+
+// useEffect(() => {
+//   async function authenticateUser() {
+//     const authClient = await AuthClient.create();
+    
+//     if (await authClient.isAuthenticated()) {
+//       const identity = authClient.getIdentity();
+//       const principal = identity.getPrincipal().toText();
+//       console.log("Authenticated user principal:", principal);
+//     } else {
+//       await authClient.login({
+//         identityProvider: "https://identity.ic0.app/#authorize",
+//         onSuccess: () => {
+//           window.location.reload(); // Reload the page to get authenticated state
+//         }
+//       });
+//     }
+//   }
+//   authenticateUser();
+// }, []);
 
   // Fetch token details (name and logo) and user balance on load
   useEffect(() => {
@@ -22,21 +45,25 @@ function App() {
 
         // Fetch user balance (replace <YourPrincipalHere> with actual principal)
         const balanceResult = await mercx_backend.check_balance({
-          owner: Principal.fromText("cy4ps-czgf3-cr64v-goyxx-vzgbp-2ilng-q4k4s-7hex3-zqaer-yq4md-3qe"),
+          owner: Principal.fromText("bd3sg-teaaa-aaaaa-qaaba-cai"),
           subaccount: [],
         });
         setBalance(balanceResult);
 
-        // Fetch latest transactions
-        const txResponse = await mercx_backend.get_transactions(0, 10); // Adjust length as needed
-        if (txResponse && txResponse.transactions) {
-          setTransactions(txResponse.transactions);
-        }
-      } catch (error) {
-        console.error("Error fetching data: ", error);
+                // Fetch latest transactions
+      const txResponse = await mercx_backend.get_transactions(0, 10); // Adjust length as needed
+      if (txResponse?.Ok?.transactions) {
+        setTransactions(txResponse.Ok.transactions); // Correctly access transactions
+        //console.log(txResponse.Ok.transactions);
+      } else {
+        console.error("No transactions in response:", txResponse);
       }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
     }
-    fetchData();
+  }
+  fetchData();
+// console.log(transactions)
   }, []);
 
   return (
@@ -59,43 +86,95 @@ function App() {
       </section>
 
       <section>
-        <h2>Transaction History</h2>
-        <ul>
-          {transactions.length > 0 ? (
-            transactions.map((tx, index) => (
-              <li key={index}>
-                <p>Type: {tx.kind}</p>
-                <p>Amount: {tx.amount ? tx.amount.toString() : "N/A"}</p>
-                <p>Timestamp: {new Date(Number(tx.timestamp / 1000000)).toLocaleString()}</p>
-                <p>From: {tx.from_account ? tx.from_account.owner.toText() : "N/A"}</p>
-                <p>To: {tx.to_account ? tx.to_account.owner.toText() : "N/A"}</p>
-              </li>
-            ))
-          ) : (
-            <p>No transactions found.</p>
-          )}
-        </ul>
-      </section>
+  <h2>Transaction History</h2>
+  <ul>
+    {transactions.length > 0 ? (
+      transactions.map((tx, index) => (
+        <li key={index}>
+          <p>Type: {tx.kind || "N/A"}</p>
+
+          <p>
+            Amount: 
+            {tx.transfer?.[0]?.amount 
+              ? tx.transfer[0].amount.toString() // Accessing the first transfer's amount
+              : tx.mint?.[0]?.amount 
+              ? tx.mint[0].amount.toString() // Accessing the first mint's amount
+              : "N/A"}
+          </p>
+
+          <p>
+            Timestamp: 
+            {tx.timestamp 
+              ? new Date(Number(tx.timestamp) / 1000000).toLocaleString() 
+              : "N/A"}
+          </p>
+
+          <p>
+            From: 
+            {tx.transfer?.[0]?.from?.owner 
+              ? tx.transfer[0].from.owner.toText() 
+              : "N/A"}
+          </p>
+
+          <p>
+            To: 
+            {tx.transfer?.[0]?.to?.owner 
+              ? tx.transfer[0].to.owner.toText() 
+              : tx.mint?.[0]?.to?.owner 
+              ? tx.mint[0].to.owner.toText() 
+              : "N/A"}
+          </p>
+        </li>
+      ))
+    ) : (
+      <p>No transactions found.</p>
+    )}
+  </ul>
+</section>
+
+
+
+
+
 
       <section>
         <h2>Transfer Tokens</h2>
         <form
           onSubmit={async (event) => {
             event.preventDefault();
-            const toAccount = event.target.elements.to.value;
-            const amount = BigInt(event.target.elements.amount.value);
 
             try {
+              // Retrieve and validate the Principal ID
+              const toAccount = event.target.elements.to.value.trim(); // Trim to remove extra spaces
+              const amount = BigInt(event.target.elements.amount.value); // Convert amount to BigInt
+
+              if (!toAccount || !amount) {
+                alert("Please provide valid inputs");
+                return;
+              }
+
+              // Validate Principal ID format
+              let principal;
+              try {
+                principal = Principal.fromText(toAccount);
+              } catch (err) {
+                alert("Invalid Principal ID format. Please provide a valid Principal ID.");
+                return;
+              }
+
+              // Call the backend transfer function
               const transferResult = await mercx_backend.transfer({
                 amount,
                 to_account: {
-                  owner: Principal.fromText(toAccount),
-                  subaccount: [],
+                  owner: principal, // Use the properly formatted Principal here
+                  subaccount: [], // Assuming no subaccount for simplicity
                 },
               });
+
               alert("Transfer successful: Block Index " + transferResult);
             } catch (error) {
               console.error("Transfer failed: ", error);
+              alert("Transfer failed: " + error.message); // Display the error message
             }
           }}
         >
@@ -109,6 +188,8 @@ function App() {
           </label>
           <button type="submit">Send</button>
         </form>
+
+
       </section>
     </main>
   );
