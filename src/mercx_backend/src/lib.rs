@@ -1,8 +1,10 @@
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize, Principal,Nat};
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, TransferError};
 use serde::Serialize;
 use icrc_ledger_types::icrc::generic_metadata_value::MetadataValue;
+use ic_cdk::call;
+
 
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -233,6 +235,66 @@ async fn get_transactions(start: candid::Nat, length: candid::Nat) -> Result<Tra
     Ok(response)
 }
 
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct GetAccountTransactionsArgs {
+    account: Account,
+    start: Option<Nat>,
+    max_results: Nat,
+}
+
+#[ic_cdk::update]
+async fn get_account_transactions(
+    max_results: u64,        // u64 as input
+    start: Option<u64>,      // Optional u64 as input
+    account: Account,        // Account remains unchanged
+) -> Result<TransactionResponse, String> {
+
+    // Convert max_results from u64 to Nat
+    let max_results_nat = Nat::from(max_results);
+    
+    // Convert start from Option<u64> to Option<Nat>
+    let start_nat = start.map(Nat::from);
+
+    // Prepare the query arguments
+    let query_args = GetAccountTransactionsArgs {
+        account,
+        start: start_nat,
+        max_results: max_results_nat,
+    };
+
+    // Call the get_account_transactions method on the icrc1_index_canister
+    let (result,): (Result<TransactionResponse, String>,) = call(
+        Principal::from_text("bd3sg-teaaa-aaaaa-qaaba-cai") // Use the correct principal for your canister
+            .expect("Could not decode the principal."),
+        "get_account_transactions",
+        (query_args,),
+    )
+    .await
+    .map_err(|e| format!("Failed to call canister: {:?}", e))?;
+
+    match result {
+        Ok(response) => {
+            // Process the response
+            for tx in &response.transactions {
+                ic_cdk::println!("Transaction Kind: {}", tx.kind);
+                
+                if let Some(transfer) = &tx.transfer {
+                    ic_cdk::println!("Transfer Amount: {}", transfer.amount);
+                    ic_cdk::println!("From: {:?}", transfer.from.owner.to_text());
+                    ic_cdk::println!("To: {:?}", transfer.to.owner.to_text());
+                } else if let Some(mint) = &tx.mint {
+                    ic_cdk::println!("Mint Amount: {}", mint.amount);
+                    ic_cdk::println!("To: {:?}", mint.to.owner.to_text());
+                }
+            }
+            Ok(response)
+        }
+        Err(message) => {
+            ic_cdk::println!("Error: {}", message);
+            Err(message)
+        }
+    }
+}
 
 // Enable Candid export (see https://internetcomputer.org/docs/current/developer-docs/backend/rust/generating-candid)
 ic_cdk::export_candid!();

@@ -49,6 +49,7 @@ type Transfer = record {
 type TransferArgs = record { to_account : Account; amount : nat };
 service : {
   check_balance : (Account) -> (nat);
+  get_account_transactions : (nat64, opt nat64, Account) -> (Result);
   get_logo_url : () -> (text);
   get_token_name : () -> (text);
   get_transactions : (nat, nat) -> (Result);

@@ -23,7 +23,6 @@ type Mint = record {
   amount : nat;
 };
 type Result = variant { Ok : TransactionResponse; Err : text };
-type Result_1 = variant { Ok : nat; Err : text };
 type Transaction = record {
   burn : opt Burn;
   kind : text;
@@ -46,11 +45,4 @@ type Transfer = record {
   amount : nat;
   spender : opt Account;
 };
-type TransferArgs = record { to_account : Account; amount : nat };
-service : {
-  check_balance : (Account) -> (nat);
-  get_logo_url : () -> (text);
-  get_token_name : () -> (text);
-  get_transactions : (nat, nat) -> (Result);
-  transfer : (TransferArgs) -> (Result_1);
-}
+service : { get_account_transactions : (nat64, opt nat64, Account) -> (Result) }
