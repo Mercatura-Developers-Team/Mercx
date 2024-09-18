@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { mercx_backend } from "declarations/mercx_backend";
 import { Principal } from "@dfinity/principal"; // Import Principal
 //import { AuthClient } from "@dfinity/auth-client";
+import { fetchTransactions } from './api/icrc1Api'; // adjust
+
 
 function App() {
   const [tokenName, setTokenName] = useState("");
@@ -10,6 +12,7 @@ function App() {
   const [transactions, setTransactions] = useState([]); // Initialize as empty array
 
 
+  const principalId = 'be2us-64aaa-aaaaa-qaabq-cai'; // Set the appropriate principal ID
 
 // useEffect(() => {
 //   async function authenticateUser() {
@@ -66,6 +69,12 @@ function App() {
 // console.log(transactions)
   }, []);
 
+  useEffect(() => {
+    fetchTransactions(Principal.fromText(principalId), 10)
+        .then(setTransactions)
+        .catch(error => console.error('Failed to fetch transactions:', error));
+}, [principalId]);
+
   return (
     <main
       style={{
@@ -84,8 +93,18 @@ function App() {
         <h2>Your Balance</h2>
         <p>{balance.toString()} {tokenName}</p> {/* Convert BigInt to string */}
       </section>
-
-      <section>
+      <div>
+            <h1>Transactions</h1>
+            {transactions.map((tx, index) => (
+                <div key={index}>
+                    <p>Transaction ID: {tx.id}</p>
+                    <p>Type: {tx.kind}</p>
+                    <p>Timestamp: {new Date(Number(tx.timestamp) / 1000000).toLocaleString()}</p>
+                    {/* Add more details as needed */}
+                </div>
+            ))}
+        </div>
+      {/* <section>
   <h2>Transaction History</h2>
   <ul>
     {transactions.length > 0 ? (
@@ -130,7 +149,7 @@ function App() {
       <p>No transactions found.</p>
     )}
   </ul>
-</section>
+</section> */}
 
 
 

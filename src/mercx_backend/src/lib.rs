@@ -10,6 +10,7 @@ use ic_cdk::call;
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct TransferArgs {
     amount: NumTokens,
+    
     to_account: Account,
 }
 
