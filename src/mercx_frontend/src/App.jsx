@@ -8,7 +8,9 @@ function App() {
   const [logoUrl, setLogoUrl] = useState("");
   const [balance, setBalance] = useState(0n); // Keep balance as BigInt
   const [transactions, setTransactions] = useState([]); // Initialize as empty array
+  const [accountTransactions, setAccountTransactions] = useState([]);
 
+  const principalId = 'bd3sg-teaaa-aaaaa-qaaba-cai';
 
 
 // useEffect(() => {
@@ -58,6 +60,30 @@ function App() {
       } else {
         console.error("No transactions in response:", txResponse);
       }
+
+      // Fetch account transactions
+      const accountTransactionsArgs = {
+        max_results: 10n,
+        start: [], // Empty array for None
+        account: {
+          owner: Principal.fromText(principalId.trim()),
+          subaccount: [], // Empty array for None
+        },
+      };
+
+      // Corrected argument order
+      const accountTxResponse = await mercx_backend.get_account_transactions(
+        accountTransactionsArgs.account,
+        accountTransactionsArgs.start,
+        accountTransactionsArgs.max_results
+      );
+
+      if (accountTxResponse?.Ok?.transactions) {
+        setAccountTransactions(accountTxResponse.Ok.transactions);
+      } else {
+        console.error("Error fetching account transactions:", accountTxResponse.Err);
+      }
+
     } catch (error) {
       console.error("Error fetching data: ", error);
     }
@@ -85,7 +111,7 @@ function App() {
         <p>{balance.toString()} {tokenName}</p> {/* Convert BigInt to string */}
       </section>
 
-      <section>
+      {/* <section>
   <h2>Transaction History</h2>
   <ul>
     {transactions.length > 0 ? (
@@ -133,50 +159,102 @@ function App() {
 </section>
 
 
+ */}
 
+<section>
+        <h2>Account Transaction History</h2>
+        <ul>
+        {accountTransactions.length > 0 ? (
+            accountTransactions.map((tx, index) => {
+              console.log('Transaction data:', tx);
 
+              const { transaction } = tx;
+              const { kind, timestamp } = transaction;
 
+              let amount = 'N/A';
+              let fromOwner = 'N/A';
+              let toOwner = 'N/A';
+
+              if (transaction.transfer && transaction.transfer.length > 0) {
+                const transfer = transaction.transfer[0];
+                amount = transfer.amount.toString();
+                fromOwner = transfer.from.owner.toText();
+                toOwner = transfer.to.owner.toText();
+              } else if (transaction.mint && transaction.mint.length > 0) {
+                const mint = transaction.mint[0];
+                amount = mint.amount.toString();
+                toOwner = mint.to.owner.toText();
+              }
+
+              return (
+                <li key={index}>
+                  <p>Transaction ID: {tx.id.toString()}</p>
+                  <p>Type: {kind || 'N/A'}</p>
+                  <p>Amount: {amount}</p>
+                  <p>
+                    Timestamp:{' '}
+                    {timestamp
+                      ? new Date(Number(timestamp / 1_000_000n)).toLocaleString()
+                      : 'N/A'}
+                  </p>
+                  <p>From: {fromOwner}</p>
+                  <p>To: {toOwner}</p>
+                </li>
+              );
+            })
+          ) : (
+            <p>No account transactions found.</p>
+          )}
+        </ul>
+      </section>
 
       <section>
         <h2>Transfer Tokens</h2>
         <form
-          onSubmit={async (event) => {
-            event.preventDefault();
-
-            try {
-              // Retrieve and validate the Principal ID
-              const toAccount = event.target.elements.to.value.trim(); // Trim to remove extra spaces
-              const amount = BigInt(event.target.elements.amount.value); // Convert amount to BigInt
-
-              if (!toAccount || !amount) {
-                alert("Please provide valid inputs");
-                return;
-              }
-
-              // Validate Principal ID format
-              let principal;
-              try {
-                principal = Principal.fromText(toAccount);
-              } catch (err) {
-                alert("Invalid Principal ID format. Please provide a valid Principal ID.");
-                return;
-              }
-
-              // Call the backend transfer function
-              const transferResult = await mercx_backend.transfer({
-                amount,
-                to_account: {
-                  owner: principal, // Use the properly formatted Principal here
-                  subaccount: [], // Assuming no subaccount for simplicity
-                },
-              });
-
-              alert("Transfer successful: Block Index " + transferResult);
-            } catch (error) {
-              console.error("Transfer failed: ", error);
-              alert("Transfer failed: " + error.message); // Display the error message
+         onSubmit={async (event) => {
+          event.preventDefault();
+        
+          try {
+            // Retrieve and validate the Principal ID
+            const toAccount = event.target.elements.to.value.trim();
+            const amount = BigInt(event.target.elements.amount.value);
+        
+            if (!toAccount || amount <= 0n) {
+              alert("Please provide valid inputs");
+              return;
             }
-          }}
+        
+            // Validate Principal ID format
+            let principal;
+            try {
+              principal = Principal.fromText(toAccount);
+            } catch (err) {
+              alert("Invalid Principal ID format. Please provide a valid Principal ID.");
+              return;
+            }
+        
+            // Call the backend transfer function
+            const transferResult = await mercx_backend.transfer({
+              amount,
+              to_account: {
+                owner: principal,
+                subaccount: [],
+              },
+            });
+        
+            // Check if the transfer was successful
+            if ('Ok' in transferResult) {
+              alert("Transfer successful: Block Index " + transferResult.Ok);
+            } else {
+              // Handle the error case
+              console.error("Transfer failed: ", transferResult.Err);
+              alert("Transfer failed: " + transferResult.Err);
+            }
+          } catch (error) {
+            console.error("Transfer failed: ", error);
+            alert("Transfer failed: " + error.message);
+          }
+        }}
         >
           <label>
             To Account (Principal ID):

@@ -5,7 +5,6 @@ use serde::Serialize;
 use icrc_ledger_types::icrc::generic_metadata_value::MetadataValue;
 
 
-
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct TransferArgs {
     amount: NumTokens,
@@ -241,11 +240,7 @@ pub struct GetAccountTransactionsArgs {
     account: Account,
 }
 
-// #[derive(CandidType, Deserialize, Debug)]
-// pub enum GetTransactionsResult {
-//     Ok(TransactionResponse),
-//     Err(String),
-// }
+
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct GetTransactions {
