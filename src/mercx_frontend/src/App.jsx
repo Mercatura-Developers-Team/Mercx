@@ -70,7 +70,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetchTransactions(Principal.fromText(principalId), 10)
+    fetchTransactions(Principal.fromText(principalId), 10 , 0 )
         .then(setTransactions)
         .catch(error => console.error('Failed to fetch transactions:', error));
 }, [principalId]);
@@ -97,8 +97,10 @@ function App() {
             <h1>Transactions</h1>
             {transactions.map((tx, index) => (
                 <div key={index}>
-                    <p>Transaction ID: {tx.id}</p>
+                    {/* <p>Transaction ID: {tx.id}</p> */}
+
                     <p>Type: {tx.kind}</p>
+                    <p>Amount : {tx.amount}</p>
                     <p>Timestamp: {new Date(Number(tx.timestamp) / 1000000).toLocaleString()}</p>
                     {/* Add more details as needed */}
                 </div>
