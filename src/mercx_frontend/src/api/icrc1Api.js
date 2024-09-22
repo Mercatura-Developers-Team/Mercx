@@ -4,7 +4,7 @@ export async function fetchTransactions(principalId, maxResults , start) {
     try {
         const response = await icrc1_index_canister.get_account_transactions({
             max_results: maxResults,
-       start: start !== undefined ? [start] : null,  // Adjust this if you need to specify a starting point
+       start: start !== undefined ? start : null,  // Adjust this if you need to specify a starting point
             account: {
                 owner: principalId,
                 subaccount: [] // Adjust if subaccounts are used
