@@ -102,64 +102,31 @@ function App() {
   return (
 
     <div className="min-h-screen bg-gray-100">
-      <MyNavbar />
-      <main className="bg-blue-900 text-white p-4">
-        <section className="bg-white text-gray-900 rounded-lg shadow p-4 m-4">
-          <h2 className="text-lg font-bold">Your Balance</h2>
-          <p className="text-xl">{balance.toString()} {tokenName}</p>
-        </section>
-  {/* <section>
-  <h2>Transaction History</h2>
-  <ul>
-    {transactions.length > 0 ? (
-      transactions.map((tx, index) => (
-        <li key={index}>
-          <p>Type: {tx.kind || "N/A"}</p>
+      <MyNavbar/>
+    <main
+      style={{
+        height: "100%",
+        minHeight: "100vh",
+        backgroundColor: "#001f3f", // Dark blue background
+        color: "white", // White text
+      }}
+    >
+      {/* <header>
+        <img src={logoUrl} alt={${tokenName} Logo} width="100" />
+        <h1>{tokenName} - Token Dashboard</h1>
+      </header> */}
 
-          <p>
-            Amount: 
-            {tx.transfer?.[0]?.amount 
-              ? tx.transfer[0].amount.toString() // Accessing the first transfer's amount
-              : tx.mint?.[0]?.amount 
-              ? tx.mint[0].amount.toString() // Accessing the first mint's amount
-              : "N/A"}
-          </p>
+      <section>
+        <h2>Your Balance</h2>
+        <p>
+          {balance.toString()} {tokenName}
+        </p>{" "}
+        {/* Convert BigInt to string */}
+      </section>
 
-          <p>
-            Timestamp: 
-            {tx.timestamp 
-              ? new Date(Number(tx.timestamp) / 1000000).toLocaleString() 
-              : "N/A"}
-          </p>
-
-          <p>
-            From: 
-            {tx.transfer?.[0]?.from?.owner 
-              ? tx.transfer[0].from.owner.toText() 
-              : "N/A"}
-          </p>
-
-          <p>
-            To: 
-            {tx.transfer?.[0]?.to?.owner 
-              ? tx.transfer[0].to.owner.toText() 
-              : tx.mint?.[0]?.to?.owner 
-              ? tx.mint[0].to.owner.toText() 
-              : "N/A"}
-          </p>
-        </li>
-      ))
-    ) : (
-      <p>No transactions found.</p>
-    )}
-  </ul>
-</section>
-
-
- */}
-
-<section className="p-4 m-4 bg-white rounded-lg shadow text-gray-900">
-        <h2 className="text-lg font-bold">Account Transaction History</h2>
+    
+      <section>
+        <h2>Account Transaction History</h2>
         <ul>
           {accountTransactions.length > 0 ? (
             accountTransactions.map((tx, index) => {
@@ -184,7 +151,7 @@ function App() {
               }
 
               return (
-                <li key={index} className="p-2 border-b border-gray-200"> 
+                <li key={index}>
                   <p>Transaction ID: {tx.id.toString()}</p>
                   <p>Type: {kind || "N/A"}</p>
                   <p>Amount: {amount}</p>
@@ -207,11 +174,9 @@ function App() {
         </ul>
       </section>
 
-
-
-        <section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
-        <h2 className="font-bold text-lg">Transfer Tokens</h2>
-        <form className="flex flex-col gap-4"
+      <section>
+        <h2>Transfer Tokens</h2>
+        <form
           onSubmit={async (event) => {
             event.preventDefault();
 
@@ -267,7 +232,6 @@ function App() {
               name="to"
               placeholder="Enter recipient's principal"
               required
-              className="p-2 border rounded" 
             />
           </label>
           <label>
@@ -277,19 +241,12 @@ function App() {
               name="amount"
               placeholder="Amount to transfer"
               required
-              className="p-2 border rounded" 
             />
           </label>
-          <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
+          <button type="submit">Send</button>
         </form>
       </section>
-      </main>
+    </main>
     </div>
-
   );
 }
-
-export default App;
-
-
-

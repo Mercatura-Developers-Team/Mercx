@@ -3,8 +3,10 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import environment from 'vite-plugin-environment';
 import dotenv from 'dotenv';
-
+import postcss from 'postcss';
 dotenv.config({ path: '../../.env' });
+import tailwind from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 
 export default defineConfig({
   build: {
@@ -40,4 +42,14 @@ export default defineConfig({
       },
     ],
   },
+  css: {
+    postcss: {
+      plugins: [
+        tailwind,
+        autoprefixer,
+      ],
+    },
+  },
 });
+
+

@@ -16,13 +16,20 @@ type Burn = record {
   amount : nat;
   spender : opt Account;
 };
+type GetTransactions = record {
+  balance : nat;
+  transactions : vec TransactionWithId;
+  oldest_tx_id : opt nat;
+};
 type Mint = record {
   to : Account;
   memo : opt blob;
   created_at_time : opt nat64;
   amount : nat;
 };
-type Result = variant { Ok : TransactionResponse; Err : text };
+type Result = variant { Ok : GetTransactions; Err : text };
+type Result_1 = variant { Ok : TransactionResponse; Err : text };
+type Result_2 = variant { Ok : nat; Err : text };
 type Transaction = record {
   burn : opt Burn;
   kind : text;
@@ -36,6 +43,7 @@ type TransactionResponse = record {
   log_length : nat;
   transactions : vec Transaction;
 };
+type TransactionWithId = record { id : nat; transaction : Transaction };
 type Transfer = record {
   to : Account;
   fee : opt nat;
@@ -45,4 +53,12 @@ type Transfer = record {
   amount : nat;
   spender : opt Account;
 };
-service : { get_account_transactions : (nat64, opt nat64, Account) -> (Result) }
+type TransferArgs = record { to_account : Account; amount : nat };
+service : {
+  check_balance : (Account) -> (nat);
+  get_account_transactions : (Account, opt nat, nat) -> (Result);
+  get_logo_url : () -> (text);
+  get_token_name : () -> (text);
+  get_transactions : (nat, nat) -> (Result_1);
+  transfer : (TransferArgs) -> (Result_2);
+}

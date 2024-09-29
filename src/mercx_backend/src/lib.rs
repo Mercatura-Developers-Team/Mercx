@@ -3,6 +3,9 @@ use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, TransferError};
 use serde::Serialize;
 use icrc_ledger_types::icrc::generic_metadata_value::MetadataValue;
+use dotenv::dotenv;
+use std::env;
+
 
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -13,6 +16,8 @@ pub struct TransferArgs {
 
 #[ic_cdk::update]
 async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
+    
+dotenv().ok(); // This loads the variables from .env into the environment
     ic_cdk::println!(
         "Transferring {} tokens to account {}",
         &args.amount,
@@ -37,12 +42,15 @@ async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
         created_at_time: None,
     };
 
+    // let ledger_principal = env::var("CANISTER_ID_ICRC1_LEDGER_CANISTER")
+    // .expect("Ledger Canister Principal ID not set in .env");
     // 1. Asynchronously call another canister function using ic_cdk::call.
     ic_cdk::call::<(TransferArg,), (Result<BlockIndex, TransferError>,)>(
         // 2. Convert a textual representation of a Principal into an actual Principal object. The principal is the one we specified in dfx.json.
         //    expect will panic if the conversion fails, ensuring the code does not proceed with an invalid principal.
         Principal::from_text("mxzaz-hqaaa-aaaar-qaada-cai")
             .expect("Could not decode the principal."),
+        
         // 3. Specify the method name on the target canister to be called, in this case, "icrc1_transfer".
         "icrc1_transfer",
         // 4. Provide the arguments for the call in a tuple, here transfer_args is encapsulated as a single-element tuple.
@@ -114,7 +122,7 @@ async fn get_token_name() -> String {
 //     .await
 //     .map_err(|e| format!("failed to retrieve metadata: {:?}", e))?;
 
-//     // Find the "logo_url" in the metadata
+//   // Find the "logo_url" in the metadata
 //     for (key, value) in metadata {
 //         if key == "logo_url" {
 //             if let MetadataValue::Text(url) = value {
@@ -293,6 +301,7 @@ async fn get_account_transactions(
         GetTransactionsResult::Err(err) => Err(err.message),
     }
 }
+
 
 
 ic_cdk::export_candid!();
