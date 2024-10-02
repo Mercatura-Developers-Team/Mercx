@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { mercx_backend } from "declarations/mercx_backend";
 import { Principal } from "@dfinity/principal"; // Import Principal
 //import { AuthClient } from "@dfinity/auth-client";
 import MyNavbar from "./Navbar";
+//import LoggedOut from "./LoggedOut";
+import { useAuth, AuthProvider } from "./use-auth-client";
+//import LoggedIn from "./LoggedIn";
 
 import './index.css';
 function App() {
@@ -11,71 +14,50 @@ function App() {
   const [balance, setBalance] = useState(0n); // Keep balance as BigInt
   const [transactions, setTransactions] = useState([]); // Initialize as empty array
   const [accountTransactions, setAccountTransactions] = useState([]);
-
-  const principalId = "be2us-64aaa-aaaaa-qaabq-cai";
-
-  // useEffect(() => {
-  //   async function authenticateUser() {
-  //     const authClient = await AuthClient.create();
-
-  //     if (await authClient.isAuthenticated()) {
-  //       const identity = authClient.getIdentity();
-  //       const principal = identity.getPrincipal().toText();
-  //       console.log("Authenticated user principal:", principal);
-  //     } else {
-  //       await authClient.login({
-  //         identityProvider: "https://identity.ic0.app/#authorize",
-  //         onSuccess: () => {
-  //           window.location.reload(); // Reload the page to get authenticated state
-  //         }
-  //       });
-  //     }
-  //   }
-  //   authenticateUser();
-  // }, []);
+  const { isAuthenticated, identity } = useAuth(); //isAuthenticated, which is a boolean indicating whether the user is currently authenticated, and identity, which likely contains data about the authenticated user.
+  //const { login } = useAuth();
+  const { whoamiActor, logout } = useAuth(); 
+  const { principal } = useAuth(); 
+ 
 
   // Fetch token details (name and logo) and user balance on load
-
-  async function fetchData() {
+  async function fetchData(principalId) {
     try {
+      // Use principalId directly if it's a Principal object
+      const owner = typeof principalId === 'string' ? Principal.fromText(principalId) : principalId;
+
       // Fetch token name
-      const name = await mercx_backend.get_token_name();
+      const name = await whoamiActor.get_token_name();
       setTokenName(name);
 
       // Fetch logo URL
-      const logo = await mercx_backend.get_logo_url();
+      const logo = await whoamiActor.get_logo_url();
       setLogoUrl(logo);
 
-      // Fetch user balance (replace <YourPrincipalHere> with actual principal)
-      //be2us-64aaa-aaaaa-qaabq-cai nour's principal
-      //bd3sg-teaaa-aaaaa-qaaba-cai  j principal
-      const balanceResult = await mercx_backend.check_balance({
-        owner: Principal.fromText("be2us-64aaa-aaaaa-qaabq-cai"),
+      // Fetch user balance
+      const balanceResult = await whoamiActor.check_balance({
+        owner, // Use the Principal object directly
         subaccount: [],
       });
       setBalance(balanceResult);
 
       // Fetch latest transactions
-      const txResponse = await mercx_backend.get_transactions(0, 50); // Adjust length as needed
+      const txResponse = await whoamiActor.get_transactions(0, 50);
       if (txResponse?.Ok?.transactions) {
-        setTransactions(txResponse.Ok.transactions); // Correctly access transactions
-        //console.log(txResponse.Ok.transactions);
-      } else {
-        console.error("No transactions in response:", txResponse);
+        setTransactions(txResponse.Ok.transactions);
       }
 
       // Fetch account transactions
       const accountTransactionsArgs = {
         max_results: 10n,
-        start: [], // Empty array for None
+        start: [],
         account: {
-          owner: Principal.fromText(principalId.trim()),
-          subaccount: [], // Empty array for None
+          owner, // Use the Principal object directly
+          subaccount: [],
         },
       };
 
-      // Corrected argument order
-      const accountTxResponse = await mercx_backend.get_account_transactions(
+      const accountTxResponse = await whoamiActor.get_account_transactions(
         accountTransactionsArgs.account,
         accountTransactionsArgs.start,
         accountTransactionsArgs.max_results
@@ -83,21 +65,23 @@ function App() {
 
       if (accountTxResponse?.Ok?.transactions) {
         setAccountTransactions(accountTxResponse.Ok.transactions);
-      } else {
-        console.error(
-          "Error fetching account transactions:",
-          accountTxResponse.Err
-        );
       }
     } catch (error) {
-      console.error("Error fetching data: ", error);
+      console.error("Error fetching data:", error);
     }
-  }
+}
 
-  useEffect(() => {
-    fetchData();
-    // console.log(transactions)
-  }, []);
+    // Fetch data once the principal ID is available
+    useEffect(() => {
+      if (principal) {
+        fetchData(principal); // Call fetchData only when 'result' (principalId) is available
+      }
+    }, [principal]);
+
+  // useEffect(() => {
+  //   fetchData();
+  //   console.log(transactions)
+  // }, []);
 
   return (
 
@@ -163,7 +147,7 @@ function App() {
         <ul>
           {accountTransactions.length > 0 ? (
             accountTransactions.map((tx, index) => {
-              console.log("Transaction data:", tx);
+            //  console.log("Transaction data:", tx);
 
               const { transaction } = tx;
               const { kind, timestamp } = transaction;
@@ -209,87 +193,96 @@ function App() {
 
 
 
-        <section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
-        <h2 className="font-bold text-lg">Transfer Tokens</h2>
-        <form className="flex flex-col gap-4"
-          onSubmit={async (event) => {
-            event.preventDefault();
+      <section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
+  <h2 className="font-bold text-lg">Transfer Tokens</h2>
+  <form className="flex flex-col gap-4"
+    onSubmit={async (event) => {
+      event.preventDefault();
 
-            try {
-              // Retrieve and validate the Principal ID
-              const toAccount = event.target.elements.to.value.trim();
-              const amount = BigInt(event.target.elements.amount.value);
+      try {
+        const toAccount = event.target.elements.to.value.trim();
+        const amount = BigInt(event.target.elements.amount.value);
 
-              if (!toAccount || amount <= 0n) {
-                alert("Please provide valid inputs");
-                return;
-              }
+        if (!toAccount || amount <= 0n) {
+          alert("Please provide valid inputs");
+          return;
+        }
 
-              // Validate Principal ID format
-              let principal;
-              try {
-                principal = Principal.fromText(toAccount);
-              } catch (err) {
-                alert(
-                  "Invalid Principal ID format. Please provide a valid Principal ID."
-                );
-                return;
-              }
+        // Validate recipient's Principal ID format
+        let recipientPrincipal;
+        try {
+          recipientPrincipal = Principal.fromText(toAccount);
+        } catch (err) {
+          alert("Invalid Principal ID format. Please provide a valid Principal ID.");
+          return;
+        }
 
-              // Call the backend transfer function
-              const transferResult = await mercx_backend.transfer({
-                amount,
-                to_account: {
-                  owner: principal,
-                  subaccount: [],
-                },
-              });
+        // Use authenticated user's principal as the sender (from_account)
+        const senderPrincipal = principal;  // principal should be available from useAuthClient()
 
-              // Check if the transfer was successful
-              if ("Ok" in transferResult) {
-                alert("Transfer successful: Block Index " + transferResult.Ok);
-                fetchData();
-              } else {
-                // Handle the error case
-                console.error("Transfer failed: ", transferResult.Err);
-                alert("Transfer failed: " + transferResult.Err);
-              }
-            } catch (error) {
-              console.error("Transfer failed: ", error);
-              alert("Transfer failed: " + error.message);
-            }
-          }}
-        >
-          <label>
-            To Account (Principal ID):
-            <input
-              type="text"
-              name="to"
-              placeholder="Enter recipient's principal"
-              required
-              className="p-2 border rounded" 
-            />
-          </label>
-          <label>
-            Amount:
-            <input
-              type="number"
-              name="amount"
-              placeholder="Amount to transfer"
-              required
-              className="p-2 border rounded" 
-            />
-          </label>
-          <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
-        </form>
-      </section>
+        // Call the backend transfer function
+        const transferResult = await whoamiActor.transfer({
+          amount,
+          to_account: {
+            owner: recipientPrincipal,
+            subaccount: [],
+          },
+          from_account: {
+            owner: senderPrincipal,  // Use the user's principal here
+            subaccount: [],  // Adjust if using subaccounts
+          },
+        });
+
+        // Check if the transfer was successful
+        if ("Ok" in transferResult) {
+          alert("Transfer successful: Block Index " + transferResult.Ok);
+          fetchData(principal);
+        } else {
+          console.error("Transfer failed: ", transferResult.Err);
+          alert("Transfer failed: " + transferResult.Err);
+        }
+      } catch (error) {
+        console.error("Transfer failed: ", error);
+        alert("Transfer failed: " + error.message);
+      }
+    }}
+  >
+    <label>
+      To Account (Principal ID):
+      <input
+        type="text"
+        name="to"
+        placeholder="Enter recipient's principal"
+        required
+        className="p-2 border rounded" 
+      />
+    </label>
+    <label>
+      Amount:
+      <input
+        type="number"
+        name="amount"
+        placeholder="Amount to transfer"
+        required
+        className="p-2 border rounded" 
+      />
+    </label>
+    <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
+  </form>
+</section>
+
+     
       </main>
+
     </div>
 
   );
 }
 
-export default App;
-
+export default () => (
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
 
 

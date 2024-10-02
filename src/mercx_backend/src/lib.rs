@@ -3,10 +3,14 @@ use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, TransferError};
 use serde::Serialize;
 use icrc_ledger_types::icrc::generic_metadata_value::MetadataValue;
-use dotenv::dotenv;
-use std::env;
+use ic_cdk::query;
+//use ic_cdk::caller;
 
-
+//The function allows you to query the principal ID of the caller of the function
+#[query]
+fn whoami() -> Principal {
+    ic_cdk::caller()
+}
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct TransferArgs {
@@ -17,7 +21,7 @@ pub struct TransferArgs {
 #[ic_cdk::update]
 async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
     
-dotenv().ok(); // This loads the variables from .env into the environment
+
     ic_cdk::println!(
         "Transferring {} tokens to account {}",
         &args.amount,
