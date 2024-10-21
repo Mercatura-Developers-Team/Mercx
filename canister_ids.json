@@ -1,0 +1,14 @@
+{
+  "icrc1_index_canister": {
+    "ic": "7i7aa-mqaaa-aaaap-akntq-cai"
+  },
+  "icrc1_ledger_canister": {
+    "ic": "7p6gu-biaaa-aaaap-aknta-cai"
+  },
+  "mercx_backend": {
+    "ic": "zoa6c-riaaa-aaaan-qzmta-cai"
+  },
+  "mercx_frontend": {
+    "ic": "zjbyw-4qaaa-aaaan-qzmtq-cai"
+  }
+}

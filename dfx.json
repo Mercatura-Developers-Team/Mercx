@@ -9,17 +9,34 @@
     "icrc1_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-ledger.wasm.gz",
-      "specified_id": "mxzaz-hqaaa-aaaar-qaada-cai"
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-ledger.wasm.gz"
     },
     "icrc1_index_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
-      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz",
-
-      "specified_id": "bd3sg-teaaa-aaaaa-qaaba-cai"
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
     },
-
+    "icp_ledger_canister": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ledger-canister.wasm.gz",
+      "remote": {
+          "id": {
+              "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+          }
+      }
+  }
+,
+"icp_index_canister": {
+  "type": "custom",
+  "candid": "https://raw.githubusercontent.com/dfinity/ic/d87954601e4b22972899e9957e800406a0a6b929/rs/rosetta-api/icp_ledger/index/index.did",
+  "wasm": "https://download.dfinity.systems/ic/d87954601e4b22972899e9957e800406a0a6b929/canisters/ic-icp-index-canister.wasm.gz",
+        "remote": {
+    "id": {
+      "ic": "qhbym-qaaaa-aaaaa-aaafq-cai"
+    }
+  }
+},
     "internet_identity": {
       "type": "custom",
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
@@ -36,7 +53,8 @@
       "dependencies": [
         "mercx_backend",
         "icrc1_ledger_canister",
-        "internet_identity"
+        "internet_identity",
+        "icp_ledger_canister"
       ],
       "source": ["src/mercx_frontend/dist"],
       "type": "assets",

@@ -61,5 +61,6 @@ service : {
   get_token_name : () -> (text);
   get_transactions : (nat, nat) -> (Result_1);
   transfer : (TransferArgs) -> (Result_2);
+  transfer_from : (TransferArgs) -> (Result_2);
   whoami : () -> (principal) query;
 }

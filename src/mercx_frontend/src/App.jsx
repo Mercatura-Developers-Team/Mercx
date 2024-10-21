@@ -3,21 +3,23 @@ import { mercx_backend } from "declarations/mercx_backend";
 import { Principal } from "@dfinity/principal"; // Import Principal
 //import { AuthClient } from "@dfinity/auth-client";
 import MyNavbar from "./Navbar";
-//import LoggedOut from "./LoggedOut";
 import { useAuth, AuthProvider } from "./use-auth-client";
-//import LoggedIn from "./LoggedIn";
-
 import './index.css';
+
 function App() {
   const [tokenName, setTokenName] = useState("");
+  const [icptokenName, setIcpTokenName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [balance, setBalance] = useState(0n); // Keep balance as BigInt
+  const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
   const [transactions, setTransactions] = useState([]); // Initialize as empty array
   const [accountTransactions, setAccountTransactions] = useState([]);
   const { isAuthenticated, identity } = useAuth(); //isAuthenticated, which is a boolean indicating whether the user is currently authenticated, and identity, which likely contains data about the authenticated user.
   //const { login } = useAuth();
-  const { whoamiActor, logout } = useAuth(); 
+  const { whoamiActor ,icrcIndexActor,icpActor} = useAuth(); 
   const { principal } = useAuth(); 
+  const [icpAmount, setIcpAmount] = useState('');
+
  
 
   // Fetch token details (name and logo) and user balance on load
@@ -27,42 +29,48 @@ function App() {
       const owner = typeof principalId === 'string' ? Principal.fromText(principalId) : principalId;
 
       // Fetch token name
-      const name = await whoamiActor.get_token_name();
+      const name = await whoamiActor.icrc1_name();
       setTokenName(name);
 
+      const icptokenname=await icpActor.icrc1_name();
+      setIcpTokenName(icptokenname);
+
       // Fetch logo URL
-      const logo = await whoamiActor.get_logo_url();
+      const logo = await whoamiActor.icrc1_metadata();
       setLogoUrl(logo);
 
       // Fetch user balance
-      const balanceResult = await whoamiActor.check_balance({
+      const balanceResult = await whoamiActor.icrc1_balance_of({
         owner, // Use the Principal object directly
         subaccount: [],
       });
       setBalance(balanceResult);
 
+           // Fetch icp balance
+           const balanceicp = await icpActor.icrc1_balance_of({
+            owner, // Use the Principal object directly
+            subaccount: [],
+          });
+          setIcpBalance(balanceicp);
+
       // Fetch latest transactions
-      const txResponse = await whoamiActor.get_transactions(0, 50);
-      if (txResponse?.Ok?.transactions) {
-        setTransactions(txResponse.Ok.transactions);
-      }
+      // const txResponse = await whoamiActor.get_transactions(0, 50);
+      // if (txResponse?.Ok?.transactions) {
+      //   setTransactions(txResponse.Ok.transactions);
+      // }
 
       // Fetch account transactions
       const accountTransactionsArgs = {
-        max_results: 10n,
-        start: [],
         account: {
-          owner, // Use the Principal object directly
-          subaccount: [],
+          owner,  // Principal object directly
+          subaccount: [],  // Optional subaccount
         },
+        start: [],  // Adjust the starting point for pagination
+        max_results: 30n,  // Pass max_results inside the same record
       };
-
-      const accountTxResponse = await whoamiActor.get_account_transactions(
-        accountTransactionsArgs.account,
-        accountTransactionsArgs.start,
-        accountTransactionsArgs.max_results
-      );
-
+      
+      const accountTxResponse = await icrcIndexActor.get_account_transactions(accountTransactionsArgs);
+      
       if (accountTxResponse?.Ok?.transactions) {
         setAccountTransactions(accountTxResponse.Ok.transactions);
       }
@@ -73,15 +81,42 @@ function App() {
 
     // Fetch data once the principal ID is available
     useEffect(() => {
-      if (principal) {
-        fetchData(principal); // Call fetchData only when 'result' (principalId) is available
+      if (principal ) {
+        fetchData(principal);  // Fetch data when principal and actor are available
       }
-    }, [principal]);
+    }, [principal]); 
 
   // useEffect(() => {
   //   fetchData();
   //   console.log(transactions)
   // }, []);
+
+
+  const handleIcpApprove = async (e) => {
+    e.preventDefault();
+    const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai";  // Make sure to replace this with the actual principal
+    const amountFormatApprove = BigInt(icpAmount * 1e8);  // Convert ICP to e8s for the ledger
+
+    try {
+      const resultIcpApprove = await icpActor.icrc2_approve({
+        spender: {
+          owner: Principal.fromText(icp_swap_canister_id),
+          subaccount: [],
+        },
+        amount: amountFormatApprove,
+        fee: [BigInt(10000)],  // Optional fee, set as needed
+        memo: [],  // Optional memo field
+        from_subaccount: [],  // From subaccount, if any
+        created_at_time: [],  // Specify if needed
+        expected_allowance: [],  // Optional, specify expected allowance if needed
+        expires_at: [],  // Specify if approval should expire
+      });
+      alert('Approval successful!');
+    } catch (error) {
+      console.error("Approval failed: ", error);
+      alert('Approval failed: ' + error.message);
+    }
+  };
 
   return (
 
@@ -91,6 +126,7 @@ function App() {
         <section className="bg-white text-gray-900 rounded-lg shadow p-4 m-4">
           <h2 className="text-lg font-bold">Your Balance</h2>
           <p className="text-xl">{balance.toString()} {tokenName}</p>
+          <p className="text-xl">{Icpbalance.toString()} {icptokenName}</p>
         </section>
   {/* <section>
   <h2>Transaction History</h2>
@@ -191,10 +227,21 @@ function App() {
         </ul>
       </section>
 
-
+      <form onSubmit={handleIcpApprove}>
+                  <input
+                    type="number"
+                    placeholder="Enter ICP amount"
+                    value={icpAmount}
+                    onChange={e => setIcpAmount(e.target.value)}
+                    className="text-gray-900 p-2 border rounded-lg"
+                  />
+                  <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Approve ICP
+                  </button>
+                </form>
 
       <section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
-  <h2 className="font-bold text-lg">Transfer Tokens</h2>
+  <h2 className="font-bold text-lg">Transfer Mercx</h2>
   <form className="flex flex-col gap-4"
     onSubmit={async (event) => {
       event.preventDefault();
@@ -221,22 +268,22 @@ function App() {
         const senderPrincipal = principal;  // principal should be available from useAuthClient()
 
         // Call the backend transfer function
-        const transferResult = await whoamiActor.transfer({
-          amount,
-          to_account: {
-            owner: recipientPrincipal,
-            subaccount: [],
+        const transferResult = await whoamiActor.icrc1_transfer({
+          to: {
+            owner: recipientPrincipal,   // Use `to` instead of `to_account`
+            subaccount: [],              // Optional, set subaccount if required
           },
-          from_account: {
-            owner: senderPrincipal,  // Use the user's principal here
-            subaccount: [],  // Adjust if using subaccounts
-          },
+          fee: [],                        // Optional fee, use [] if not needed
+          memo: [],                       // Optional memo, use [] if not needed
+          from_subaccount: [],            // Optional, set sender's subaccount if required
+          created_at_time: [],            // Optional, use [] if no specific timestamp is provided
+          amount,                         // The amount to transfer
         });
 
         // Check if the transfer was successful
         if ("Ok" in transferResult) {
           alert("Transfer successful: Block Index " + transferResult.Ok);
-          fetchData(principal);
+          fetchData(principal);  // Refresh balance and transactions
         } else {
           console.error("Transfer failed: ", transferResult.Err);
           alert("Transfer failed: " + transferResult.Err);
@@ -270,6 +317,87 @@ function App() {
     <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
   </form>
 </section>
+
+<section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
+  <h2 className="font-bold text-lg">Transfer ICP</h2>
+  <form className="flex flex-col gap-4"
+    onSubmit={async (event) => {
+      event.preventDefault();
+
+      try {
+        const toAccount = event.target.elements.to.value.trim();
+        const amount = BigInt(event.target.elements.amount.value);
+
+        if (!toAccount || amount <= 0n) {
+          alert("Please provide valid inputs");
+          return;
+        }
+
+        // Validate recipient's Principal ID format
+        let recipientPrincipal;
+        try {
+          recipientPrincipal = Principal.fromText(toAccount);
+        } catch (err) {
+          alert("Invalid Principal ID format. Please provide a valid Principal ID.");
+          return;
+        }
+
+        // Use authenticated user's principal as the sender (from_account)
+        const senderPrincipal = principal;  // principal should be available from useAuthClient()
+
+        // Call the backend transfer function
+        const transferResult = await icpActor.icrc1_transfer({
+          to: {
+            owner: recipientPrincipal,   // Use `to` instead of `to_account`
+            subaccount: [],              // Optional, set subaccount if required
+          },
+          fee: [],                        // Optional fee, use [] if not needed
+          memo: [],                       // Optional memo, use [] if not needed
+          from_subaccount: [],            // Optional, set sender's subaccount if required
+          created_at_time: [],            // Optional, use [] if no specific timestamp is provided
+          amount,                         // The amount to transfer
+        });
+
+        // Check if the transfer was successful
+        if ("Ok" in transferResult) {
+          alert("Transfer successful: Block Index " + transferResult.Ok);
+          fetchData(principal);  // Refresh balance and transactions
+        } else {
+          console.error("Transfer failed: ", transferResult.Err);
+          alert("Transfer failed: " + transferResult.Err);
+        }
+      } catch (error) {
+        console.error("Transfer failed: ", error);
+        alert("Transfer failed: " + error.message);
+      }
+    }}
+  >
+    <label>
+      To Account (Principal ID):
+      <input
+        type="text"
+        name="to"
+        placeholder="Enter recipient's principal"
+        required
+        className="p-2 border rounded" 
+      />
+    </label>
+    <label>
+      Amount:
+      <input
+        type="number"
+        name="amount"
+        placeholder="Amount to transfer"
+        required
+        className="p-2 border rounded" 
+      />
+    </label>
+    <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
+  </form>
+</section>
+
+
+
 
      
       </main>

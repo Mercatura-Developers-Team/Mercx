@@ -1,6 +1,9 @@
 import { AuthClient } from "@dfinity/auth-client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { canisterId, createActor } from "../../declarations/mercx_backend";
+//import { canisterId, createActor } from "../../declarations/mercx_backend";
+import { canisterId, createActor } from "../../declarations/icrc1_ledger_canister";
+import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
+import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
 
 
 // Create a React Context for sharing authentication status across the component tree
@@ -63,6 +66,9 @@ export const useAuthClient = (options = defaultOptions) => {
   const [identity, setIdentity] = useState(null);
   const [principal, setPrincipal] = useState(null);
   const [whoamiActor, setWhoamiActor] = useState(null);
+  const [icrcIndexActor, setIcrcIndexActor] = useState(null);
+  const [icpActor, setIcpActor] = useState(null);
+
 
   useEffect(() => {
     // Initialize AuthClient
@@ -102,6 +108,19 @@ export const useAuthClient = (options = defaultOptions) => {
     });
 
     setWhoamiActor(actor);
+    const indexActor = createIndexActor(icrcIndexCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setIcrcIndexActor(indexActor);
+
+    const IcpActor = createIcpActor(icpCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setIcpActor(IcpActor);
   }
 
   async function logout() {
@@ -117,6 +136,8 @@ export const useAuthClient = (options = defaultOptions) => {
     identity,
     principal,
     whoamiActor,
+    icrcIndexActor,
+    icpActor,
   };
 };
 
