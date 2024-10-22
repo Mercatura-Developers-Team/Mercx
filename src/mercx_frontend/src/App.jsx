@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { mercx_backend } from "declarations/mercx_backend";
+//import { mercx_backend } from "declarations/mercx_backend";
 import { Principal } from "@dfinity/principal"; // Import Principal
 //import { AuthClient } from "@dfinity/auth-client";
 import MyNavbar from "./Navbar";
@@ -14,11 +14,11 @@ function App() {
   const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
   const [transactions, setTransactions] = useState([]); // Initialize as empty array
   const [accountTransactions, setAccountTransactions] = useState([]);
-  const { isAuthenticated, identity } = useAuth(); //isAuthenticated, which is a boolean indicating whether the user is currently authenticated, and identity, which likely contains data about the authenticated user.
+ // const { isAuthenticated, identity } = useAuth(); //isAuthenticated, which is a boolean indicating whether the user is currently authenticated, and identity, which likely contains data about the authenticated user.
   //const { login } = useAuth();
   const { whoamiActor ,icrcIndexActor,icpActor} = useAuth(); 
   const { principal } = useAuth(); 
-  const [icpAmount, setIcpAmount] = useState('');
+  const [icpAmount, setIcpAmount] = useState(''); //approval amount 
 
  
 
@@ -84,7 +84,7 @@ function App() {
       if (principal ) {
         fetchData(principal);  // Fetch data when principal and actor are available
       }
-    }, [principal]); 
+    }, [principal,balance,Icpbalance,accountTransactions]); 
 
   // useEffect(() => {
   //   fetchData();
@@ -95,7 +95,9 @@ function App() {
   const handleIcpApprove = async (e) => {
     e.preventDefault();
     const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai";  // Make sure to replace this with the actual principal
-    const amountFormatApprove = BigInt(icpAmount * 1e8);  // Convert ICP to e8s for the ledger
+    //const amountFormatApprove = BigInt(icpAmount * 1e8);  // Convert ICP to e8s for the ledger
+    let amountFormatApprove = BigInt(Math.floor((Number(icpAmount) + 0.0001) * 10 ** 8)); //adding 10000 transfering fees 
+
 
     try {
       const resultIcpApprove = await icpActor.icrc2_approve({
@@ -283,7 +285,7 @@ function App() {
         // Check if the transfer was successful
         if ("Ok" in transferResult) {
           alert("Transfer successful: Block Index " + transferResult.Ok);
-          fetchData(principal);  // Refresh balance and transactions
+         // fetchData(principal);  // Refresh balance and transactions
         } else {
           console.error("Transfer failed: ", transferResult.Err);
           alert("Transfer failed: " + transferResult.Err);

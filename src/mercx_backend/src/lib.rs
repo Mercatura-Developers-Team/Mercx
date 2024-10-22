@@ -79,7 +79,7 @@ async fn transfer_from(args: TransferArgs) -> Result<BlockIndex, String> {
 
     let transfer_from_args = TransferFromArgs {
         // the account we want to transfer tokens from (in this case we assume the caller approved the canister to spend funds on their behalf)
-        from: Account::from(ic_cdk::caller()),
+        from: Account::from(ic_cdk::caller()), //when changed to api::id the from and spender where the same (MERCX canister)
         // can be used to distinguish between transactions
         memo: None,
         // the amount we want to transfer
