@@ -51,4 +51,6 @@ dfx deploy icp_ledger_canister --argument "
 
 dfx deploy icp_index_canister --specified-id qhbym-qaaaa-aaaaa-aaafq-cai --argument '(record {ledger_id = principal "br5f7-7uaaa-aaaaa-qaaca-cai"})'
 
+
+
 echo "DONE"

@@ -16,7 +16,7 @@ function App() {
   const [accountTransactions, setAccountTransactions] = useState([]);
  // const { isAuthenticated, identity } = useAuth(); //isAuthenticated, which is a boolean indicating whether the user is currently authenticated, and identity, which likely contains data about the authenticated user.
   //const { login } = useAuth();
-  const { whoamiActor ,icrcIndexActor,icpActor} = useAuth(); 
+  const { whoamiActor ,icrcIndexActor,icpActor,mercx_Actor} = useAuth(); 
   const { principal } = useAuth(); 
   const [icpAmount, setIcpAmount] = useState(''); //approval amount 
 
@@ -94,31 +94,44 @@ function App() {
 
   const handleIcpApprove = async (e) => {
     e.preventDefault();
-    const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai";  // Make sure to replace this with the actual principal
-    //const amountFormatApprove = BigInt(icpAmount * 1e8);  // Convert ICP to e8s for the ledger
-    let amountFormatApprove = BigInt(Math.floor((Number(icpAmount) + 0.0001) * 10 ** 8)); //adding 10000 transfering fees 
+    const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai"; // Placeholder for actual canister ID
+    let amount = Number(icpAmount); // Assume icpAmount is a string input from the user
 
+    // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
+    let amountFormatApprove= Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
 
     try {
-      const resultIcpApprove = await icpActor.icrc2_approve({
-        spender: {
-          owner: Principal.fromText(icp_swap_canister_id),
-          subaccount: [],
-        },
-        amount: amountFormatApprove,
-        fee: [BigInt(10000)],  // Optional fee, set as needed
-        memo: [],  // Optional memo field
-        from_subaccount: [],  // From subaccount, if any
-        created_at_time: [],  // Specify if needed
-        expected_allowance: [],  // Optional, specify expected allowance if needed
-        expires_at: [],  // Specify if approval should expire
-      });
-      alert('Approval successful!');
+        const resultIcpApprove = await icpActor.icrc2_approve({
+            spender: {
+                owner: Principal.fromText(icp_swap_canister_id),
+                subaccount: [],
+            },
+            amount: BigInt(amountFormatApprove),
+            fee: [BigInt(10000)], // Optional fee, set as needed
+            memo: [],  // Optional memo field
+            from_subaccount: [],  // From subaccount, if any
+            created_at_time: [],  // Specify if needed
+            expected_allowance: [],  // Optional, specify expected allowance if needed
+            expires_at: [],  // Specify if approval should expire
+        });
+
+        // If the approval was successful, call the backend function
+        if (resultIcpApprove && "Ok" in resultIcpApprove) {
+            alert('Approval successful!');
+
+            // Call the backend function
+            const backendResponse = await mercx_Actor.deposit_icp_in_canister(amount);
+
+            console.log('Backend response:', backendResponse);
+        } else {
+            console.error("Approval failed:", resultIcpApprove.Err);
+            alert("Approval failed: " + resultIcpApprove.Err);
+        }
     } catch (error) {
-      console.error("Approval failed: ", error);
-      alert('Approval failed: ' + error.message);
+        console.error("Approval process failed:", error);
+        alert('Approval failed: ' + error.message);
     }
-  };
+};
 
   return (
 

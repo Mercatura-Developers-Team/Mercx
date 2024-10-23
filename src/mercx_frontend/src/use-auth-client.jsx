@@ -1,6 +1,6 @@
 import { AuthClient } from "@dfinity/auth-client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-//import { canisterId, createActor } from "../../declarations/mercx_backend";
+import { canisterId as MercxId, createActor as createMercxActor} from "../../declarations/mercx_backend";
 import { canisterId, createActor } from "../../declarations/icrc1_ledger_canister";
 import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
 import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
@@ -68,6 +68,7 @@ export const useAuthClient = (options = defaultOptions) => {
   const [whoamiActor, setWhoamiActor] = useState(null);
   const [icrcIndexActor, setIcrcIndexActor] = useState(null);
   const [icpActor, setIcpActor] = useState(null);
+  const [mercx_Actor, setMercxActor] = useState(null);
 
 
   useEffect(() => {
@@ -121,6 +122,13 @@ export const useAuthClient = (options = defaultOptions) => {
       },
     });
     setIcpActor(IcpActor);
+
+    const MercxActor = createMercxActor(MercxId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setMercxActor(MercxActor);
   }
 
   async function logout() {
@@ -138,6 +146,7 @@ export const useAuthClient = (options = defaultOptions) => {
     whoamiActor,
     icrcIndexActor,
     icpActor,
+    mercx_Actor,
   };
 };
 
