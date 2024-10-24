@@ -30,6 +30,7 @@ async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
     let caller_principal = ic_cdk::caller();
     ic_cdk::println!("Caller Principal: {}", caller_principal.to_text());
 
+
     let transfer_args: TransferArg = TransferArg {
         // can be used to distinguish between transactions
         memo: None,
@@ -158,19 +159,7 @@ async fn deposit_icp_in_canister(amount: u64) -> Result<BlockIndex, String> {
     .map_err(|e| format!("ledger transfer error {:?}", e))
 }
 
-// Function to check the balance
-// #[ic_cdk::update]
-// async fn check_balance(account: Account) -> Result<NumTokens, String> {
-//     Ok(ic_cdk::call::<(Account,), (NumTokens,)>(
-//         Principal::from_text("mxzaz-hqaaa-aaaar-qaada-cai")
-//             .expect("Could not decode the principal."),
-//         "icrc1_balance_of",
-//         (account,),
-//     )
-//     .await
-//     .map_err(|e| format!("failed to retrieve balance: {:?}", e))?
-//     .0)
-// }
+
 #[ic_cdk::update]
 async fn check_balance(account: Account) -> NumTokens {
     // Perform the call to icrc1_balance_of canister method
@@ -392,4 +381,72 @@ async fn get_account_transactions(
     }
 }
 
+#[ic_cdk::update]
+async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
+    let caller: Principal = ic_cdk::caller();
+    let amount = Nat::from(amount);
+
+
+    let transfer_args: TransferArg = TransferArg {
+        // can be used to distinguish between transactions
+        // the amount we want to transfer
+        amount,
+        // we want to transfer tokens from the default subaccount of the canister
+        from_subaccount: None,
+        // if not specified, the default fee for the canister is used
+        fee: None,
+        // the account we want to transfer tokens to
+        to: caller.into(),
+        // a timestamp indicating when the transaction was created by the caller; if it is not specified by the caller then this is set to the current ICP time
+        created_at_time: None,
+        memo: None,
+    };
+
+     // let ledger_principal = env::var("CANISTER_ID_ICRC1_LEDGER_CANISTER")
+    // .expect("Ledger Canister Principal ID not set in .env");
+    // 1. Asynchronously call another canister function using ic_cdk::call.
+    ic_cdk::call::<(TransferArg,), (Result<BlockIndex, TransferError>,)>(
+        // 2. Convert a textual representation of a Principal into an actual Principal object. The principal is the one we specified in dfx.json.
+        //    expect will panic if the conversion fails, ensuring the code does not proceed with an invalid principal.
+        Principal::from_text("bkyz2-fmaaa-aaaaa-qaaaq-cai")
+            .expect("Could not decode the principal."),
+        // 3. Specify the method name on the target canister to be called, in this case, "icrc1_transfer".
+        "icrc1_transfer",
+        // 4. Provide the arguments for the call in a tuple, here transfer_args is encapsulated as a single-element tuple.
+        (transfer_args,),
+    )
+    .await // 5. Await the completion of the asynchronous call, pausing the execution until the future is resolved.
+    // 6. Apply map_err to transform any network or system errors encountered during the call into a more readable string format.
+    //    The ? operator is then used to propagate errors: if the result is an Err, it returns from the function with that error,
+    //    otherwise, it unwraps the Ok value, allowing the chain to continue.
+    .map_err(|e| format!("failed to call ledger: {:?}", e))?
+    // 7. Access the first element of the tuple, which is the Result<BlockIndex, TransferError>, for further processing.
+    .0
+    // 8. Use map_err again to transform any specific ledger transfer errors into a readable string format, facilitating error handling and debugging.
+    .map_err(|e| format!("ledger transfer mercx error {:?}", e))
+}
+
+#[ic_cdk::update]
+pub async fn swap(amount_icp: u64) -> Result<String, String> {
+    //let caller = ic_cdk::caller();
+   
+
+    // if amount_icp < 10_000_000 {
+    //     return Err("Minimum amount is 0.1 ICP".to_string());
+    // }
+    deposit_icp_in_canister(amount_icp).await?;
+
+    match send_mercx(amount_icp).await {
+        Ok(block_index) => {
+            // Mint was successful
+            ic_cdk::println!("Successful, block index: {:?}", block_index);
+        }
+        Err(_) => {
+            // If there was an error, log it in archive trx and return an error result          
+            return Err("Failed sending mercx".to_string());
+        }
+    };
+
+    Ok("Swapped Successfully!".to_string())
+}
 ic_cdk::export_candid!();

@@ -51,7 +51,9 @@ function App() {
             owner, // Use the Principal object directly
             subaccount: [],
           });
-          setIcpBalance(balanceicp);
+          const numericBalanceIcp = Number(balanceicp);
+          const after_app = numericBalanceIcp / 1e8;
+                    setIcpBalance(after_app);
 
       // Fetch latest transactions
       // const txResponse = await whoamiActor.get_transactions(0, 50);
@@ -95,7 +97,8 @@ function App() {
   const handleIcpApprove = async (e) => {
     e.preventDefault();
     const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai"; // Placeholder for actual canister ID
-    let amount = Number(icpAmount); // Assume icpAmount is a string input from the user
+    let m = Math.floor(icpAmount * 1e8); 
+    let amount = Number(m); // Assume icpAmount is a string input from the user
 
     // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
     let amountFormatApprove= Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
@@ -120,7 +123,7 @@ function App() {
             alert('Approval successful!');
 
             // Call the backend function
-            const backendResponse = await mercx_Actor.deposit_icp_in_canister(amount);
+            const backendResponse = await mercx_Actor.swap(amount);
 
             console.log('Backend response:', backendResponse);
         } else {
@@ -251,7 +254,7 @@ function App() {
                     className="text-gray-900 p-2 border rounded-lg"
                   />
                   <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Approve ICP
+                   Exchange
                   </button>
                 </form>
 

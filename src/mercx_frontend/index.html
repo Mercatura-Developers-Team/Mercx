@@ -3,6 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Adding the specific Chrome extension ID to CSP in the HTML header -->
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' chrome-extension://d1191173-6d6a-40bb-b017-b6d00e31c79d 'unsafe-eval' 'inline-speculation-rules';">
+
   <meta name="viewport" content="width=device-width" />
   <title>IC Hello Starter</title>
   <base href="/" />
