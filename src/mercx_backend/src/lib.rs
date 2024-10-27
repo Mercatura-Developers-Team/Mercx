@@ -435,15 +435,15 @@ pub async fn swap(amount_icp: u64) -> Result<String, String> {
     //     return Err("Minimum amount is 0.1 ICP".to_string());
     // }
     deposit_icp_in_canister(amount_icp).await?;
-
-    match send_mercx(amount_icp).await {
+    let mercx_amount = amount_icp / 100_000_000;  //to send to ledger 
+    match send_mercx(mercx_amount).await {
         Ok(block_index) => {
             // Mint was successful
             ic_cdk::println!("Successful, block index: {:?}", block_index);
         }
-        Err(_) => {
+        Err(e) => {
             // If there was an error, log it in archive trx and return an error result          
-            return Err("Failed sending mercx".to_string());
+            return Err(e);
         }
     };
 
