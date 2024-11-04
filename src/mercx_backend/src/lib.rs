@@ -161,10 +161,26 @@ async fn deposit_icp_in_canister(amount: u64) -> Result<BlockIndex, String> {
 
 
 #[ic_cdk::update]
-async fn check_balance(account: Account) -> NumTokens {
+async fn check_balance_icp(account: Account) -> NumTokens {
     // Perform the call to icrc1_balance_of canister method
     let (balance_result,): (NumTokens,) = ic_cdk::call::<(Account,), (NumTokens,)>(
-        Principal::from_text("mxzaz-hqaaa-aaaar-qaada-cai")
+        Principal::from_text("br5f7-7uaaa-aaaaa-qaaca-cai")
+            .expect("Could not decode the principal."),
+        "icrc1_balance_of",
+        (account,),
+    )
+    .await
+    .expect("failed to retrieve balance");
+
+    // Return the balance directly
+    balance_result
+}
+
+#[ic_cdk::update]
+async fn check_balance_mercx(account: Account) -> NumTokens {
+    // Perform the call to icrc1_balance_of canister method
+    let (balance_result,): (NumTokens,) = ic_cdk::call::<(Account,), (NumTokens,)>(
+        Principal::from_text("bkyz2-fmaaa-aaaaa-qaaaq-cai")
             .expect("Could not decode the principal."),
         "icrc1_balance_of",
         (account,),
@@ -428,12 +444,21 @@ async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
 
 #[ic_cdk::update]
 pub async fn swap(amount_icp: u64) -> Result<String, String> {
-    //let caller = ic_cdk::caller();
+    let caller = ic_cdk::caller();
    
-
     // if amount_icp < 10_000_000 {
     //     return Err("Minimum amount is 0.1 ICP".to_string());
     // }
+    let principal = Principal::from_text("b77ix-eeaaa-aaaaa-qaada-cai")
+    .map_err(|e| format!("Error parsing principal: {:?}", e))?;
+let account = Account::from(principal);
+let mercx_balance = check_balance_mercx(account).await;
+
+ let icp_balance = check_balance_icp(Account::from(caller)).await;
+
+
+
+    if amount_icp<icp_balance && amount_icp <mercx_balance {
     deposit_icp_in_canister(amount_icp).await?;
     //mn gher di kan bywsal haga madroba 
    // let mercx_amount = amount_icp / 100_000_000;  //to send to ledger 
@@ -447,7 +472,9 @@ pub async fn swap(amount_icp: u64) -> Result<String, String> {
             return Err(e);
         }
     };
+}
 
     Ok("Swapped Successfully!".to_string())
+
 }
 ic_cdk::export_candid!();

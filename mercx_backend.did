@@ -56,7 +56,8 @@ type Transfer = record {
 };
 type TransferArgs = record { to_account : Account; amount : nat };
 service : {
-  check_balance : (Account) -> (nat);
+  check_balance_icp : (Account) -> (nat);
+  check_balance_mercx : (Account) -> (nat);
   deposit_icp_in_canister : (nat64) -> (Result);
   get_account_transactions : (Account, opt nat, nat) -> (Result_1);
   get_logo_url : () -> (text);

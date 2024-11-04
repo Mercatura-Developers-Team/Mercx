@@ -67,6 +67,22 @@ const Swap = () => {
 
         let amountFormatApprove = Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
         try {
+
+            const allowanceCheck = {
+                account: { owner: principal, subaccount: [] },
+                spender: { owner: Principal.fromText(icp_swap_canister_id), subaccount: [] }
+            };
+    
+            console.log("Checking allowance with structure:", JSON.stringify(allowanceCheck));
+            
+            const currentAllowanceResult = await icpActor.icrc2_allowance(allowanceCheck);
+            const currentAllowance = currentAllowanceResult.allowance;
+    
+            console.log("Current allowance:", currentAllowance);
+
+            if ((BigInt(amountFormatApprove)) < Icpbalance ) {
+
+            
             // Check if we already have enough allowance for the swap
             // const currentAllowance = await icpActor.icrc2_allowance({
             //     owner: principal,
@@ -75,6 +91,7 @@ const Swap = () => {
 
              // Proceed with approval only if current allowance is less than needed
         // if (currentAllowance < BigInt(amountFormatApprove)){
+            if (BigInt(currentAllowance) < BigInt(amountFormatApprove)) {
 
             const resultIcpApprove = await icpActor.icrc2_approve({
                 spender: {
@@ -93,19 +110,22 @@ const Swap = () => {
             // If the approval was successful, call the backend function
             if (resultIcpApprove && "Ok" in resultIcpApprove) {
                 alert('Approval successful!');
-
           //  }
-
-                // Call the backend function
-                const backendResponse = await mercx_Actor.swap(amount);
-                setInputIcp("0.0");
-                setAmountMercx('0.0');
-                console.log('Backend response:', backendResponse);
-                fetchData(principal);
-            } else {
+            }
+              
+             else {
                 console.error("Approval failed:", resultIcpApprove.Err);
                 alert("Approval failed: " + resultIcpApprove.Err);
-            }
+            }}
+              // Call the backend function
+              const backendResponse = await mercx_Actor.swap(amount);
+              setInputIcp("0.0");
+              setAmountMercx('0.0');
+              console.log('Backend response:', backendResponse);
+              fetchData(principal);
+        } else {
+            alert("Insufficient balance")
+        }
         } catch (error) {
             console.error("Approval process failed:", error);
             alert('Approval failed: ' + error.message);
