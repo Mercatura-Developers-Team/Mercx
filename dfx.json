@@ -6,6 +6,30 @@
       "type": "rust",
       "dependencies": ["icrc1_ledger_canister", "internet_identity"]
     },
+
+    "xrc": {
+      "type": "custom",
+      "candid": "xrc/xrc.did",
+      "wasm": "xrc/xrc.wasm.gz",
+      "remote": {
+        "candid": "xrc/xrc.did",
+        "id": {
+          "ic": "uf6dk-hyaaa-aaaaq-qaaaq-cai"
+        }
+      }
+    },
+    "xrc_mock": {
+      "candid": "src/xrc_mock/xrc.did",
+      "package": "xrc_mock",
+      "type": "rust",
+      "dependencies": ["xrc"]
+    },
+    "xrc_demo": {
+      "main": "src/xrc_demo/main.mo",
+      "type": "motoko",
+      "dependencies": ["xrc"]
+    },
+  
     "icrc1_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
@@ -56,7 +80,15 @@
       "workspace": "mercx_frontend"
     }
   },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943",
+      "type": "ephemeral"
+    }},
   "defaults": {
+    "replica": {
+      "subnet_type": "system"
+    },
     "build": {
       "args": "",
       "packtool": ""

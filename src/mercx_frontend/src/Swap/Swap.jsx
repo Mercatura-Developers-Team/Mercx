@@ -15,12 +15,40 @@ const Swap = () => {
     const [inputIcp, setInputIcp] = useState('');
     const [amountMercx, setAmountMercx] = useState('0.0');
     const [logoUrl, setLogoUrl] = useState("");//not used 
+    const [rate , setRate]=useState("0");
+    // Add state for fetchingRate at the top level of your component 
+    // Loading upper rate 
+    //const [loading,setLoading]= useState(false);
+    const [fetchingRateDown,setFetchingRate]=useState(false);
 
-    const handleAmountChange = (e) => {
+    async function handleAmountChange(e) {
         setInputIcp(e.target.value);
-       // setAmountMercx(Number(e.target.value) / 0.00125);
-    setAmountMercx(Number(e.target.value) );
-
+    
+        try {
+            const rateResponse = await mercx_Actor.get_icp_rate();
+            console.log('Rate fetched:', rateResponse);
+    
+            // Ensure rate.Ok is a number and not undefined or NaN
+            if (!rateResponse.Ok || isNaN(rateResponse.Ok)) {
+                console.error('Invalid rate:', rateResponse.Ok);
+                setAmountMercx(0);  // Set Mercx amount to zero if rate is invalid
+                return;
+            }
+    
+            const inputIcp = Number(e.target.value);
+            const rate = Number(rateResponse.Ok);
+            // Fetching rate up 
+            setRate(rate);
+            // Fetching rate down 
+            setFetchingRate(true);       
+            // Calculating and setting amount of Mercx, rounding to 4 decimal places
+            const amountMercx = (inputIcp * rate);
+            setAmountMercx(amountMercx);
+            console.log('Calculated Mercx Amount:', amountMercx);
+        } catch (error) {
+            console.error('Failed to fetch rate:', error);
+            setAmountMercx(0);  // Handle any errors by setting Mercx amount to zero
+        }
     }
 
     async function fetchData(principalId) {
@@ -80,14 +108,8 @@ const Swap = () => {
     
             console.log("Current allowance:", currentAllowance);
 
-            if ((BigInt(amountFormatApprove)) < Icpbalance ) {
+          //  if ((BigInt(amount)) < Icpbalance ) {
 
-            
-            // Check if we already have enough allowance for the swap
-            // const currentAllowance = await icpActor.icrc2_allowance({
-            //     owner: principal,
-            //     spender: Principal.fromText(icp_swap_canister_id),
-            // });
 
              // Proceed with approval only if current allowance is less than needed
         // if (currentAllowance < BigInt(amountFormatApprove)){
@@ -119,13 +141,13 @@ const Swap = () => {
             }}
               // Call the backend function
               const backendResponse = await mercx_Actor.swap(amount);
-              setInputIcp("0.0");
+              setInputIcp("");
               setAmountMercx('0.0');
               console.log('Backend response:', backendResponse);
               fetchData(principal);
-        } else {
-            alert("Insufficient balance")
-        }
+        // } else {
+        //     alert("Insufficient balance")
+        // }
         } catch (error) {
             console.error("Approval process failed:", error);
             alert('Approval failed: ' + error.message);
@@ -187,7 +209,13 @@ const Swap = () => {
                                     {amountMercx}
                                 </label>
                             </div>
-                        </div>
+                            {fetchingRateDown && inputIcp !== "" && (
+    <div className="text-sm font-medium text-center text-gray-500 dark:text-gray-200 pt-5">
+        1 ICP = {rate} Mercx (${rate})
+    </div>
+)}
+                        </div> 
+                        
                         <div className="flex justify-center">
                             <button
                                 type="button"

@@ -31,6 +31,7 @@ type Result = variant { Ok : nat; Err : text };
 type Result_1 = variant { Ok : GetTransactions; Err : text };
 type Result_2 = variant { Ok : TransactionResponse; Err : text };
 type Result_3 = variant { Ok : text; Err : text };
+type Result_4 = variant { Ok : float64; Err : text };
 type Transaction = record {
   burn : opt Burn;
   kind : text;
@@ -68,4 +69,6 @@ service : {
   transfer : (TransferArgs) -> (Result);
   transfer_from : (TransferArgs) -> (Result);
   whoami : () -> (principal) query;
+  get_icp_rate : () -> (Result_4);
+
 }

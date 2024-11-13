@@ -6,6 +6,8 @@ use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, Tra
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 use serde::Serialize;
 //use ic_cdk::caller;
+pub mod xrc_mock;
+pub use xrc_mock::get_icp_rate;
 
 //The function allows you to query the principal ID of the caller of the function
 #[query]
@@ -29,7 +31,6 @@ async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
 
     let caller_principal = ic_cdk::caller();
     ic_cdk::println!("Caller Principal: {}", caller_principal.to_text());
-
 
     let transfer_args: TransferArg = TransferArg {
         // can be used to distinguish between transactions
@@ -119,7 +120,6 @@ async fn transfer_from(args: TransferArgs) -> Result<BlockIndex, String> {
 
 #[ic_cdk::update]
 async fn deposit_icp_in_canister(amount: u64) -> Result<BlockIndex, String> {
-   
     let transfer_from_args = TransferFromArgs {
         // the account we want to transfer tokens from (in this case we assume the caller approved the canister to spend funds on their behalf)
         from: Account::from(ic_cdk::caller()), //when changed to api::id the from and spender where the same (MERCX canister)
@@ -132,7 +132,7 @@ async fn deposit_icp_in_canister(amount: u64) -> Result<BlockIndex, String> {
         // if not specified, the default fee for the canister is used
         fee: None,
         // the account we want to transfer tokens to
-        to:  Account::from(ic_cdk::api::id()),
+        to: Account::from(ic_cdk::api::id()),
         // a timestamp indicating when the transaction was created by the caller; if it is not specified by the caller then this is set to the current ICP time
         created_at_time: None,
     };
@@ -158,7 +158,6 @@ async fn deposit_icp_in_canister(amount: u64) -> Result<BlockIndex, String> {
     // 8. Use `map_err` again to transform any specific ledger transfer errors into a readable string format, facilitating error handling and debugging.
     .map_err(|e| format!("ledger transfer error {:?}", e))
 }
-
 
 #[ic_cdk::update]
 async fn check_balance_icp(account: Account) -> NumTokens {
@@ -402,7 +401,6 @@ async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
     let caller: Principal = ic_cdk::caller();
     let amount = Nat::from(amount);
 
-
     let transfer_args: TransferArg = TransferArg {
         // can be used to distinguish between transactions
         // the amount we want to transfer
@@ -418,7 +416,7 @@ async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
         memo: None,
     };
 
-     // let ledger_principal = env::var("CANISTER_ID_ICRC1_LEDGER_CANISTER")
+    // let ledger_principal = env::var("CANISTER_ID_ICRC1_LEDGER_CANISTER")
     // .expect("Ledger Canister Principal ID not set in .env");
     // 1. Asynchronously call another canister function using ic_cdk::call.
     ic_cdk::call::<(TransferArg,), (Result<BlockIndex, TransferError>,)>(
@@ -445,36 +443,54 @@ async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
 #[ic_cdk::update]
 pub async fn swap(amount_icp: u64) -> Result<String, String> {
     let caller = ic_cdk::caller();
-   
+    
+  //  let rate_result = get_icp_rate().await; // Assuming this function returns Result<f64, String>
+
+    let mercx_amount = match get_icp_rate().await {
+        Ok(rate) => ((amount_icp as f64) * rate) / 1.0,
+        Err(e) => {
+            eprintln!("Error calculating exchange rate: {}", e);
+            Err(e) // Return a Result<f64, String> from the Err arm
+        }?,
+    };
+
+   // ic_cdk::println!("{:?}", mercx_amount as u64);
+    // let eq_rate= 1/rate_result;
     // if amount_icp < 10_000_000 {
     //     return Err("Minimum amount is 0.1 ICP".to_string());
     // }
     let principal = Principal::from_text("b77ix-eeaaa-aaaaa-qaada-cai")
-    .map_err(|e| format!("Error parsing principal: {:?}", e))?;
-let account = Account::from(principal);
-let mercx_balance = check_balance_mercx(account).await;
+        .map_err(|e| format!("Error parsing principal: {:?}", e))?;
+    let account = Account::from(principal);
+    let mercx_balance = check_balance_mercx(account).await;
 
- let icp_balance = check_balance_icp(Account::from(caller)).await;
+    let icp_balance = check_balance_icp(Account::from(caller)).await;
+    // Check if ICP balance is sufficient
+    if amount_icp > icp_balance {
+        return Err("Insufficient ICP balance".to_string());
+    }
 
+    // Check if MERCX balance is sufficient
+    if mercx_amount as u64 > mercx_balance {
+        return Err("Insufficient MERCX balance".to_string());
+    }
 
-
-    if amount_icp<icp_balance && amount_icp <mercx_balance {
-    deposit_icp_in_canister(amount_icp).await?;
-    //mn gher di kan bywsal haga madroba 
-   // let mercx_amount = amount_icp / 100_000_000;  //to send to ledger 
-    match send_mercx(amount_icp).await {
-        Ok(block_index) => {
-            // Mint was successful
-            ic_cdk::println!("Successful, block index: {:?}", block_index);
-        }
-        Err(e) => {
-            // If there was an error, log it in archive trx and return an error result          
-            return Err(e);
-        }
-    };
-}
+   // if amount_icp < icp_balance && (mercx_amount as u64) < mercx_balance {
+        deposit_icp_in_canister(amount_icp).await?;
+        //mn gher di kan bywsal haga madroba
+       // let mercx_amount = eq_rate;  //to send to ledger
+        match send_mercx(mercx_amount as u64).await {
+            Ok(block_index) => {
+                // Mint was successful
+                ic_cdk::println!("Successful, block index: {:?}", block_index);
+            }
+            Err(e) => {
+                // If there was an error, log it in archive trx and return an error result
+                return Err(e);
+            }
+       // };
+    }
 
     Ok("Swapped Successfully!".to_string())
-
 }
 ic_cdk::export_candid!();
