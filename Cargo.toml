@@ -1,5 +1,5 @@
 [workspace]
 members = [
     "src/mercx_backend"
-, "src/xrc_mock"]
+]
 resolver = "2"

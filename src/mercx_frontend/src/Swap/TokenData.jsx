@@ -9,7 +9,6 @@ const TokenData = ({TokenBalance, TokenName,TokenLogo}) => {
             className="flex items-center px-2 py-2 text-sm text-gray-600 dark:text-gray-300 shadow-md rounded-md hover:bg-gray-100 dark:hover:bg-slate-700"
         >
             <img
-             
                 src={TokenLogo}
                 alt=""
                 height={20}

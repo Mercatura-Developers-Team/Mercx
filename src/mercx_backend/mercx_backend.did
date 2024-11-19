@@ -65,7 +65,7 @@ service : {
   get_token_name : () -> (text);
   get_transactions : (nat, nat) -> (Result_2);
   send_mercx : (nat64) -> (Result);
-  swap : (nat64) -> (Result_3);
+  swap : (nat64 , nat64) -> (Result_3);
   transfer : (TransferArgs) -> (Result);
   transfer_from : (TransferArgs) -> (Result);
   whoami : () -> (principal) query;

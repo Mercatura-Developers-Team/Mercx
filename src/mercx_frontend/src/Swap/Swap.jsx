@@ -4,10 +4,10 @@ import { Dialog, Transition } from "@headlessui/react";
 import TokenData from './TokenData';
 import { useAuth } from '.././use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
-
+import SuccessModal from './SuccessModel';
 
 const Swap = () => {
-    const { whoamiActor, icpActor, mercx_Actor } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated } = useAuth();
     const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
     const { principal } = useAuth();
     const [balance, setBalance] = useState(0n);
@@ -15,32 +15,36 @@ const Swap = () => {
     const [inputIcp, setInputIcp] = useState('');
     const [amountMercx, setAmountMercx] = useState('0.0');
     const [logoUrl, setLogoUrl] = useState("");//not used 
-    const [rate , setRate]=useState("0");
+    const [rate, setRate] = useState("0");
+    const [canisterBalance, setCanisterBalance] = useState(""); //swap canister balance
     // Add state for fetchingRate at the top level of your component 
     // Loading upper rate 
-    //const [loading,setLoading]= useState(false);
-    const [fetchingRateDown,setFetchingRate]=useState(false);
+    const [isloadingRate, setLoadingRate] = useState(false);
+    const [fetchingRateDown, setFetchingRate] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
 
     async function handleAmountChange(e) {
         setInputIcp(e.target.value);
-    
+        setLoadingRate(true);  // Start fetching, show loading indicator
+
         try {
             const rateResponse = await mercx_Actor.get_icp_rate();
             console.log('Rate fetched:', rateResponse);
-    
+
             // Ensure rate.Ok is a number and not undefined or NaN
             if (!rateResponse.Ok || isNaN(rateResponse.Ok)) {
                 console.error('Invalid rate:', rateResponse.Ok);
                 setAmountMercx(0);  // Set Mercx amount to zero if rate is invalid
+                setLoadingRate(false);  // Stop fetching, hide loading indicator
                 return;
             }
-    
+
             const inputIcp = Number(e.target.value);
             const rate = Number(rateResponse.Ok);
             // Fetching rate up 
             setRate(rate);
             // Fetching rate down 
-            setFetchingRate(true);       
+            setFetchingRate(true);
             // Calculating and setting amount of Mercx, rounding to 4 decimal places
             const amountMercx = (inputIcp * rate);
             setAmountMercx(amountMercx);
@@ -48,6 +52,9 @@ const Swap = () => {
         } catch (error) {
             console.error('Failed to fetch rate:', error);
             setAmountMercx(0);  // Handle any errors by setting Mercx amount to zero
+        }
+        finally {
+            setLoadingRate(false);  // Ensure fetching indicator is hidden after fetch attempt
         }
     }
 
@@ -94,60 +101,97 @@ const Swap = () => {
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
 
         let amountFormatApprove = Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
+
+        let mercxAmountFormat = Math.floor(amountMercx * 1e8);
         try {
 
             const allowanceCheck = {
                 account: { owner: principal, subaccount: [] },
                 spender: { owner: Principal.fromText(icp_swap_canister_id), subaccount: [] }
             };
-    
+
             console.log("Checking allowance with structure:", JSON.stringify(allowanceCheck));
-            
+
             const currentAllowanceResult = await icpActor.icrc2_allowance(allowanceCheck);
             const currentAllowance = currentAllowanceResult.allowance;
-    
+
             console.log("Current allowance:", currentAllowance);
 
-          //  if ((BigInt(amount)) < Icpbalance ) {
+            //  if ((BigInt(amount)) < Icpbalance ) {
 
 
-             // Proceed with approval only if current allowance is less than needed
-        // if (currentAllowance < BigInt(amountFormatApprove)){
-            if (BigInt(currentAllowance) < BigInt(amountFormatApprove)) {
+            // Proceed with approval only if current allowance is less than needed
+            // if (currentAllowance < BigInt(amountFormatApprove)){
 
-            const resultIcpApprove = await icpActor.icrc2_approve({
-                spender: {
-                    owner: Principal.fromText(icp_swap_canister_id),
-                    subaccount: [],
-                },
-                amount: BigInt(amountFormatApprove),
-                fee: [BigInt(10000)], // Optional fee, set as needed
-                memo: [],  // Optional memo field
-                from_subaccount: [],  // From subaccount, if any
-                created_at_time: [],  // Specify if needed
-                expected_allowance: [],  // Optional, specify expected allowance if needed
-                expires_at: [],  // Specify if approval should expire
+            // Fetch mercx canister balance(mercx token)
+            const balanceResult = await whoamiActor.icrc1_balance_of({
+                owner: Principal.fromText(icp_swap_canister_id), // Use the Principal object directly
+                subaccount: [],
             });
 
-            // If the approval was successful, call the backend function
-            if (resultIcpApprove && "Ok" in resultIcpApprove) {
-                alert('Approval successful!');
-          //  }
+            const numericBalanceMercx = Number(balanceResult);
+            const after_ap = numericBalanceMercx / 1e8;
+            setCanisterBalance(after_ap);
+
+
+            //no enough mercx token in mercx canister //3ashan maykhosh approve 
+            if (after_ap <= 0 || after_ap < amountMercx) {
+                alert("Cannot proceed with swap");
+                console.log(after_ap);
+                console.log(amountMercx);
+                return;
             }
-              
-             else {
-                console.error("Approval failed:", resultIcpApprove.Err);
-                alert("Approval failed: " + resultIcpApprove.Err);
-            }}
-              // Call the backend function
-              const backendResponse = await mercx_Actor.swap(amount);
-              setInputIcp("");
-              setAmountMercx('0.0');
-              console.log('Backend response:', backendResponse);
-              fetchData(principal);
-        // } else {
-        //     alert("Insufficient balance")
-        // }
+
+            // user does'nt have icps and handled also in backend, but made it here for 
+            if (Icpbalance <= 0 || Icpbalance < inputIcp) {
+                alert("Insufficient ICP balance");
+                return;
+            }
+
+            if (BigInt(currentAllowance) < BigInt(amountFormatApprove)) {
+
+                const resultIcpApprove = await icpActor.icrc2_approve({
+                    spender: {
+                        owner: Principal.fromText(icp_swap_canister_id),
+                        subaccount: [],
+                    },
+                    amount: BigInt(amountFormatApprove),
+                    fee: [BigInt(10000)], // Optional fee, set as needed
+                    memo: [],  // Optional memo field
+                    from_subaccount: [],  // From subaccount, if any
+                    created_at_time: [],  // Specify if needed
+                    expected_allowance: [],  // Optional, specify expected allowance if needed
+                    expires_at: [],  // Specify if approval should expire
+                });
+
+                // If the approval was successful, call the backend function
+                if (resultIcpApprove && "Ok" in resultIcpApprove) {
+                    alert('Approval successful!');
+                }
+
+                else {
+                    console.error("Approval failed:", resultIcpApprove.Err);
+                    alert("Approval failed: " + resultIcpApprove.Err);
+                }
+            }
+            // Call the backend function
+            const backendResponse = await mercx_Actor.swap(amount, mercxAmountFormat);
+            setInputIcp("");
+            setAmountMercx('0.0');
+            console.log('Backend response:', backendResponse);
+
+            // Check the backend response for success confirmation
+        if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
+            setIsModalVisible(true); // Show modal on successful swap
+        } else {
+            // Handle cases where swap was not successful
+            console.error('Swap failed:', backendResponse);
+        }
+
+            fetchData(principal);
+            // } else {
+            //     alert("Insufficient balance")
+            // } 
         } catch (error) {
             console.error("Approval process failed:", error);
             alert('Approval failed: ' + error.message);
@@ -206,27 +250,43 @@ const Swap = () => {
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 >
-                                    {amountMercx}
+                                    {isloadingRate ? (
+                                        <div className="flex items-center justify-center space-x-2">
+                                            <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.86 1.861 7.298 4.708 9.291l1.292-1.292z"></path>
+                                            </svg>
+                                            <span className="text-sm text-gray-600">Fetching price...</span>
+                                        </div>
+                                    ) : amountMercx} {/* Assuming amountMercx is a number, format it to four decimal places */}
                                 </label>
                             </div>
                             {fetchingRateDown && inputIcp !== "" && (
-    <div className="text-sm font-medium text-center text-gray-500 dark:text-gray-200 pt-5">
-        1 ICP = {rate} Mercx (${rate})
-    </div>
-)}
-                        </div> 
-                        
+                                <div className="text-sm font-medium text-center text-gray-500 dark:text-gray-200 pt-5">
+                                    1 ICP = {rate} Mercx (${rate})
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex justify-center">
                             <button
                                 type="button"
                                 className="place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90 disabled:bg-indigo-400"
-                                disabled={inputIcp === '0' || inputIcp === ''}
+                                disabled={!isAuthenticated || inputIcp === '0' || inputIcp === ''}
                                 onClick={() => handleIcpApprove()}
                             >
-                                {inputIcp === '0' || inputIcp === '' ? "Enter an amount" : "SWAP"}
+                                {!isAuthenticated ? "Connect your wallet" : (inputIcp === '0' || inputIcp === '' ? "Enter an amount" : "SWAP")}
+
 
                             </button>
                         </div>
+                        
+                         {/* Modal for success message */}
+            {isModalVisible && (
+               <div>
+                 <SuccessModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+           </div>
+            )}
                     </div>
                 </div>
             </main>

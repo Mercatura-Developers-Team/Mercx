@@ -1,2 +1,0 @@
-type Result = variant { Ok : float64; Err : text };
-service : { get_icp_rate_in_cents : () -> (Result) }

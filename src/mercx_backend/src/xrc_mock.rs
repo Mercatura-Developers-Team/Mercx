@@ -76,8 +76,8 @@ pub async fn get_icp_rate() -> Result<f64, String> {
             class: AssetClass::Cryptocurrency,
         },
         quote_asset: Asset {
-            symbol: "USDT".to_string(),
-            class: AssetClass::Cryptocurrency,
+            symbol: "USD".to_string(),
+            class: AssetClass::FiatCurrency,
         },
         timestamp: None,
     };

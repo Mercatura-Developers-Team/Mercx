@@ -18,17 +18,6 @@
         }
       }
     },
-    "xrc_mock": {
-      "candid": "src/xrc_mock/xrc.did",
-      "package": "xrc_mock",
-      "type": "rust",
-      "dependencies": ["xrc"]
-    },
-    "xrc_demo": {
-      "main": "src/xrc_demo/main.mo",
-      "type": "motoko",
-      "dependencies": ["xrc"]
-    },
   
     "icrc1_ledger_canister": {
       "type": "custom",

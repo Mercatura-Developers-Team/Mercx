@@ -441,18 +441,18 @@ async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
 }
 
 #[ic_cdk::update]
-pub async fn swap(amount_icp: u64) -> Result<String, String> {
+pub async fn swap(amount_icp: u64, amount_mercx : u64) -> Result<String, String> {
     let caller = ic_cdk::caller();
     
   //  let rate_result = get_icp_rate().await; // Assuming this function returns Result<f64, String>
 
-    let mercx_amount = match get_icp_rate().await {
-        Ok(rate) => ((amount_icp as f64) * rate) / 1.0,
-        Err(e) => {
-            eprintln!("Error calculating exchange rate: {}", e);
-            Err(e) // Return a Result<f64, String> from the Err arm
-        }?,
-    };
+    // let mercx_amount = match get_icp_rate().await {
+    //     Ok(rate) => ((amount_icp as f64) * rate) / 1.0,
+    //     Err(e) => {
+    //         eprintln!("Error calculating exchange rate: {}", e);
+    //         Err(e) // Return a Result<f64, String> from the Err arm
+    //     }?,
+    // };
 
    // ic_cdk::println!("{:?}", mercx_amount as u64);
     // let eq_rate= 1/rate_result;
@@ -471,7 +471,7 @@ pub async fn swap(amount_icp: u64) -> Result<String, String> {
     }
 
     // Check if MERCX balance is sufficient
-    if mercx_amount as u64 > mercx_balance {
+    if amount_mercx as u64 > mercx_balance {
         return Err("Insufficient MERCX balance".to_string());
     }
 
@@ -479,7 +479,7 @@ pub async fn swap(amount_icp: u64) -> Result<String, String> {
         deposit_icp_in_canister(amount_icp).await?;
         //mn gher di kan bywsal haga madroba
        // let mercx_amount = eq_rate;  //to send to ledger
-        match send_mercx(mercx_amount as u64).await {
+        match send_mercx(amount_mercx).await {
             Ok(block_index) => {
                 // Mint was successful
                 ic_cdk::println!("Successful, block index: {:?}", block_index);
