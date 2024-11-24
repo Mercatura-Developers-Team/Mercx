@@ -99,7 +99,7 @@ pub async fn get_icp_rate() -> Result<f64, String> {
                     println!("Decoded response: {:?}", response);
                     match response {
                         XRCResponse::Ok(exchange_rate) => {
-                            // Calculate the float rate in a way that mimics the Motoko handling of decimals
+                            //Calculate the float rate in a way that mimics the Motoko handling of decimals
                             let divisor = 10f64.powi(exchange_rate.metadata.decimals as i32);
                             let float_rate = (exchange_rate.rate as f64) / divisor;
                             println!("Calculated rate: {}", float_rate);

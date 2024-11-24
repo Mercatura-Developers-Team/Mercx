@@ -32,8 +32,12 @@
     "icp_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ledger-canister.wasm.gz"
-  }
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ledger-canister.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+        }
+  } }
 ,
 "icp_index_canister": {
   "type": "custom",

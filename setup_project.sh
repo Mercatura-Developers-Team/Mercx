@@ -7,14 +7,17 @@ dfx start --background --clean
 # Deploy the ICRC1 Ledger Canister with necessary arguments
 export MINTER=$(dfx identity --identity minter get-principal)
 export DEFAULT=$(dfx identity get-principal)
+export FEATURE_FLAGS=true
+
 dfx deploy icrc1_ledger_canister --argument "(variant { Init =
 record {
-     token_symbol = \"MERCX\";
-     token_name = \"MERCX\";
+     token_symbol = \"BELLA\";
+     token_name = \"BELLA\";
      minting_account = record { owner = principal \"${MINTER}\" };
-     transfer_fee = 10_000;
+     transfer_fee = 1;
      metadata = vec {};
-     initial_balances = vec { record { record { owner = principal \"${DEFAULT}\"; }; 10_000_000_000; }; };
+     feature_flags = opt record{icrc2 = ${FEATURE_FLAGS}};
+     initial_balances = vec { record { record { owner = principal \"${DEFAULT}\"; }; 100_000_000_000_000; }; };
      archive_options = record {
          num_blocks_to_archive = 1000;
          trigger_threshold = 2000;
