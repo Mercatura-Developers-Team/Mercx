@@ -8,7 +8,7 @@ dfx start --background --clean
 export MINTER=$(dfx identity --identity minter get-principal)
 export DEFAULT=$(dfx identity get-principal)
 export FEATURE_FLAGS=true
-
+ 
 dfx deploy icrc1_ledger_canister --argument "(variant { Init =
 record {
      token_symbol = \"BELLA\";

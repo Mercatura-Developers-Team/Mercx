@@ -22,11 +22,21 @@ const Swap = () => {
     const [isloadingRate, setLoadingRate] = useState(false);
     const [fetchingRateDown, setFetchingRate] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
+    //Negative input error (icp)
+    const [inputError, setInputError] = useState("");
 
     async function handleAmountChange(e) {
+        const inputValue = Number(e.target.value);
+        if (inputValue < 0) {
+            setInputError("Amount must be greater than zero.");
+            setInputIcp('');  // Reset the input field
+            return; }
+
+        else{
+            setInputError("");
         setInputIcp(e.target.value);
         setLoadingRate(true);  // Start fetching, show loading indicator
-
+        }
         try {
             const rateResponse = await mercx_Actor.get_icp_rate();
             console.log('Rate fetched:', rateResponse);
@@ -95,7 +105,7 @@ const Swap = () => {
     }
     const handleIcpApprove = async (e) => {
 
-        const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = "zoa6c-riaaa-aaaan-qzmta-cai"; // Placeholder for actual canister ID
         let m = Math.floor(inputIcp * 1e8);
         let amount = Number(m); // Assume icpAmount is a string input from the user
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
@@ -117,13 +127,7 @@ const Swap = () => {
 
             console.log("Current allowance:", currentAllowance);
 
-            //  if ((BigInt(amount)) < Icpbalance ) {
-
-
-            // Proceed with approval only if current allowance is less than needed
-            // if (currentAllowance < BigInt(amountFormatApprove)){
-
-            // Fetch mercx canister balance(mercx token)
+           
             const balanceResult = await whoamiActor.icrc1_balance_of({
                 owner: Principal.fromText(icp_swap_canister_id), // Use the Principal object directly
                 subaccount: [],
@@ -189,9 +193,7 @@ const Swap = () => {
         }
 
             fetchData(principal);
-            // } else {
-            //     alert("Insufficient balance")
-            // } 
+          
         } catch (error) {
             console.error("Approval process failed:", error);
             alert('Approval failed: ' + error.message);
@@ -234,9 +236,10 @@ const Swap = () => {
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 />
+                                  {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}
                             </div>
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"/j.png"} />
+                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"/favicon.ico"} />
                                 <label
                                     type="number"
                                     min='0'
@@ -250,6 +253,7 @@ const Swap = () => {
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 >
+                                   
                                     {isloadingRate ? (
                                         <div className="flex items-center justify-center space-x-2">
                                             <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
@@ -272,10 +276,10 @@ const Swap = () => {
                             <button
                                 type="button"
                                 className="place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90 disabled:bg-indigo-400"
-                                disabled={!isAuthenticated || inputIcp === '0' || inputIcp === ''}
+                                disabled={!isAuthenticated || inputIcp === '0' || inputIcp === '' || isloadingRate}
                                 onClick={() => handleIcpApprove()}
                             >
-                                {!isAuthenticated ? "Connect your wallet" : (inputIcp === '0' || inputIcp === '' ? "Enter an amount" : "SWAP")}
+                                {!isAuthenticated ? "Connect your wallet" : (inputIcp === '0' || inputIcp === '' ? "Enter an amount" : "SWAP" || inputError)}
 
 
                             </button>

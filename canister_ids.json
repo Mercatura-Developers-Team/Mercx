@@ -1,4 +1,7 @@
 {
+  "icp_index_canister": {
+    "ic": "ne7xn-waaaa-aaaan-qzpeq-cai"
+  },
   "icrc1_index_canister": {
     "ic": "7i7aa-mqaaa-aaaap-akntq-cai"
   },

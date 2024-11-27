@@ -2,6 +2,8 @@ use candid::{CandidType, Deserialize, Principal};
 //use crate::get_icp_rate_in_cents;
 use ic_cdk::update;
 
+use crate::CANISTER_ID_XRC;
+
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Metadata {
     decimals: u32,
@@ -82,7 +84,7 @@ pub async fn get_icp_rate() -> Result<f64, String> {
         timestamp: None,
     };
 
-    let xrc_canister_id = Principal::from_text("avqkn-guaaa-aaaaa-qaaea-cai").unwrap();
+    let xrc_canister_id = Principal::from_text(CANISTER_ID_XRC).unwrap();
 
     let call_result: Result<Vec<u8>, (ic_cdk::api::call::RejectionCode, String)> =
         ic_cdk::api::call::call_raw(

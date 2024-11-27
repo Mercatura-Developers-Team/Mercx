@@ -28,7 +28,7 @@ function Home() {
       const name = await whoamiActor.icrc1_name();
       setTokenName(name);
 
-      const icptokenname = await icpActor.icrc1_name();
+      const icptokenname = await icpActor.icrc1_symbol();
       setIcpTokenName(icptokenname);
 
       // Fetch logo URL
