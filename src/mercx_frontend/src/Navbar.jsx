@@ -7,6 +7,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 const navigation = [
   { name: "Home", to: "/" },
   { name: "Swap", to: "/swap" },
+  { name: "Transactions", to: "/transactions" },
 ];
 
 function MyNavbar() {

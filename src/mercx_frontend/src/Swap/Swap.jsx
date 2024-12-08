@@ -24,6 +24,8 @@ const Swap = () => {
     const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
     //Negative input error (icp)
     const [inputError, setInputError] = useState("");
+    //Handling swapping time
+    const [notSwapped,setNotSwapped]=useState(true);
 
     async function handleAmountChange(e) {
         const inputValue = Number(e.target.value);
@@ -78,7 +80,7 @@ const Swap = () => {
             setTokenName(name);
 
             // Fetch logo URL
-            const logo = await whoamiActor.icrc1_metadata();
+            const logo = await mercx_Actor.get_logo_url();
             setLogoUrl(logo);
 
             // Fetch user balance
@@ -104,8 +106,8 @@ const Swap = () => {
         }
     }
     const handleIcpApprove = async (e) => {
-
-        const icp_swap_canister_id = "zoa6c-riaaa-aaaan-qzmta-cai"; // Placeholder for actual canister ID
+        setNotSwapped(false);
+        const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai"; // Placeholder for actual canister ID
         let m = Math.floor(inputIcp * 1e8);
         let amount = Number(m); // Assume icpAmount is a string input from the user
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
@@ -187,6 +189,7 @@ const Swap = () => {
             // Check the backend response for success confirmation
         if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
             setIsModalVisible(true); // Show modal on successful swap
+            setNotSwapped(true);
         } else {
             // Handle cases where swap was not successful
             console.error('Swap failed:', backendResponse);
@@ -207,22 +210,22 @@ const Swap = () => {
     }, [principal, Icpbalance]);
 
     return (<>
-        <div className="min-h-screen bg-white dark:bg-slate-750">
+        <div className="min-h-screen bg-white dark:bg-slate-750 ">
             <main>
 
-                <div className="max-w-md mx-auto sm:px-6 lg:px-8 pt-8 lg:pt-14 2xl:pt-18">
+                <div className="max-w-xl mx-auto sm:px-6 lg:px-8 pt-8 lg:pt-14 2xl:pt-18">
                     <div className="shadow-xl rounded-3xl h-[480px] border-t-[1px] border-gray-100 dark:border-slate-800 dark:bg-slate-800">
                         <div className="border-b-[1px] border-gray-200 dark:border-gray-900 shadow-md p-3">
                             <p className="text-lg font-bold text-center dark:text-gray-200">
                                 Swap
                             </p>
                             <p className="text-gray-500 dark:text-gray-300 text-center text-sm">
-                                Swap ICP with MERCX
+                                Swap ICP with BELLA
                             </p>
                         </div>
                         <div className="p-4">
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={Icpbalance} TokenName="ICP" TokenLogo={"./favicon.ico"} />
+                                <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} />
                                 <input
                                     type="number"
                                     min='0'
@@ -239,7 +242,7 @@ const Swap = () => {
                                   {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}
                             </div>
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"/favicon.ico"} />
+                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={logoUrl} />
                                 <label
                                     type="number"
                                     min='0'
@@ -276,15 +279,29 @@ const Swap = () => {
                             <button
                                 type="button"
                                 className="place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90 disabled:bg-indigo-400"
-                                disabled={!isAuthenticated || inputIcp === '0' || inputIcp === '' || isloadingRate}
+                                disabled={!isAuthenticated || inputIcp === '0' || inputIcp === '' || isloadingRate || !notSwapped}
                                 onClick={() => handleIcpApprove()}
                             >
-                                {!isAuthenticated ? "Connect your wallet" : (inputIcp === '0' || inputIcp === '' ? "Enter an amount" : "SWAP" || inputError)}
-
+ {!isAuthenticated ? "Connect your wallet" :
+     inputIcp === '0' || inputIcp === '' ? "Enter an amount" :
+     !notSwapped ? "Processing..." : // This line checks if notSwapped is false
+     "SWAP"}
 
                             </button>
+                            
                         </div>
-                        
+                        {/*transfer fees*/}
+                      
+          <div className=" rounded-lg border border-gray-100 bg-gray-50 p-2 m-2 dark:border-gray-700 dark:bg-gray-800 flex justify-center ">
+            
+              <dl className="flex items-center gap-4">
+                <dt className="text-base font-normal text-gray-500 dark:text-gray-400">Network Fees</dt>
+                <dd className="text-base font-medium text-gray-900 dark:text-white">0.0002 ICP</dd>
+              </dl>
+              </div>
+             
+           
+
                          {/* Modal for success message */}
             {isModalVisible && (
                <div>

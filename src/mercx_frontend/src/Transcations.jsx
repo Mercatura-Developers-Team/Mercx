@@ -6,7 +6,7 @@ import { Principal } from "@dfinity/principal"; // Import Principal
 import { useAuth } from "./use-auth-client";
 import './index.css';
 
-function Home() {
+function Transcations() {
   const [tokenName, setTokenName] = useState("");
   const [icptokenName, setIcpTokenName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
@@ -99,55 +99,7 @@ function Home() {
           <p className="text-xl">{!isAuthenticated ? `0 ${tokenName}` : `${balance.toString()} ${tokenName}`}</p>
           <p className="text-xl"> {!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
         </section>
-        {/* <section>
-  <h2>Transaction History</h2>
-  <ul>
-    {transactions.length > 0 ? (
-      transactions.map((tx, index) => (
-        <li key={index}>
-          <p>Type: {tx.kind || "N/A"}</p>
-
-          <p>
-            Amount: 
-            {tx.transfer?.[0]?.amount 
-              ? tx.transfer[0].amount.toString() // Accessing the first transfer's amount
-              : tx.mint?.[0]?.amount 
-              ? tx.mint[0].amount.toString() // Accessing the first mint's amount
-              : "N/A"}
-          </p>
-
-          <p>
-            Timestamp: 
-            {tx.timestamp 
-              ? new Date(Number(tx.timestamp) / 1000000).toLocaleString() 
-              : "N/A"}
-          </p>
-
-          <p>
-            From: 
-            {tx.transfer?.[0]?.from?.owner 
-              ? tx.transfer[0].from.owner.toText() 
-              : "N/A"}
-          </p>
-
-          <p>
-            To: 
-            {tx.transfer?.[0]?.to?.owner 
-              ? tx.transfer[0].to.owner.toText() 
-              : tx.mint?.[0]?.to?.owner 
-              ? tx.mint[0].to.owner.toText() 
-              : "N/A"}
-          </p>
-        </li>
-      ))
-    ) : (
-      <p>No transactions found.</p>
-    )}
-  </ul>
-</section>
-
-
- */}
+ 
 
         <section className="p-4 m-4 bg-white rounded-lg shadow text-gray-900">
           <h2 className="text-lg font-bold">Account Transaction History</h2>
@@ -369,7 +321,7 @@ function Home() {
 
 export default () => (
 
-  <Home />
+  <Transcations />
 
 );
 
