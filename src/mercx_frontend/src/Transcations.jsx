@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-
 import { Principal } from "@dfinity/principal"; // Import Principal
-
-
 import { useAuth } from "./use-auth-client";
 import './index.css';
 
@@ -53,11 +50,6 @@ function Transcations() {
       const after_app = numericBalanceIcp / 1e8;
       setIcpBalance(after_app);
 
-      // Fetch latest transactions
-      // const txResponse = await whoamiActor.get_transactions(0, 50);
-      // if (txResponse?.Ok?.transactions) {
-      //   setTransactions(txResponse.Ok.transactions);
-      // }
 
       // Fetch account transactions
       const accountTransactionsArgs = {
@@ -90,17 +82,11 @@ function Transcations() {
 
 
   return (
-
+  
     <div className="min-h-screen bg-gray-100">
       {/* <MyNavbar /> */}
       <main className="bg-blue-900 text-white p-4">
-        <section className="bg-white text-gray-900 rounded-lg shadow p-4 m-4">
-          <h2 className="text-lg font-bold">Your Balance</h2>
-          <p className="text-xl">{!isAuthenticated ? `0 ${tokenName}` : `${balance.toString()} ${tokenName}`}</p>
-          <p className="text-xl"> {!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
-        </section>
- 
-
+      
         <section className="p-4 m-4 bg-white rounded-lg shadow text-gray-900">
           <h2 className="text-lg font-bold">Account Transaction History</h2>
           <ul>
@@ -149,168 +135,6 @@ function Transcations() {
             )}
           </ul>
         </section>
-
-
-
-        <section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
-          <h2 className="font-bold text-lg">Transfer Bella</h2>
-          <form className="flex flex-col gap-4"
-            onSubmit={async (event) => {
-              event.preventDefault();
-
-              try {
-                const toAccount = event.target.elements.to.value.trim();
-                const amount = BigInt(event.target.elements.amount.value * 1e8);
-
-                if (!toAccount || amount <= 0n) {
-                  alert("Please provide valid inputs");
-                  return;
-                }
-
-                // Validate recipient's Principal ID format
-                let recipientPrincipal;
-                try {
-                  recipientPrincipal = Principal.fromText(toAccount);
-                } catch (err) {
-                  alert("Invalid Principal ID format. Please provide a valid Principal ID.");
-                  return;
-                }
-
-                // Use authenticated user's principal as the sender (from_account)
-                const senderPrincipal = principal;  // principal should be available from useAuthClient()
-
-                // Call the backend transfer function
-                const transferResult = await whoamiActor.icrc1_transfer({
-                  to: {
-                    owner: recipientPrincipal,   // Use `to` instead of `to_account`
-                    subaccount: [],              // Optional, set subaccount if required
-                  },
-                  fee: [],                        // Optional fee, use [] if not needed
-                  memo: [],                       // Optional memo, use [] if not needed
-                  from_subaccount: [],            // Optional, set sender's subaccount if required
-                  created_at_time: [],            // Optional, use [] if no specific timestamp is provided
-                  amount,                         // The amount to transfer
-                });
-
-                // Check if the transfer was successful
-                if ("Ok" in transferResult) {
-                  alert("Transfer successful: Block Index " + transferResult.Ok);
-                  // fetchData(principal);  // Refresh balance and transactions
-                } else {
-                  console.error("Transfer failed: ", transferResult.Err);
-                  alert("Transfer failed: " + transferResult.Err);
-                }
-              } catch (error) {
-                console.error("Transfer failed: ", error);
-                alert("Transfer failed: " + error.message);
-              }
-            }}
-          >
-            <label>
-              To Account (Principal ID):
-              <input
-                type="text"
-                name="to"
-                placeholder="Enter recipient's principal"
-                required
-                className="p-2 border rounded"
-              />
-            </label>
-            <label>
-              Amount:
-              <input
-                type="number"
-                name="amount"
-                placeholder="Amount to transfer"
-                required
-                className="p-2 border rounded"
-              />
-            </label>
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
-          </form>
-        </section>
-
-        <section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
-          <h2 className="font-bold text-lg">Transfer ICP</h2>
-          <form className="flex flex-col gap-4"
-            onSubmit={async (event) => {
-              event.preventDefault();
-
-              try {
-                const toAccount = event.target.elements.to.value.trim();
-                const amount = BigInt(event.target.elements.amount.value);
-
-                if (!toAccount || amount <= 0n) {
-                  alert("Please provide valid inputs");
-                  return;
-                }
-
-                // Validate recipient's Principal ID format
-                let recipientPrincipal;
-                try {
-                  recipientPrincipal = Principal.fromText(toAccount);
-                } catch (err) {
-                  alert("Invalid Principal ID format. Please provide a valid Principal ID.");
-                  return;
-                }
-
-                // Use authenticated user's principal as the sender (from_account)
-                const senderPrincipal = principal;  // principal should be available from useAuthClient()
-
-                // Call the backend transfer function
-                const transferResult = await icpActor.icrc1_transfer({
-                  to: {
-                    owner: recipientPrincipal,   // Use `to` instead of `to_account`
-                    subaccount: [],              // Optional, set subaccount if required
-                  },
-                  fee: [],                        // Optional fee, use [] if not needed
-                  memo: [],                       // Optional memo, use [] if not needed
-                  from_subaccount: [],            // Optional, set sender's subaccount if required
-                  created_at_time: [],            // Optional, use [] if no specific timestamp is provided
-                  amount,                         // The amount to transfer
-                });
-
-                // Check if the transfer was successful
-                if ("Ok" in transferResult) {
-                  alert("Transfer successful: Block Index " + transferResult.Ok);
-                  fetchData(principal);  // Refresh balance and transactions
-                } else {
-                  console.error("Transfer failed: ", transferResult.Err);
-                  alert("Transfer failed: " + transferResult.Err);
-                }
-              } catch (error) {
-                console.error("Transfer failed: ", error);
-                alert("Transfer failed: " + error.message);
-              }
-            }}
-          >
-            <label>
-              To Account (Principal ID):
-              <input
-                type="text"
-                name="to"
-                placeholder="Enter recipient's principal"
-                required
-                className="p-2 border rounded"
-              />
-            </label>
-            <label>
-              Amount:
-              <input
-                type="number"
-                name="amount"
-                placeholder="Amount to transfer"
-                required
-                className="p-2 border rounded"
-              />
-            </label>
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
-          </form>
-        </section>
-
-
-
-
 
       </main>
 
