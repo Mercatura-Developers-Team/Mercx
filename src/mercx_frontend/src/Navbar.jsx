@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "./use-auth-client";
 import './index.css';
 import { HiOutlineLogout, HiMenu, HiX } from "react-icons/hi";
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const navigation = [
   { name: "Home", to: "/" },
@@ -11,7 +11,6 @@ const navigation = [
 ];
 
 function MyNavbar() {
-  const location = useLocation();
   const { isAuthenticated, login, logout, principal } = useAuth();
   const [principals, setPrincipal] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -53,8 +52,8 @@ function MyNavbar() {
                     key={item.name}
                     to={item.to}
                     className={({ isActive }) =>
-                      isActive ? "bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium" : "text-gray-600 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                    }
+                      isActive ? "bg-gray-700 text-white px-3 py-2 rounded-md text-sm font-medium" : "text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                  }
                   >
                     {item.name}
                   </NavLink>
