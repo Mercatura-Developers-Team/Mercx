@@ -45,10 +45,11 @@ function Transcations() {
 
 
   return (
-    <div className="min-h-screen m-6 bg-slate-800 rounded-lg shadow">
-      <main>
-        <div className="p-7 ml-9 mb-8 flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+   
+    <div className="min-h-screen  justify-center bg-gray-900 flex">
+    <div className="m-10 w-full max-w-screen-xl bg-slate-800 rounded-lg shadow-lg p-8 ">
+
+      <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
@@ -135,9 +136,8 @@ function Transcations() {
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
-      </main>
+            </div>
+      </div>
     </div>
   );
 }

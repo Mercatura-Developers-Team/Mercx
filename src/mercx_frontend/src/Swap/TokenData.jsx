@@ -6,7 +6,7 @@ const TokenData = ({TokenBalance, TokenName,TokenLogo}) => {
 
     return (<>  <div className="flex justify-between items-center">
         <label
-            className="flex items-center px-2 py-2 text-sm text-gray-600 dark:text-gray-300 shadow-md rounded-md hover:bg-gray-100 dark:hover:bg-slate-700"
+            className="flex items-center px-2 py-2 text-sm text-gray-300 shadow-md rounded-md hover:bg-slate-700"
         >
             <img
                 src={TokenLogo}
@@ -19,7 +19,7 @@ const TokenData = ({TokenBalance, TokenName,TokenLogo}) => {
             {TokenName}
             </span>
         </label>
-        <p className="text-gray-600 dark:text-gray-300 text-sm font-medium">
+        <p className="text-gray-300 text-sm font-medium">
             Balance: {TokenBalance}
         </p>
     </div></>);
