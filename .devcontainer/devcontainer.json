@@ -1,0 +1,28 @@
+{
+    "name": "ICP Dev Environment",
+    "image": "ghcr.io/dfinity/icp-dev-env-slim:13",
+    "forwardPorts": [4943, 5173 , 3000],
+    "portsAttributes": {
+      "4943": {
+        "label": "dfx",
+        "onAutoForward": "ignore"
+      },
+      "5173": {
+        "label": "vite",
+        "onAutoForward": "openBrowser"
+      },
+      "3000": {
+        "label": "React Dev Server",
+        "onAutoForward": "openBrowser"
+      }
+    ,"remoteEnv": {
+    "CHOKIDAR_USEPOLLING": "true",
+    "WATCHPACK_POLLING": "true" // Adds polling for file changes
+  }
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": ["dfinity-foundation.vscode-motoko", "bradlc.vscode-tailwindcss"]
+      }
+    }
+  }

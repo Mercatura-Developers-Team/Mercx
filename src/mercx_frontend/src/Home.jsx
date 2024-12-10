@@ -149,7 +149,7 @@ function Home() {
 
  */}
 
-        <section className="p-4 m-4 bg-white rounded-lg shadow text-gray-900">
+        {/* <section className="p-4 m-4 bg-white rounded-lg shadow text-gray-900">
           <h2 className="text-lg font-bold">Account Transaction History</h2>
           <ul>
             {accountTransactions.length > 0 ? (
@@ -196,10 +196,10 @@ function Home() {
               <p>No account transactions found.</p>
             )}
           </ul>
-        </section>
+        </section> */}
 
 
-
+{/* 
         <section className="p-4 m-4 bg-white rounded-lg shadow  text-gray-900">
           <h2 className="font-bold text-lg">Transfer Bella</h2>
           <form className="flex flex-col gap-4"
@@ -354,7 +354,7 @@ function Home() {
             </label>
             <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
           </form>
-        </section>
+        </section> */}
 
 
 

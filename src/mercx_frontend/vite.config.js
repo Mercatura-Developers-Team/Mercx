@@ -20,12 +20,20 @@ export default defineConfig({
     },
   },
   server: {
+  
+      open: true, // Automatically opens the browser
+      watch: {
+        usePolling: true // Fixes file watching in Docker or remote dev containers
+      }, // Bind to all network interfaces
+    port: 3000,
     proxy: {
       "/api": {
         target: "http://127.0.0.1:4943",
         changeOrigin: true,
       },
     },
+    host:true
+     
   },
   plugins: [
     react(),

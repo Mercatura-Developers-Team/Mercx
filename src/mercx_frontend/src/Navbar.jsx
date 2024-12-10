@@ -8,6 +8,7 @@ const navigation = [
   { name: "Home", to: "/" },
   { name: "Swap", to: "/swap" },
   { name: "Transactions", to: "/transactions" },
+  { name: "Transfer", to: "/transfer" },
 ];
 
 function MyNavbar() {

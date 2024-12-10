@@ -5,6 +5,7 @@ import Home from './Home';
 import Swap from './Swap/Swap';
 import {  AuthProvider } from "./use-auth-client";
 import Transcations from './Transcations';
+import Transfer from './Transfer';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/swap" element={<Swap />} />
         <Route path="/transactions" element={ <Transcations />} />
+        <Route path="/transfer" element={ <Transfer/>} />
       </Routes>
     </div>
     </AuthProvider>
