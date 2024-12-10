@@ -210,16 +210,16 @@ const Swap = () => {
     }, [principal, Icpbalance]);
 
     return (<>
-        <div className="min-h-screen bg-white dark:bg-slate-750 ">
+        <div className="min-h-screen bg-gray-900 ">
             <main>
 
                 <div className="max-w-xl mx-auto sm:px-6 lg:px-8 pt-8 lg:pt-14 2xl:pt-18">
-                    <div className="shadow-xl rounded-3xl h-[480px] border-t-[1px] border-gray-100 dark:border-slate-800 dark:bg-slate-800">
-                        <div className="border-b-[1px] border-gray-200 dark:border-gray-900 shadow-md p-3">
-                            <p className="text-lg font-bold text-center dark:text-gray-200">
+                    <div className="shadow-xl rounded-3xl h-[480px] border-t-[1px] border-slate-800 bg-slate-800">
+                        <div className="border-b-[1px] border-gray-900 shadow-md p-3">
+                            <p className="text-lg font-bold text-center text-gray-200">
                                 Swap
                             </p>
-                            <p className="text-gray-500 dark:text-gray-300 text-center text-sm">
+                            <p className="text-gray-300 text-center text-sm">
                                 Swap ICP with BELLA
                             </p>
                         </div>
@@ -235,7 +235,7 @@ const Swap = () => {
                                     value={inputIcp}
                                     onFocus={(e) => e.target.select()}
                                     onChange={(e) => handleAmountChange(e)}
-                                    className="block w-full text-right outline-0 text-gray-500 dark:text-gray-200 bg-inherit"
+                                    className="block w-full text-right outline-0 text-gray-200 bg-inherit"
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 />
@@ -252,7 +252,7 @@ const Swap = () => {
                                     //  value={amountMercx}
                                     onFocus={(e) => e.target.select()}
                                     //   onChange={(e) => onChangeInput(e.target.value, isTokenA)}
-                                    className="block w-full pr-4 text-right outline-0 text-gray-500 dark:text-gray-200 bg-inherit"
+                                    className="block w-full pr-4 text-right outline-0 text-gray-200 bg-inherit"
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 >
@@ -269,7 +269,7 @@ const Swap = () => {
                                 </label>
                             </div>
                             {fetchingRateDown && inputIcp !== "" && (
-                                <div className="text-sm font-medium text-center text-gray-500 dark:text-gray-200 pt-5">
+                                <div className="text-sm font-medium text-center text-gray-200 pt-5">
                                     1 ICP = {rate} Mercx (${rate})
                                 </div>
                             )}
@@ -292,11 +292,11 @@ const Swap = () => {
                         </div>
                         {/*transfer fees*/}
                       
-          <div className=" rounded-lg border border-gray-100 bg-gray-50 p-2 m-2 dark:border-gray-700 dark:bg-gray-800 flex justify-center ">
+          <div className=" rounded-lg border  p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
             
               <dl className="flex items-center gap-4">
-                <dt className="text-base font-normal text-gray-500 dark:text-gray-400">Network Fees</dt>
-                <dd className="text-base font-medium text-gray-900 dark:text-white">0.0002 ICP</dd>
+                <dt className="text-base font-normal text-gray-400">Network Fees</dt>
+                <dd className="text-base font-medium text-white">0.0002 ICP</dd>
               </dl>
               </div>
              

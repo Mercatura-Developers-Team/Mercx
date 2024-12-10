@@ -64,7 +64,7 @@ const Transfer = () => {
                         }
                     }}
                 >
-                    <label className="m-4 block text-sm font-medium text-white dark:text-red w-full ">
+                    <label className="m-4 block text-sm font-medium text-white  w-full ">
                         To Account (Principal ID):
                         <input
                             type="text"
@@ -87,7 +87,7 @@ const Transfer = () => {
                             />
                         </label>
                     
-                    <button type="submit" className="flex w-full items-center justify-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4  focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Send</button>
+                    <button type="submit" className="flex w-full items-center justify-center bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white rounded-lg  bg-primary-600 hover:bg-primary-700 focus:ring-primary-800">Send</button>
                 </form>
             </section>
 
@@ -98,7 +98,6 @@ const Transfer = () => {
                 <form className="flex flex-col gap-4 bg-slate-800"
                     onSubmit={async (event) => {
                         event.preventDefault();
-
                         try {
                             const toAccount = event.target.elements.to.value.trim();
 
@@ -148,7 +147,7 @@ const Transfer = () => {
                         }
                     }}
                 >
-                    <label className='mb-2 block text-sm font-medium text-gray-900 dark:text-white w-full'>
+                    <label className='m-4 block text-sm font-medium text-white  w-full '>
                         To Account (Principal ID):
                         <input
                             type="text"
@@ -169,7 +168,7 @@ const Transfer = () => {
                             className="w-full rounded-lg border p-2.5 text-sm  border-gray-600 bg-gray-700 text-white placeholder:text-gray-400 focus:border-primary-500 focus:ring-primary-500"
                         />
                     </label>
-                    <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Send</button>
+                    <button type="submit" className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white py-2 px-4 rounded">Send</button>
                 </form>
             </section>
 

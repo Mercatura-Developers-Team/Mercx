@@ -2,17 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "./use-auth-client";
 import './index.css';
 import { HiOutlineLogout, HiMenu, HiX } from "react-icons/hi";
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const navigation = [
   { name: "Home", to: "/" },
   { name: "Swap", to: "/swap" },
   { name: "Transactions", to: "/transactions" },
-  { name: "Transfer", to: "/transfer" },
+  { name: "Transfer", to: "/transfer" }
 ];
 
 function MyNavbar() {
-  const location = useLocation();
   const { isAuthenticated, login, logout, principal } = useAuth();
   const [principals, setPrincipal] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +28,7 @@ function MyNavbar() {
   }, [isAuthenticated, principal]);
 
   return (
-    <nav className="bg-white border-gray-200 dark:bg-gray-900">
+    <nav className="bg-gray-900">
       <div className="max-w-screen-xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
           {/* Mobile menu button*/}
@@ -54,8 +53,8 @@ function MyNavbar() {
                     key={item.name}
                     to={item.to}
                     className={({ isActive }) =>
-                      isActive ? "bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium" : "text-gray-600 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                    }
+                      isActive ? "bg-gray-700 text-white px-3 py-2 rounded-md text-sm font-medium" : "text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                  }
                   >
                     {item.name}
                   </NavLink>
@@ -67,6 +66,7 @@ function MyNavbar() {
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
             {isAuthenticated ? (
               <>
+              
                 <input
                   type="text"
                   readOnly
@@ -80,7 +80,7 @@ function MyNavbar() {
             ) : (
               <button
                 onClick={login}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg  py-2 px-4 rounded"
               >
                 Connect to Wallet
               </button>
