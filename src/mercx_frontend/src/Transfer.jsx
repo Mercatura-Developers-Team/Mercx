@@ -86,7 +86,7 @@ const Transfer = () => {
                             className="w-full mt-3 rounded-lg border border-gray-300 p-2.5 bg-gray-50 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                         />
                     </label>
-
+                    <span className="text-gray-500 text-sm ">Network fees 0.0001 MercX </span>
                     <button type="submit" className=" place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90">Send</button>
                 </form>
             </section>
