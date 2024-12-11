@@ -71,23 +71,23 @@ const Transfer = () => {
                             name="to"
                             placeholder="Enter recipient's principal"
                             required
-                            className=" w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                            className=" w-full mt-3 rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                         />
                     </label>
-                  
-                        <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white w-full">
-                            Amount:
-                            <input
-                                type="number"
-                                name="amount"
-                                step="any"
-                                placeholder="Amount to transfer"
-                                required
-                                className="w-full rounded-lg border border-gray-300 p-2.5 bg-gray-50 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
-                            />
-                        </label>
-                    
-                    <button type="submit" className="flex w-full items-center justify-center bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white rounded-lg  bg-primary-600 hover:bg-primary-700 focus:ring-primary-800">Send</button>
+
+                    <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white w-full">
+                        Amount:
+                        <input
+                            type="number"
+                            name="amount"
+                            step="any"
+                            placeholder="Amount to transfer"
+                            required
+                            className="w-full mt-3 rounded-lg border border-gray-300 p-2.5 bg-gray-50 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                        />
+                    </label>
+
+                    <button type="submit" className=" place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90">Send</button>
                 </form>
             </section>
 
@@ -154,10 +154,10 @@ const Transfer = () => {
                             name="to"
                             placeholder="Enter recipient's principal"
                             required
-                            className="w-full rounded-lg border border-gray-300 p-2.5 bg-gray-50 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500 "
+                            className="w-full mt-3 rounded-lg border border-gray-300 p-2.5 bg-gray-50 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500 "
                         />
                     </label>
-                    <label className='mb-2 block text-sm font-medium text-gray-900 dark:text-white w-full '>
+                    <label className='mb-2 block text-sm font-medium text-white w-full '>
                         Amount:
                         <input
                             type="number"
@@ -165,10 +165,12 @@ const Transfer = () => {
                             step="any"
                             placeholder="Amount to transfer"
                             required
-                            className="w-full rounded-lg border p-2.5 text-sm  border-gray-600 bg-gray-700 text-white placeholder:text-gray-400 focus:border-primary-500 focus:ring-primary-500"
+                            className="w-full mt-3 rounded-lg border p-2.5 text-sm  border-gray-600 bg-gray-700 text-white placeholder:text-gray-400 focus:border-primary-500 focus:ring-primary-500"
                         />
+                     
                     </label>
-                    <button type="submit" className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white py-2 px-4 rounded">Send</button>
+                    <span className="text-gray-500 text-sm ">Network fees 0.0001 Icp </span>
+                    <button type="submit" className=" bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white py-2 px-4 rounded-lg text-sm">Send</button>
                 </form>
             </section>
 
@@ -176,7 +178,7 @@ const Transfer = () => {
 
 
         </div>
-        );
+    );
 }
 
 export default Transfer;
