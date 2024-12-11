@@ -14,7 +14,7 @@ const Swap = () => {
     const [tokenName, setTokenName] = useState("");
     const [inputIcp, setInputIcp] = useState('');
     const [amountMercx, setAmountMercx] = useState('0.0');
-    const [logoUrl, setLogoUrl] = useState("");//not used 
+    //const [logoUrl, setLogoUrl] = useState("");//not used 
     const [rate, setRate] = useState("0");
     const [canisterBalance, setCanisterBalance] = useState(""); //swap canister balance
     // Add state for fetchingRate at the top level of your component 
@@ -79,9 +79,9 @@ const Swap = () => {
             const name = await whoamiActor.icrc1_name();
             setTokenName(name);
 
-            // Fetch logo URL
-            const logo = await mercx_Actor.get_logo_url();
-            setLogoUrl(logo);
+            // // Fetch logo URL
+            // const logo = await mercx_Actor.get_logo_url();
+            // setLogoUrl(logo);
 
             // Fetch user balance
             const balanceResult = await whoamiActor.icrc1_balance_of({
@@ -242,7 +242,7 @@ const Swap = () => {
                                   {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}
                             </div>
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={logoUrl} />
+                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"./Bella.jpeg"} />
                                 <label
                                     type="number"
                                     min='0'
@@ -292,11 +292,11 @@ const Swap = () => {
                         </div>
                         {/*transfer fees*/}
                       
-          <div className=" rounded-lg border  p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
+          <div className=" p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
             
               <dl className="flex items-center gap-4">
-                <dt className="text-base font-normal text-gray-400">Network Fees</dt>
-                <dd className="text-base font-medium text-white">0.0002 ICP</dd>
+                <dt className="text-sm font-normal text-gray-400">Network Fees</dt>
+                <dd className="text-sm font-medium text-white">0.0002 ICP</dd>
               </dl>
               </div>
              

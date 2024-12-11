@@ -129,8 +129,8 @@ function Transcations() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="6" className="text-center text-white py-4">
-                      No account transactions found.
+                    <td colSpan="6" className="text-center text-gray-500 py-4">
+                      No account transactions found
                     </td>
                   </tr>
                 )}

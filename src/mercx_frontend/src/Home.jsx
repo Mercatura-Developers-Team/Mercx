@@ -9,7 +9,7 @@ import './index.css';
 function Home() {
   const [tokenName, setTokenName] = useState("");
   const [icptokenName, setIcpTokenName] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
+  //const [logoUrl, setLogoUrl] = useState("");
   const [balance, setBalance] = useState(0n); // Keep balance as BigInt
   const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
   const [accountTransactions, setAccountTransactions] = useState([]);
@@ -32,8 +32,8 @@ function Home() {
       setIcpTokenName(icptokenname);
 
       // Fetch logo URL
-      const logo = await whoamiActor.icrc1_metadata();
-      setLogoUrl(logo);
+      // const logo = await whoamiActor.icrc1_metadata();
+      // setLogoUrl(logo);
 
       // Fetch user balance
       const balanceResult = await whoamiActor.icrc1_balance_of({
