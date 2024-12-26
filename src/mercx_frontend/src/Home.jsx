@@ -7,13 +7,17 @@ import { useAuth } from "./use-auth-client";
 import './index.css';
 
 function Home() {
+  //token names
   const [tokenName, setTokenName] = useState("");
   const [icptokenName, setIcpTokenName] = useState("");
+  const [TommytokenName, setTommyName] = useState("");
   //const [logoUrl, setLogoUrl] = useState("");
+  //token balances
   const [balance, setBalance] = useState(0n); // Keep balance as BigInt
   const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
+  const [Tommybalance, setTommyBalance] = useState(0n); // Keep balance as BigInt
   const [accountTransactions, setAccountTransactions] = useState([]);
-  const { whoamiActor, icrcIndexActor, icpActor, isAuthenticated } = useAuth();
+  const { whoamiActor, icrcIndexActor, icpActor, tommy_Actor, isAuthenticated } = useAuth();
   const { principal } = useAuth();
 
 
@@ -31,11 +35,14 @@ function Home() {
       const icptokenname = await icpActor.icrc1_symbol();
       setIcpTokenName(icptokenname);
 
+      const tommyTokenname = await tommy_Actor.icrc1_name();
+      setTommyName(tommyTokenname);
+
       // Fetch logo URL
       // const logo = await whoamiActor.icrc1_metadata();
       // setLogoUrl(logo);
 
-      // Fetch user balance
+      // Fetch user token balances
       const balanceResult = await whoamiActor.icrc1_balance_of({
         owner, // Use the Principal object directly
         subaccount: [],
@@ -52,6 +59,14 @@ function Home() {
       const numericBalanceIcp = Number(balanceicp);
       const after_app = numericBalanceIcp / 1e8;
       setIcpBalance(after_app);
+
+      const balanceTommy = await tommy_Actor.icrc1_balance_of({
+        owner, // Use the Principal object directly
+        subaccount: [],
+      });
+      const numericBalanceTommy = Number(balanceTommy);
+      const after_ap_tommy = numericBalanceTommy / 1e8;
+      setTommyBalance(after_ap_tommy);
 
       // Fetch latest transactions
       // const txResponse = await whoamiActor.get_transactions(0, 50);
@@ -98,6 +113,8 @@ function Home() {
           <h2 className="text-lg font-bold">Your Balance</h2>
           <p className="text-xl">{!isAuthenticated ? `0 ${tokenName}` : `${balance.toString()} ${tokenName}`}</p>
           <p className="text-xl"> {!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
+          <p className="text-xl">{!isAuthenticated ? `0 ${TommytokenName}` : `${Tommybalance.toString()} ${TommytokenName}`}</p>
+
         </section>
         {/* <section>
   <h2>Transaction History</h2>

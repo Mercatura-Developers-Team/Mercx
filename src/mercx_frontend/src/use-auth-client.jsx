@@ -4,6 +4,7 @@ import { canisterId as MercxId, createActor as createMercxActor} from "../../dec
 import { canisterId, createActor } from "../../declarations/icrc1_ledger_canister";
 import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
 import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
+import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
 
 
 // Create a React Context for sharing authentication status across the component tree
@@ -69,6 +70,7 @@ export const useAuthClient = (options = defaultOptions) => {
   const [icrcIndexActor, setIcrcIndexActor] = useState(null);
   const [icpActor, setIcpActor] = useState(null);
   const [mercx_Actor, setMercxActor] = useState(null);
+  const [tommy_Actor, setTommyActor] = useState(null);
 
 
   useEffect(() => {
@@ -129,6 +131,13 @@ export const useAuthClient = (options = defaultOptions) => {
       },
     });
     setMercxActor(MercxActor);
+
+    const tommyActor = createTommyActor(tommyCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setTommyActor(tommyActor);
   }
 
   async function logout() {
@@ -147,6 +156,7 @@ export const useAuthClient = (options = defaultOptions) => {
     icrcIndexActor,
     icpActor,
     mercx_Actor,
+    tommy_Actor,
   };
 };
 
