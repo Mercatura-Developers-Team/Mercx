@@ -8,6 +8,14 @@ import SuccessModal from './SuccessModel';
 
 const Swap = () => {
     const { whoamiActor, icpActor, mercx_Actor, isAuthenticated } = useAuth();
+    // State for tokens
+    const [selectedTokenA, setSelectedTokenA] = useState("");
+    const [selectedTokenB, setSelectedTokenB] = useState("Bella");
+    const [tokenABalance, setTokenABalance] = useState(0);
+    const [tokenBBalance, setTokenBBalance] = useState(0);
+    const [inputTokenA, setInputTokenA] = useState("");
+    // const [outputTokenB,setOutputTokenB] = useState(0);
+
     const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
     const { principal } = useAuth();
     const [balance, setBalance] = useState(0n);
@@ -25,19 +33,35 @@ const Swap = () => {
     //Negative input error (icp)
     const [inputError, setInputError] = useState("");
     //Handling swapping time
-    const [notSwapped,setNotSwapped]=useState(true);
+    const [notSwapped, setNotSwapped] = useState(true);
+
+
+
+    // Handle changes to Token A
+    const handleTokenAChange = (e) => {
+        const selected = e.target.value;
+        setSelectedTokenA(selected);
+
+        // Set Token B based on Token A selection
+        if (selected === "ICP") {
+            setSelectedTokenB("Bella");
+        } else if (selected === "Bella") {
+            setSelectedTokenB("EL TOKEN EL GDEEDA ");
+        }
+    };
 
     async function handleAmountChange(e) {
         const inputValue = Number(e.target.value);
         if (inputValue < 0) {
             setInputError("Amount must be greater than zero.");
             setInputIcp('');  // Reset the input field
-            return; }
+            return;
+        }
 
-        else{
+        else {
             setInputError("");
-        setInputIcp(e.target.value);
-        setLoadingRate(true);  // Start fetching, show loading indicator
+            setInputIcp(e.target.value);
+            setLoadingRate(true);  // Start fetching, show loading indicator
         }
         try {
             const rateResponse = await mercx_Actor.get_icp_rate();
@@ -75,7 +99,7 @@ const Swap = () => {
             // Use principalId directly if it's a Principal object
             const owner = typeof principalId === 'string' ? Principal.fromText(principalId) : principalId;
 
-            //   // Fetch token name
+            // Fetch token name
             const name = await whoamiActor.icrc1_name();
             setTokenName(name);
 
@@ -129,7 +153,7 @@ const Swap = () => {
 
             console.log("Current allowance:", currentAllowance);
 
-           
+
             const balanceResult = await whoamiActor.icrc1_balance_of({
                 owner: Principal.fromText(icp_swap_canister_id), // Use the Principal object directly
                 subaccount: [],
@@ -187,16 +211,16 @@ const Swap = () => {
             console.log('Backend response:', backendResponse);
 
             // Check the backend response for success confirmation
-        if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
-            setIsModalVisible(true); // Show modal on successful swap
-            setNotSwapped(true);
-        } else {
-            // Handle cases where swap was not successful
-            console.error('Swap failed:', backendResponse);
-        }
+            if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
+                setIsModalVisible(true); // Show modal on successful swap
+                setNotSwapped(true);
+            } else {
+                // Handle cases where swap was not successful
+                console.error('Swap failed:', backendResponse);
+            }
 
             fetchData(principal);
-          
+
         } catch (error) {
             console.error("Approval process failed:", error);
             alert('Approval failed: ' + error.message);
@@ -207,7 +231,7 @@ const Swap = () => {
         if (principal) {
             fetchData(principal);  // Fetch data when principal and actor are available
         }
-    }, [principal, Icpbalance]);
+    }, [principal, Icpbalance, selectedTokenA, selectedTokenB]);
 
     return (<>
         <div className="min-h-screen bg-gray-900 ">
@@ -219,13 +243,39 @@ const Swap = () => {
                             <p className="text-lg font-bold text-center text-gray-200">
                                 Swap
                             </p>
-                            <p className="text-gray-300 text-center text-sm">
+                            {/* <p className="text-gray-300 text-center text-sm">
                                 Swap ICP with BELLA
-                            </p>
+                            </p> */}
                         </div>
                         <div className="p-4">
+
+
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} />
+                                <div className="flex justify-between items-center">
+                                    <label
+                                        className="flex items-center px-2 py-2 text-sm text-gray-300 shadow-md rounded-md hover:bg-slate-700 cursor-pointer"
+                                    >
+                                        <img
+                                            src={selectedTokenA === "ICP" ? "./favicon.ico" : "./public/Bella.jpeg"}
+                                            alt={`${selectedTokenA} logo`}
+                                            height={20}
+                                            width={20}
+                                        />
+                                        <select
+                                            value={selectedTokenA}
+                                            onChange={(e) => handleTokenAChange(e)}
+                                            className="block w-full bg-inherit text-gray-200 border-none outline-none font-bold mx-2 cursor-pointer"
+                                        >
+                                            <option value="ICP">ICP</option>
+                                            <option value="Bella">{tokenName}</option>
+                                        </select>
+                                    </label>
+                                    <p className="text-gray-300 text-sm font-medium">
+                                        
+                                        Balance: {tokenABalance}
+                                    </p>
+                                </div>
+                                <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} /> 
                                 <input
                                     type="number"
                                     min='0'
@@ -236,11 +286,12 @@ const Swap = () => {
                                     onFocus={(e) => e.target.select()}
                                     onChange={(e) => handleAmountChange(e)}
                                     className="block w-full text-right outline-0 text-gray-200 bg-inherit"
-                                    //   disabled={token?.address ? false : true}
+                                    //disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 />
-                                  {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}
+                                {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}
                             </div>
+
                             <div className="p-4 mt-4 rounded-md shadow-md">
                                 <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={logoUrl} />
                                 <label
@@ -256,7 +307,7 @@ const Swap = () => {
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 >
-                                   
+
                                     {isloadingRate ? (
                                         <div className="flex items-center justify-center space-x-2">
                                             <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
@@ -282,32 +333,32 @@ const Swap = () => {
                                 disabled={!isAuthenticated || inputIcp === '0' || inputIcp === '' || isloadingRate || !notSwapped}
                                 onClick={() => handleIcpApprove()}
                             >
- {!isAuthenticated ? "Connect your wallet" :
-     inputIcp === '0' || inputIcp === '' ? "Enter an amount" :
-     !notSwapped ? "Processing..." : // This line checks if notSwapped is false
-     "SWAP"}
+                                {!isAuthenticated ? "Connect your wallet" :
+                                    inputIcp === '0' || inputIcp === '' ? "Enter an amount" :
+                                        !notSwapped ? "Processing..." : // This line checks if notSwapped is false
+                                            "SWAP"}
 
                             </button>
-                            
+
                         </div>
                         {/*transfer fees*/}
-                      
-          <div className=" rounded-lg border  p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
-            
-              <dl className="flex items-center gap-4">
-                <dt className="text-base font-normal text-gray-400">Network Fees</dt>
-                <dd className="text-base font-medium text-white">0.0002 ICP</dd>
-              </dl>
-              </div>
-             
-           
 
-                         {/* Modal for success message */}
-            {isModalVisible && (
-               <div>
-                 <SuccessModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
-           </div>
-            )}
+                        <div className=" rounded-lg border  p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
+
+                            <dl className="flex items-center gap-4">
+                                <dt className="text-base font-normal text-gray-400">Network Fees</dt>
+                                <dd className="text-base font-medium text-white">0.0002 ICP</dd>
+                            </dl>
+                        </div>
+
+
+
+                        {/* Modal for success message */}
+                        {isModalVisible && (
+                            <div>
+                                <SuccessModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

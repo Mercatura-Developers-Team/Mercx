@@ -2,7 +2,7 @@ import React from 'react';
 
 
 const TokenData = ({TokenBalance, TokenName,TokenLogo}) => {
-    
+
 
     return (<>  <div className="flex justify-between items-center">
         <label
@@ -18,11 +18,15 @@ const TokenData = ({TokenBalance, TokenName,TokenLogo}) => {
             <span className="font-bold mx-2">
             {TokenName}
             </span>
+          
         </label>
-        <p className="text-gray-300 text-sm font-medium">
+        <p 
+        className="text-gray-300 text-sm font-medium">
             Balance: {TokenBalance}
         </p>
-    </div></>);
+
+    </div>
+    </>);
 }
 
 export default TokenData;
