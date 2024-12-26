@@ -105,15 +105,15 @@ function Home() {
 
 
   return (
-
+ 
     <div>
       {/* <MyNavbar /> */}
       <main className="min-h-screen bg-gray-900 text-white p-4">
         <section className="bg-slate-800 text-white rounded-lg shadow p-4 m-4">
           <h2 className="text-lg font-bold">Your Balance</h2>
           <p className="text-xl">{!isAuthenticated ? `0 ${tokenName}` : `${balance.toString()} ${tokenName}`}</p>
-          <p className="text-xl"> {!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
           <p className="text-xl">{!isAuthenticated ? `0 ${TommytokenName}` : `${Tommybalance.toString()} ${TommytokenName}`}</p>
+          <p className="text-xl"> {!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
 
         </section>
         {/* <section>
