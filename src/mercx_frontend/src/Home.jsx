@@ -148,13 +148,6 @@ function Home() {
 
 
  */}
-
-       
-
-
-
-
-
       </main>
 
     </div>
