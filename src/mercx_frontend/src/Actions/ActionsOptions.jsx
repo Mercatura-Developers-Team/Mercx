@@ -1,26 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import TokenData from './TokenData';
 import { useAuth } from '.././use-auth-client';
-import { Principal } from "@dfinity/principal"; // Import Principal
-import SuccessModal from './SuccessModel';
+import Swap from './Swap/Swap';
 
-const Swap = () => {
-    const { whoamiActor, icpActor, isAuthenticated } = useAuth();
+
+const ActionsOptions = () => {
+
     const [currentTab, setCurrentTab] = useState('Swap'); // Manage the current tab
 
-    // State setups as before
-    const [Icpbalance, setIcpBalance] = useState(0n);
-    const [balance, setBalance] = useState(0n);
-    const [inputIcp, setInputIcp] = useState('');
-    const [amountMercx, setAmountMercx] = useState('0.0');
-    const [isModalVisible, setIsModalVisible] = useState(false);
+   
 
     const handleTabClick = (tabName) => {
         setCurrentTab(tabName);
     };
 
-    // Functionality and effects remain similar
-    // Async fetches and other interactions
+
 
     return (
         <div className="min-h-screen bg-gray-900">
@@ -63,7 +56,7 @@ const Swap = () => {
                         {currentTab === 'Swap' && (
                             <div>
                                 {/* Existing Swap logic and UI */}
-                                <p className="text-center text-gray-200">Swap interface here</p>
+                                <Swap/>
                             </div>
                         )}
                         {/* Other components and logic */}
@@ -74,4 +67,4 @@ const Swap = () => {
     );
 };
 
-export default Swap;
+export default ActionsOptions;
