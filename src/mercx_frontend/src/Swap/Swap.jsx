@@ -107,9 +107,9 @@ const Swap = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const icp_swap_canister_id = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai"; // Placeholder for actual canister ID
         let m = Math.floor(inputIcp * 1e8);
-        let amount = Number(m); // Assume icpAmount is a string input from the user
+        let amount = Number(m); // Assume icpAmount` is a string input from the user
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
 
         let amountFormatApprove = Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
