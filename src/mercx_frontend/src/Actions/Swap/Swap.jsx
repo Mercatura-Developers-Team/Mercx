@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { Fragment, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { useState } from "react";
 import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
@@ -107,7 +106,7 @@ const Swap = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const icp_swap_canister_id = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai"; // Placeholder for actual canister ID
         let m = Math.floor(inputIcp * 1e8);
         let amount = Number(m); // Assume icpAmount` is a string input from the user
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
@@ -217,9 +216,9 @@ const Swap = () => {
                 <div >
                     <div className="shadow-xl rounded-3xl h-[480px] border-t-[1px] border-slate-800 bg-slate-800">
                         <div className="border-b-[1px] border-gray-900 shadow-md p-3">
-                            <p className="text-lg font-bold text-center text-gray-200">
+                            {/* <p className="text-lg font-bold text-center text-gray-200">
                                 Swap
-                            </p>
+                            </p> */}
                             <p className="text-gray-300 text-center text-sm">
                                 Swap ICP with BELLA
                             </p>
