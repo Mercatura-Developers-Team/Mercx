@@ -2,7 +2,7 @@ import React from 'react';
 import MyNavbar from './Navbar';
 import { Route, Routes } from 'react-router-dom';
 import Home from './Home';
-import Swap from './Swap/Swap';
+import Swap from './Actions/Swap/Swap';
 import {  AuthProvider } from "./use-auth-client";
 import Transcations from './Transcations';
 import Transfer from './Transfer';

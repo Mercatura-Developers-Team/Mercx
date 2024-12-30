@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import TokenData from './TokenData';
-import { useAuth } from '.././use-auth-client';
+import TokenData from '../TokenData';
+import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
 import SuccessModal from './SuccessModel';
 
@@ -107,7 +107,7 @@ const Swap = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const icp_swap_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
         let m = Math.floor(inputIcp * 1e8);
         let amount = Number(m); // Assume icpAmount` is a string input from the user
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
