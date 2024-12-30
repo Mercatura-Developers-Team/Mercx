@@ -82,6 +82,8 @@ function Transcations() {
                     let fromOwner = "N/A";
                     let toOwner = "N/A";
                     let timestamp = "N/A";
+                    const maxIndex = accountTransactions.length;
+
 
                     if (transaction.transfer && transaction.transfer.length > 0) {
                       const transfer = transaction.transfer[0];
@@ -91,8 +93,8 @@ function Transcations() {
                       timestamp = new Date(Number(transaction.timestamp / 1_000_000n)).toLocaleString();
 
                       // Check if the owner ID matches the specific ID and replace name
-                      if (fromOwner === "b77ix-eeaaa-aaaaa-qaada-cai") fromOwner = "MercX Link";
-                      if (toOwner === "b77ix-eeaaa-aaaaa-qaada-cai") toOwner = "MercX Link";
+                      if (fromOwner === "avqkn-guaaa-aaaaa-qaaea-cai") fromOwner = "MercX Link";
+                      if (toOwner === "avqkn-guaaa-aaaaa-qaaea-cai") toOwner = "MercX Link";
 
                     } else if (transaction.mint && transaction.mint.length > 0) {
                       const mint = transaction.mint[0];
@@ -101,13 +103,13 @@ function Transcations() {
                       timestamp = new Date(Number(transaction.timestamp / 1_000_000n)).toLocaleString();
 
                       // Check if the owner ID matches the specific ID and replace name
-                      if (toOwner === "b77ix-eeaaa-aaaaa-qaada-cai") toOwner = "MercX Link";
+                      if (toOwner === "avqkn-guaaa-aaaaa-qaaea-cai") toOwner = "MercX Link";
                     }
 
                     return (
                       <tr key={index}>
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                          {(index + 1).toString()}
+                        {maxIndex - index}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
                           {kind || "N/A"}
@@ -129,8 +131,8 @@ function Transcations() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="6" className="text-center text-white py-4">
-                      No account transactions found.
+                    <td colSpan="6" className="text-center text-gray-500 py-4">
+                      No account transactions found
                     </td>
                   </tr>
                 )}

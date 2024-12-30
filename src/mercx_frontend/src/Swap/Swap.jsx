@@ -7,22 +7,23 @@ import { Principal } from "@dfinity/principal"; // Import Principal
 import SuccessModal from './SuccessModel';
 
 const Swap = () => {
-    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
     // State for tokens
-    const [selectedTokenA, setSelectedTokenA] = useState("");
+    const [selectedTokenA, setSelectedTokenA] = useState("ICP");
     const [selectedTokenB, setSelectedTokenB] = useState("Bella");
-    const [tokenABalance, setTokenABalance] = useState(0);
-    const [tokenBBalance, setTokenBBalance] = useState(0);
+    // const [tokenABalance, setTokenABalance] = useState(0);
+    // const [tokenBBalance, setTokenBBalance] = useState(0);
     const [inputTokenA, setInputTokenA] = useState("");
     // const [outputTokenB,setOutputTokenB] = useState(0);
-
     const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
     const { principal } = useAuth();
     const [balance, setBalance] = useState(0n);
     const [tokenName, setTokenName] = useState("");
     const [inputIcp, setInputIcp] = useState('');
     const [amountMercx, setAmountMercx] = useState('0.0');
-    const [logoUrl, setLogoUrl] = useState("");//not used 
+    const [tommyToken, SetTommy] = useState("");
+    const [tommyBalance, SetTommyBalance] = useState(0n);
+    //const [logoUrl, setLogoUrl] = useState("");//not used 
     const [rate, setRate] = useState("0");
     const [canisterBalance, setCanisterBalance] = useState(""); //swap canister balance
     // Add state for fetchingRate at the top level of your component 
@@ -46,9 +47,10 @@ const Swap = () => {
         if (selected === "ICP") {
             setSelectedTokenB("Bella");
         } else if (selected === "Bella") {
-            setSelectedTokenB("EL TOKEN EL GDEEDA ");
+            setSelectedTokenB("Tommy");
         }
     };
+
 
     async function handleAmountChange(e) {
         const inputValue = Number(e.target.value);
@@ -103,9 +105,9 @@ const Swap = () => {
             const name = await whoamiActor.icrc1_name();
             setTokenName(name);
 
-            // Fetch logo URL
-            const logo = await mercx_Actor.get_logo_url();
-            setLogoUrl(logo);
+            // // Fetch logo URL
+            // const logo = await mercx_Actor.get_logo_url();
+            // setLogoUrl(logo);
 
             // Fetch user balance
             const balanceResult = await whoamiActor.icrc1_balance_of({
@@ -124,6 +126,15 @@ const Swap = () => {
             const numericBalanceIcp = Number(balanceicp);
             const after_app = numericBalanceIcp / 1e8;
             setIcpBalance(after_app);
+
+            const balancetommy = await tommy_Actor.icrc1_balance_of({
+                owner, // Use the Principal object directly
+                subaccount: [],
+            });
+            const numericBalanceTommy = Number(balancetommy);
+            const formatted_Balance = numericBalanceTommy / 1e8;
+            SetTommyBalance(formatted_Balance);
+
 
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -256,7 +267,7 @@ const Swap = () => {
                                         className="flex items-center px-2 py-2 text-sm text-gray-300 shadow-md rounded-md hover:bg-slate-700 cursor-pointer"
                                     >
                                         <img
-                                            src={selectedTokenA === "ICP" ? "./favicon.ico" : "./public/Bella.jpeg"}
+                                            src={selectedTokenA === "ICP" ? "./favicon.ico" : "./Bella.jpeg"}
                                             alt={`${selectedTokenA} logo`}
                                             height={20}
                                             width={20}
@@ -271,11 +282,17 @@ const Swap = () => {
                                         </select>
                                     </label>
                                     <p className="text-gray-300 text-sm font-medium">
-                                        
-                                        Balance: {tokenABalance}
+
+                                        {/* Balance: {tokenABalance} */}
+                                        Balance:{" "}
+                                        {selectedTokenA === "ICP"
+                                            ? !isAuthenticated
+                                                ? "0"
+                                                : Icpbalance.toString()
+                                            : balance.toString()}
                                     </p>
                                 </div>
-                                <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} /> 
+                                {/* <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} />  */}
                                 <input
                                     type="number"
                                     min='0'
@@ -293,7 +310,12 @@ const Swap = () => {
                             </div>
 
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={logoUrl} />
+                                {/* <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"./Bella.jpeg"} /> */}
+                                <TokenData
+                                    TokenBalance={selectedTokenB === "Bella" ? balance : tommyBalance}
+                                    TokenName={selectedTokenB}
+                                    TokenLogo={selectedTokenB === "Bella" ? "./Bella.jpeg" : "newtokenlogo"}
+                                />
                                 <label
                                     type="number"
                                     min='0'
@@ -343,13 +365,17 @@ const Swap = () => {
                         </div>
                         {/*transfer fees*/}
 
-                        <div className=" rounded-lg border  p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
+                        <div className=" p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
 
                             <dl className="flex items-center gap-4">
-                                <dt className="text-base font-normal text-gray-400">Network Fees</dt>
-                                <dd className="text-base font-medium text-white">0.0002 ICP</dd>
+                                <dt className="text-sm font-normal text-gray-400">Network Fees</dt>
+                                <dd className="text-sm font-medium text-white">0.0002 ICP</dd>
                             </dl>
                         </div>
+
+
+
+
 
 
 
