@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
 import SuccessModal from './SuccessModel';
 
-const Swap = () => {
+const Buy = () => {
     const { whoamiActor, icpActor, mercx_Actor, isAuthenticated } = useAuth();
     const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
     const { principal } = useAuth();
@@ -219,7 +220,7 @@ const Swap = () => {
                                 Swap
                             </p> */}
                             <p className="text-gray-300 text-center text-sm">
-                                Swap ICP with BELLA
+                                Buy BELLA with ICP
                             </p>
                         </div>
                         <div className="p-4">
@@ -284,7 +285,7 @@ const Swap = () => {
  {!isAuthenticated ? "Connect your wallet" :
      inputIcp === '0' || inputIcp === '' ? "Enter an amount" :
      !notSwapped ? "Processing..." : // This line checks if notSwapped is false
-     "SWAP"}
+     "BUY"}
 
                             </button>
                             
@@ -314,4 +315,4 @@ const Swap = () => {
     </>);
 }
 
-export default Swap;
+export default Buy;

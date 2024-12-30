@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '.././use-auth-client';
-import Swap from './Swap/Swap';
+import Buy from './Buy/Buy';
 
 
 const ActionsOptions = () => {
@@ -20,7 +19,7 @@ const ActionsOptions = () => {
             <main>
                 <div className="max-w-xl mx-auto sm:px-6 lg:px-8 pt-8 lg:pt-14 2xl:pt-18">
                     <div className="shadow-xl rounded-3xl h-auto border-t-[1px] border-slate-800 bg-slate-800">
-                        <div className="flex justify-around p-3 border-b border-gray-900">
+                        <div className="flex justify-around p-3 ">
                             <button
                                 onClick={() => handleTabClick('Buy')}
                                 className={`text-lg ${currentTab === 'Buy' ? 'text-white' : 'text-gray-400'} font-bold`}
@@ -35,7 +34,7 @@ const ActionsOptions = () => {
                             </button>
                             <button
                                 onClick={() => handleTabClick('Swap')}
-                                className={`text-lg ${currentTab === 'Swap' ? 'text-white' : 'text-gray-400'} font-bold`}
+                                className={`text-lg ${currentTab === 'Swap' ? 'text-white ' : 'text-gray-400'} font-bold`}
                             >
                                 Swap
                             </button>
@@ -44,7 +43,7 @@ const ActionsOptions = () => {
                         {currentTab === 'Buy' && (
                             <div>
                                 {/* Buy tab content */}
-                                <p className="text-center text-gray-200">Buy interface here</p>
+                                <Buy/>
                             </div>
                         )}
                         {currentTab === 'Sell' && (
@@ -56,7 +55,7 @@ const ActionsOptions = () => {
                         {currentTab === 'Swap' && (
                             <div>
                                 {/* Existing Swap logic and UI */}
-                                <Swap/>
+                                <p className="text-center text-gray-200 ">Comming Soon</p>
                             </div>
                         )}
                         {/* Other components and logic */}
