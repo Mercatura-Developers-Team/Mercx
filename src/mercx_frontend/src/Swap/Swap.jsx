@@ -11,8 +11,7 @@ const Swap = () => {
     // State for tokens
     const [selectedTokenA, setSelectedTokenA] = useState("ICP");
     const [selectedTokenB, setSelectedTokenB] = useState("Bella");
-    // const [tokenABalance, setTokenABalance] = useState(0);
-    // const [tokenBBalance, setTokenBBalance] = useState(0);
+
     const [inputTokenA, setInputTokenA] = useState("");
     // const [outputTokenB,setOutputTokenB] = useState(0);
     const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
@@ -187,6 +186,7 @@ const Swap = () => {
             if (Icpbalance <= 0 || Icpbalance < inputIcp) {
                 alert("Insufficient ICP balance");
                 return;
+
             }
 
             if (BigInt(currentAllowance) < BigInt(amountFormatApprove)) {
