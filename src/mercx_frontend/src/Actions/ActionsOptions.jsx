@@ -4,7 +4,7 @@ import Buy from './Buy/Buy';
 
 const ActionsOptions = () => {
 
-    const [currentTab, setCurrentTab] = useState('Swap'); // Manage the current tab
+    const [currentTab, setCurrentTab] = useState('Buy'); // Manage the current tab
 
    
 
