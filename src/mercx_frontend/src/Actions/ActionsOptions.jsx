@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '.././use-auth-client';
-import Swap from './Swap/Swap';
-
-
+import Swap from '../Actions/Swap/Swap';
+import Sell from '../Actions/Sell/Sell';
 const ActionsOptions = () => {
 
     const [currentTab, setCurrentTab] = useState('Swap'); // Manage the current tab
@@ -20,7 +19,7 @@ const ActionsOptions = () => {
             <main>
                 <div className="max-w-xl mx-auto sm:px-6 lg:px-8 pt-8 lg:pt-14 2xl:pt-18">
                     <div className="shadow-xl rounded-3xl h-auto border-t-[1px] border-slate-800 bg-slate-800">
-                        <div className="flex justify-around p-3 border-b border-gray-900">
+                        <div className="flex justify-around p-3  border-gray-900">
                             <button
                                 onClick={() => handleTabClick('Buy')}
                                 className={`text-lg ${currentTab === 'Buy' ? 'text-white' : 'text-gray-400'} font-bold`}
@@ -48,10 +47,8 @@ const ActionsOptions = () => {
                             </div>
                         )}
                         {currentTab === 'Sell' && (
-                            <div>
-                                {/* Sell tab content */}
-                                <p className="text-center text-gray-200">Sell interface here</p>
-                            </div>
+                            <Sell/>
+                              
                         )}
                         {currentTab === 'Swap' && (
                             <div>

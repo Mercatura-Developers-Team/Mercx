@@ -4,16 +4,17 @@ import { Dialog, Transition } from "@headlessui/react";
 import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
-import SuccessModal from './SuccessModel';
+import SuccessModal from '../Swap/SuccessModel';
 
-const Swap = () => {
-    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated } = useAuth();
-    const [Icpbalance, setIcpBalance] = useState(0n); // Keep balance as BigInt
+const Sell = () => {
+    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
+    // Keep balance as BigInt
+    const [Tommybalance, setTommyBalance] = useState(0n);
     const { principal } = useAuth();
     const [balance, setBalance] = useState(0n);
     const [tokenName, setTokenName] = useState("");
-    const [inputIcp, setInputIcp] = useState('');
-    const [amountMercx, setAmountMercx] = useState('0.0');
+    const [amountTommy, setAmountTommy] = useState('0.0');
+    const [inputBella, setInputBella] = useState('');
     //const [logoUrl, setLogoUrl] = useState("");//not used 
     const [rate, setRate] = useState("0");
     const [canisterBalance, setCanisterBalance] = useState(""); //swap canister balance
@@ -25,19 +26,20 @@ const Swap = () => {
     //Negative input error (icp)
     const [inputError, setInputError] = useState("");
     //Handling swapping time
-    const [notSwapped,setNotSwapped]=useState(true);
+    const [notSwapped, setNotSwapped] = useState(true);
 
     async function handleAmountChange(e) {
         const inputValue = Number(e.target.value);
         if (inputValue < 0) {
             setInputError("Amount must be greater than zero.");
-            setInputIcp('');  // Reset the input field
-            return; }
+            setInputBella('');  // Reset the input field
+            return;
+        }
 
-        else{
+        else {
             setInputError("");
-        setInputIcp(e.target.value);
-        setLoadingRate(true);  // Start fetching, show loading indicator
+            inputBella(e.target.value);
+            setLoadingRate(true);  // Start fetching, show loading indicator
         }
         try {
             const rateResponse = await mercx_Actor.get_icp_rate();
@@ -46,24 +48,26 @@ const Swap = () => {
             // Ensure rate.Ok is a number and not undefined or NaN
             if (!rateResponse.Ok || isNaN(rateResponse.Ok)) {
                 console.error('Invalid rate:', rateResponse.Ok);
-                setAmountMercx(0);  // Set Mercx amount to zero if rate is invalid
+                setAmountTommy(0);  // Set Mercx amount to zero if rate is invalid
                 setLoadingRate(false);  // Stop fetching, hide loading indicator
                 return;
             }
 
-            const inputIcp = Number(e.target.value);
+            const inputBella = Number(e.target.value);
             const rate = Number(rateResponse.Ok);
             // Fetching rate up 
             setRate(rate);
             // Fetching rate down 
             setFetchingRate(true);
             // Calculating and setting amount of Mercx, rounding to 4 decimal places
-            const amountMercx = (inputIcp * rate);
-            setAmountMercx(amountMercx);
-            console.log('Calculated Mercx Amount:', amountMercx);
+            // const amountMercx = (inputIcp * rate);
+            // const amountMercx = (inputTommy);
+            const amountTommy = (inputBella)
+            setAmountTommy(amountTommy);
+            console.log('Calculated Mercx Amount:', amountTommy);
         } catch (error) {
             console.error('Failed to fetch rate:', error);
-            setAmountMercx(0);  // Handle any errors by setting Mercx amount to zero
+            setAmountTommy(0);  // Handle any errors by setting Mercx amount to zero
         }
         finally {
             setLoadingRate(false);  // Ensure fetching indicator is hidden after fetch attempt
@@ -92,14 +96,15 @@ const Swap = () => {
             const after_ap = numericBalanceMercx / 1e8;
             setBalance(after_ap);
 
-            // Fetch icp balance
-            const balanceicp = await icpActor.icrc1_balance_of({
+            const balancetommy = await tommy_Actor.icrc1_balance_of({
                 owner, // Use the Principal object directly
                 subaccount: [],
             });
-            const numericBalanceIcp = Number(balanceicp);
-            const after_app = numericBalanceIcp / 1e8;
-            setIcpBalance(after_app);
+            const numericBalanceTommy = Number(balancetommy);
+            const formatted_Balance = numericBalanceTommy / 1e8;
+            setTommyBalance(formatted_Balance);
+
+
 
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -108,13 +113,13 @@ const Swap = () => {
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
         const icp_swap_canister_id = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
-        let m = Math.floor(inputIcp * 1e8);
+        let m = Math.floor(inputBella * 1e8);
         let amount = Number(m); // Assume icpAmount` is a string input from the user
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
 
         let amountFormatApprove = Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
 
-        let mercxAmountFormat = Math.floor(amountMercx * 1e8);
+        let mercxAmountFormat = Math.floor(amountTommy * 1e8);
         try {
 
             const allowanceCheck = {
@@ -129,7 +134,7 @@ const Swap = () => {
 
             console.log("Current allowance:", currentAllowance);
 
-           
+
             const balanceResult = await whoamiActor.icrc1_balance_of({
                 owner: Principal.fromText(icp_swap_canister_id), // Use the Principal object directly
                 subaccount: [],
@@ -141,16 +146,16 @@ const Swap = () => {
 
 
             //no enough mercx token in mercx canister //3ashan maykhosh approve 
-            if (after_ap <= 0 || after_ap < amountMercx) {
+            if (after_ap <= 0 || after_ap < amountTommy) {
                 alert("Cannot proceed with swap");
                 console.log(after_ap);
-                console.log(amountMercx);
+                console.log(amountTommy);
                 return;
             }
 
             // user does'nt have icps and handled also in backend, but made it here for 
-            if (Icpbalance <= 0 || Icpbalance < inputIcp) {
-                alert("Insufficient ICP balance");
+            if (balance <= 0 || balance < inputBella) {
+                alert("Insufficient Bella balance");
                 return;
 
             }
@@ -183,21 +188,21 @@ const Swap = () => {
             }
             // Call the backend function
             const backendResponse = await mercx_Actor.swap(amount, mercxAmountFormat);
-            setInputIcp("");
-            setAmountMercx('0.0');
+            setInputBella("");
+            setAmountTommy('0.0');
             console.log('Backend response:', backendResponse);
 
             // Check the backend response for success confirmation
-        if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
-            setIsModalVisible(true); // Show modal on successful swap
-            setNotSwapped(true);
-        } else {
-            // Handle cases where swap was not successful
-            console.error('Swap failed:', backendResponse);
-        }
+            if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
+                setIsModalVisible(true); // Show modal on successful swap
+                setNotSwapped(true);
+            } else {
+                // Handle cases where swap was not successful
+                console.error('Swap failed:', backendResponse);
+            }
 
             fetchData(principal);
-          
+
         } catch (error) {
             console.error("Approval process failed:", error);
             alert('Approval failed: ' + error.message);
@@ -208,42 +213,44 @@ const Swap = () => {
         if (principal) {
             fetchData(principal);  // Fetch data when principal and actor are available
         }
-    }, [principal, Icpbalance]);
+    }, [principal, Tommybalance, balance]);
 
     return (<>
-        <div className="min-h-screen bg-gray-900 ">
+        <div >
             <main>
 
                 <div className="max-w-xl mx-auto sm:px-6 lg:px-8 pt-8 lg:pt-14 2xl:pt-18">
                     <div className="shadow-xl rounded-3xl h-[480px] border-t-[1px] border-slate-800 bg-slate-800">
                         <div className="border-b-[1px] border-gray-900 shadow-md p-3">
-                            <p className="text-lg font-bold text-center text-gray-200">
+                            {/* <p className="text-lg font-bold text-center text-gray-200">
                                 Swap
-                            </p>
+                            </p> */}
                             <p className="text-gray-300 text-center text-sm">
-                                Swap ICP with BELLA
+                                Sell Bella and get Tommy
                             </p>
                         </div>
                         <div className="p-4">
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} />
+                                {/* <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="Tommy" TokenLogo={"./favicon.ico"} /> */}
+                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"./Bella.jpeg"} />
                                 <input
                                     type="number"
                                     min='0'
                                     inputMode="decimal"
                                     name="amount"
                                     id="amount"
-                                    value={inputIcp}
+                                    value={inputBella}
                                     onFocus={(e) => e.target.select()}
                                     onChange={(e) => handleAmountChange(e)}
                                     className="block w-full text-right outline-0 text-gray-200 bg-inherit"
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 />
-                                  {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}
+                                {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}
                             </div>
                             <div className="p-4 mt-4 rounded-md shadow-md">
-                                <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"./Bella.jpeg"} />
+
+                                <TokenData TokenBalance={!isAuthenticated ? `0` : Tommybalance.toString()} TokenName="Tommy" TokenLogo={"logo_tommy"} />
                                 <label
                                     type="number"
                                     min='0'
@@ -257,7 +264,7 @@ const Swap = () => {
                                     //   disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 >
-                                   
+
                                     {isloadingRate ? (
                                         <div className="flex items-center justify-center space-x-2">
                                             <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
@@ -266,12 +273,12 @@ const Swap = () => {
                                             </svg>
                                             <span className="text-sm text-gray-600">Fetching price...</span>
                                         </div>
-                                    ) : amountMercx} {/* Assuming amountMercx is a number, format it to four decimal places */}
+                                    ) : amountTommy} {/* Assuming amountMercx is a number, format it to four decimal places */}
                                 </label>
                             </div>
-                            {fetchingRateDown && inputIcp !== "" && (
+                            {fetchingRateDown && amountTommy !== "" && (
                                 <div className="text-sm font-medium text-center text-gray-200 pt-5">
-                                    1 ICP = {rate} Mercx (${rate})
+                                    1 Bella = 1 Tommy
                                 </div>
                             )}
                         </div>
@@ -280,35 +287,35 @@ const Swap = () => {
                             <button
                                 type="button"
                                 className="place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90 disabled:bg-indigo-400"
-                                disabled={!isAuthenticated || inputIcp === '0' || inputIcp === '' || isloadingRate || !notSwapped}
+                                disabled={!isAuthenticated || amountTommy === '0' || amountTommy === '' || isloadingRate || !notSwapped}
                                 onClick={() => handleIcpApprove()}
                             >
- {!isAuthenticated ? "Connect your wallet" :
-     inputIcp === '0' || inputIcp === '' ? "Enter an amount" :
-     !notSwapped ? "Processing..." : // This line checks if notSwapped is false
-     "SWAP"}
+                                {!isAuthenticated ? "Connect your wallet" :
+                                    inputBella === '0' || inputBella === '' ? "Enter an amount" :
+                                        !notSwapped ? "Processing..." : // This line checks if notSwapped is false
+                                            "Sell"}
 
                             </button>
-                            
+
                         </div>
                         {/*transfer fees*/}
-                      
-          <div className=" p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
-            
-              <dl className="flex items-center gap-4">
-                <dt className="text-sm font-normal text-gray-400">Network Fees</dt>
-                <dd className="text-sm font-medium text-white">0.0002 ICP</dd>
-              </dl>
-              </div>
-             
-           
 
-                         {/* Modal for success message */}
-            {isModalVisible && (
-               <div>
-                 <SuccessModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
-           </div>
-            )}
+                        <div className=" p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
+
+                            <dl className="flex items-center gap-4">
+                                <dt className="text-sm font-normal text-gray-400">Network Fees</dt>
+                                <dd className="text-sm font-medium text-white">0.0002 ICP</dd>
+                            </dl>
+                        </div>
+
+
+
+                        {/* Modal for success message */}
+                        {isModalVisible && (
+                            <div>
+                                <SuccessModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
@@ -316,4 +323,4 @@ const Swap = () => {
     </>);
 }
 
-export default Swap;
+export default Sell;
