@@ -250,7 +250,7 @@ const Sell = () => {
                             </div>
                             <div className="p-4 mt-4 rounded-md shadow-md">
 
-                                <TokenData TokenBalance={!isAuthenticated ? `0` : Tommybalance.toString()} TokenName="Tommy" TokenLogo={"logo_tommy"} />
+                                <TokenData TokenBalance={!isAuthenticated ? `0` : Tommybalance.toString()} TokenName="Tommy" TokenLogo={"./Tommy.JPG"} />
                                 <label
                                     type="number"
                                     min='0'

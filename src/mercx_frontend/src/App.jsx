@@ -14,7 +14,7 @@ function App() {
       <MyNavbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/swap" element={<ActionsOptions />} />
+        <Route path="/trade" element={<ActionsOptions />} />
         <Route path="/transactions" element={ <Transcations />} />
         <Route path="/transfer" element={ <Transfer/>} />
       </Routes>
