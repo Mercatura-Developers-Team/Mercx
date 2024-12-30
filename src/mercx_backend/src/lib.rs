@@ -16,14 +16,21 @@ pub use xrc_mock::get_icp_rate;
 // pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
 // pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
 
-pub const CANISTER_ID_XRC:&str="a3shf-5eaaa-aaaaa-qaafa-cai";
+// pub const CANISTER_ID_XRC:&str="a3shf-5eaaa-aaaaa-qaafa-cai";
+// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="bkyz2-fmaaa-aaaaa-qaaaq-cai";
+// pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="be2us-64aaa-aaaaa-qaabq-cai";
+// pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="b77ix-eeaaa-aaaaa-qaada-cai";
+// pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
+// pub const CANISTER_ID_MERCX_BACKEND :&str="avqkn-guaaa-aaaaa-qaaea-cai";
+// pub const CANISTER_ID_TOMMY_LEDGER_CANISTER :&str="br5f7-7uaaa-aaaaa-qaaca-cai";
+
+//N Ids
+pub const CANISTER_ID_MERCX_BACKEND :&str="b77ix-eeaaa-aaaaa-qaada-cai";
 pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="bkyz2-fmaaa-aaaaa-qaaaq-cai";
 pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="be2us-64aaa-aaaaa-qaabq-cai";
-pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="b77ix-eeaaa-aaaaa-qaada-cai";
+pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="br5f7-7uaaa-aaaaa-qaaca-cai";
 pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
-pub const CANISTER_ID_MERCX_BACKEND :&str="avqkn-guaaa-aaaaa-qaaea-cai";
-pub const CANISTER_ID_TOMMY_LEDGER_CANISTER :&str="br5f7-7uaaa-aaaaa-qaaca-cai";
-
+pub const CANISTER_ID_XRC :&str="avqkn-guaaa-aaaaa-qaaea-cai";
 
 //The function allows you to query the principal ID of the caller of the function
 #[query]

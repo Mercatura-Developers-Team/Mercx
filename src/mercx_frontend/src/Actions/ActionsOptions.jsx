@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '.././use-auth-client';
+//import Swap from '../Actions/Swap/Swap';
+import Sell from '../Actions/Sell/Sell';
 import Buy from './Buy/Buy';
 
 
@@ -47,10 +50,8 @@ const ActionsOptions = () => {
                             </div>
                         )}
                         {currentTab === 'Sell' && (
-                            <div>
-                                {/* Sell tab content */}
-                                <p className="text-center text-gray-200">Sell interface here</p>
-                            </div>
+                            <Sell/>
+                              
                         )}
                         {currentTab === 'Swap' && (
                             <div>
