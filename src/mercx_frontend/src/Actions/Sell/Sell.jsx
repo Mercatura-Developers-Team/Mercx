@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
-import { Fragment, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { useState } from "react";
 import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
 import SuccessModal from '../Swap/SuccessModel';
 
 const Sell = () => {
-    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
+    const { whoamiActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
     // Keep balance as BigInt
     const [Tommybalance, setTommyBalance] = useState(0n);
     const { principal } = useAuth();
@@ -42,29 +41,29 @@ const Sell = () => {
             setLoadingRate(true);  // Start fetching, show loading indicator
         }
         try {
-            const rateResponse = await mercx_Actor.get_icp_rate();
-            console.log('Rate fetched:', rateResponse);
+            // const rateResponse = await mercx_Actor.get_icp_rate();
+            // console.log('Rate fetched:', rateResponse);
 
             // Ensure rate.Ok is a number and not undefined or NaN
-            if (!rateResponse.Ok || isNaN(rateResponse.Ok)) {
-                console.error('Invalid rate:', rateResponse.Ok);
-                setAmountTommy(0);  // Set Mercx amount to zero if rate is invalid
-                setLoadingRate(false);  // Stop fetching, hide loading indicator
-                return;
-            }
+            // if (!rateResponse.Ok || isNaN(rateResponse.Ok)) {
+            //     console.error('Invalid rate:', rateResponse.Ok);
+            //     setAmountTommy(0);  // Set Mercx amount to zero if rate is invalid
+            //     setLoadingRate(false);  // Stop fetching, hide loading indicator
+            //     return;
+           // }
 
             const inputBella = Number(e.target.value);
-            const rate = Number(rateResponse.Ok);
+           // const rate = Number(rateResponse.Ok);
             // Fetching rate up 
-            setRate(rate);
+        //    setRate(rate);
             // Fetching rate down 
             setFetchingRate(true);
             // Calculating and setting amount of Mercx, rounding to 4 decimal places
             // const amountMercx = (inputIcp * rate);
-            // const amountMercx = (inputTommy);
-            const amountTommy = (inputBella)
+ 
+            const amountTommy = (inputBella*10);
             setAmountTommy(amountTommy);
-            console.log('Calculated Mercx Amount:', amountTommy);
+            console.log('Calculated Tommy Amount:', amountTommy);
         } catch (error) {
             console.error('Failed to fetch rate:', error);
             setAmountTommy(0);  // Handle any errors by setting Mercx amount to zero
@@ -104,48 +103,44 @@ const Sell = () => {
             const formatted_Balance = numericBalanceTommy / 1e8;
             setTommyBalance(formatted_Balance);
 
-
-
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const icp_swap_canister_id = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
-        let m = Math.floor(inputBella * 1e8);
-        let amount = Number(m); // Assume icpAmount` is a string input from the user
+        const backend_canister = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
+        let amountBella = Number(Math.floor((inputBella) * 1e8));
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
 
-        let amountFormatApprove = Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
 
-        let mercxAmountFormat = Math.floor(amountTommy * 1e8);
+        let tommyAmount = Math.floor(amountTommy * 1e8);
         try {
 
             const allowanceCheck = {
                 account: { owner: principal, subaccount: [] },
-                spender: { owner: Principal.fromText(icp_swap_canister_id), subaccount: [] }
+                spender: { owner: Principal.fromText(backend_canister), subaccount: [] }
             };
 
             console.log("Checking allowance with structure:", JSON.stringify(allowanceCheck));
 
-            const currentAllowanceResult = await icpActor.icrc2_allowance(allowanceCheck);
+            const currentAllowanceResult = await whoamiActor.icrc2_allowance(allowanceCheck);
             const currentAllowance = currentAllowanceResult.allowance;
 
             console.log("Current allowance:", currentAllowance);
 
 
-            const balanceResult = await whoamiActor.icrc1_balance_of({
-                owner: Principal.fromText(icp_swap_canister_id), // Use the Principal object directly
+            const balanceResult = await tommy_Actor.icrc1_balance_of({
+                owner: Principal.fromText(backend_canister), // Use the Principal object directly
                 subaccount: [],
             });
 
-            const numericBalanceMercx = Number(balanceResult);
-            const after_ap = numericBalanceMercx / 1e8;
-            setCanisterBalance(after_ap);
+            const numericBalanceTommy = Number(balanceResult);
+            const after_ap = numericBalanceTommy / 1e8;
+           // setCanisterBalance(after_ap);
 
 
-            //no enough mercx token in mercx canister //3ashan maykhosh approve 
+            //no enough tommy token in mercx canister //3ashan may3melsh approve 
             if (after_ap <= 0 || after_ap < amountTommy) {
                 alert("Cannot proceed with swap");
                 console.log(after_ap);
@@ -157,17 +152,16 @@ const Sell = () => {
             if (balance <= 0 || balance < inputBella) {
                 alert("Insufficient Bella balance");
                 return;
-
             }
 
-            if (BigInt(currentAllowance) < BigInt(amountFormatApprove)) {
+            if (BigInt(currentAllowance) < BigInt(amountBella)) {
 
-                const resultIcpApprove = await icpActor.icrc2_approve({
+                const resultBellaApprove = await whoamiActor.icrc2_approve({
                     spender: {
-                        owner: Principal.fromText(icp_swap_canister_id),
+                        owner: Principal.fromText(backend_canister),
                         subaccount: [],
                     },
-                    amount: BigInt(amountFormatApprove),
+                    amount: BigInt(amountBella),
                     fee: [BigInt(10000)], // Optional fee, set as needed
                     memo: [],  // Optional memo field
                     from_subaccount: [],  // From subaccount, if any
@@ -177,22 +171,26 @@ const Sell = () => {
                 });
 
                 // If the approval was successful, call the backend function
-                if (resultIcpApprove && "Ok" in resultIcpApprove) {
+                if (resultBellaApprove && "Ok" in resultBellaApprove) {
                     alert('Approval successful!');
                 }
 
                 else {
-                    console.error("Approval failed:", resultIcpApprove.Err);
-                    alert("Approval failed: " + resultIcpApprove.Err);
+                    console.error("Approval failed:", resultBellaApprove.Err);
+                    alert("Approval failed: " + resultBellaApprove.Err);
                 }
             }
+            let bella_ledger= process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER;
+            let tommy_ledger= process.env.CANISTER_ID_TOMMY_ICRC1_LEDGER;
+            let bella_principal=Principal.fromText(bella_ledger);
+            let tommy_principal=Principal.fromText(tommy_ledger);
             // Call the backend function
-            const backendResponse = await mercx_Actor.swap(amount, mercxAmountFormat);
-            setInputBella("");
-            setAmountTommy('0.0');
-            console.log('Backend response:', backendResponse);
+             const backendResponse = await mercx_Actor.sell(amountBella,bella_principal, tommyAmount,tommy_principal);
+            // setInputBella("");
+            // setAmountTommy('0.0');
+             console.log('Backend response:', backendResponse);
 
-            // Check the backend response for success confirmation
+           // Check the backend response for success confirmation
             if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
                 setIsModalVisible(true); // Show modal on successful swap
                 setNotSwapped(true);
@@ -278,7 +276,7 @@ const Sell = () => {
                             </div>
                             {fetchingRateDown && amountTommy !== "" && (
                                 <div className="text-sm font-medium text-center text-gray-200 pt-5">
-                                    1 Bella = 1 Tommy
+                                    1 Bella = 10 Tommy
                                 </div>
                             )}
                         </div>

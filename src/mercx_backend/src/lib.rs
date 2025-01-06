@@ -16,13 +16,13 @@ pub use xrc_mock::get_icp_rate;
 // pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
 // pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
 
-pub const CANISTER_ID_XRC:&str="a3shf-5eaaa-aaaaa-qaafa-cai";
-pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="bkyz2-fmaaa-aaaaa-qaaaq-cai";
-pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="be2us-64aaa-aaaaa-qaabq-cai";
-pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="b77ix-eeaaa-aaaaa-qaada-cai";
-pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
-pub const CANISTER_ID_MERCX_BACKEND :&str="avqkn-guaaa-aaaaa-qaaea-cai";
-pub const CANISTER_ID_TOMMY_LEDGER_CANISTER :&str="br5f7-7uaaa-aaaaa-qaaca-cai";
+pub const CANISTER_ID_XRC: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
+pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
+pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "b77ix-eeaaa-aaaaa-qaada-cai";
+pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
+pub const CANISTER_ID_MERCX_BACKEND: &str = "avqkn-guaaa-aaaaa-qaaea-cai";
+pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
 
 //N Ids
 // pub const CANISTER_ID_MERCX_BACKEND :&str="b77ix-eeaaa-aaaaa-qaada-cai";
@@ -183,6 +183,30 @@ async fn deposit_icp_in_canister(amount: u64) -> Result<BlockIndex, String> {
 }
 
 #[ic_cdk::update]
+async fn deposit_token(amount: u64, token_info: Principal) -> Result<BlockIndex, String> {
+    let transfer_from_args = TransferFromArgs {
+        from: Account::from(ic_cdk::caller()), // Assuming the caller has approved the transfer
+        memo: None,
+        amount: amount.into(),
+        spender_subaccount: None,
+        fee: None,
+        to: Account::from(ic_cdk::api::id()),
+        created_at_time: None,
+    };
+
+    // Properly handle the output of the call directly as a tuple
+    let call_result: Result<(Result<BlockIndex, TransferFromError>,), _> = ic_cdk::api::call::call(token_info, "icrc2_transfer_from", (transfer_from_args,)).await;
+
+    // Flatten the result for easier error handling
+    match call_result {
+        Ok((Ok(block_index),)) => Ok(block_index),
+        Ok((Err(e),)) => Err(format!("Ledger transfer error: {:?}", e)),
+        Err(e) => Err(format!("Failed to call ledger: {:?}", e)),
+    }
+}
+
+
+#[ic_cdk::update]
 async fn check_balance_icp(account: Account) -> NumTokens {
     // Perform the call to icrc1_balance_of canister method
     let (balance_result,): (NumTokens,) = ic_cdk::call::<(Account,), (NumTokens,)>(
@@ -212,6 +236,18 @@ async fn check_balance_mercx(account: Account) -> NumTokens {
 
     // Return the balance directly
     balance_result
+}
+
+#[ic_cdk::update]
+async fn check_balance(account: Account, token_info: Principal) -> Result<NumTokens, String> {
+    // Perform the call to icrc1_balance_of canister method
+    let result: Result<(NumTokens,), _> =
+        ic_cdk::api::call::call(token_info, "icrc1_balance_of", (account,)).await;
+
+    match result {
+        Ok((balance,)) => Ok(balance),
+        Err(e) => Err(format!("Failed to retrieve balance: {:?}", e)),
+    }
 }
 
 #[ic_cdk::update]
@@ -508,24 +544,9 @@ async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
 // }
 
 #[ic_cdk::update]
-pub async fn swap(amount_icp: u64, amount_mercx : u64) -> Result<String, String> {
+pub async fn swap(amount_icp: u64, amount_mercx: u64) -> Result<String, String> {
     let caller = ic_cdk::caller();
-    
-  //  let rate_result = get_icp_rate().await; // Assuming this function returns Result<f64, String>
 
-    // let mercx_amount = match get_icp_rate().await {
-    //     Ok(rate) => ((amount_icp as f64) * rate) / 1.0,
-    //     Err(e) => {
-    //         eprintln!("Error calculating exchange rate: {}", e);
-    //         Err(e) // Return a Result<f64, String> from the Err arm
-    //     }?,
-    // };
-
-   // ic_cdk::println!("{:?}", mercx_amount as u64);
-    // let eq_rate= 1/rate_result;
-    // if amount_icp < 10_000_000 {
-    //     return Err("Minimum amount is 0.1 ICP".to_string());
-    // }
     let principal = Principal::from_text(CANISTER_ID_MERCX_BACKEND)
         .map_err(|e| format!("Error parsing principal: {:?}", e))?;
     let account = Account::from(principal);
@@ -542,22 +563,53 @@ pub async fn swap(amount_icp: u64, amount_mercx : u64) -> Result<String, String>
         return Err("Insufficient MERCX balance".to_string());
     }
 
-   // if amount_icp < icp_balance && (mercx_amount as u64) < mercx_balance {
-        deposit_icp_in_canister(amount_icp).await?;
-        //mn gher di kan bywsal haga madroba
-       // let mercx_amount = eq_rate;  //to send to ledger
-        match send_mercx(amount_mercx).await {
-            Ok(block_index) => {
-                // Mint was successful
-                ic_cdk::println!("Successful, block index: {:?}", block_index);
-            }
-            Err(e) => {
-                // If there was an error, log it in archive trx and return an error result
-                return Err(e);
-            }
-       // };
+    deposit_icp_in_canister(amount_icp).await?;
+
+    match send_mercx(amount_mercx).await {
+        Ok(block_index) => {
+            // Mint was successful
+            ic_cdk::println!("Successful, block index: {:?}", block_index);
+        }
+        Err(e) => {
+            // If there was an error, log it in archive trx and return an error result
+            return Err(e);
+        } // };
     }
 
     Ok("Swapped Successfully!".to_string())
 }
+
+#[ic_cdk::update]
+pub async fn sell(
+    amount_from: u64,
+    from_token: Principal,
+    amount_to: u64,
+    to_token: Principal,
+) -> Result<String, String> {
+    let caller = ic_cdk::caller();
+    let to_principal = Principal::from_text(CANISTER_ID_MERCX_BACKEND)
+        .map_err(|e| format!("Error parsing Mercx canister principal: {:?}", e))?;
+    // let from_principal = Principal::from_text(CANISTER_ID_ICRC1_LEDGER_CANISTER)
+    //     .map_err(|e| format!("Error parsing ICP ledger principal: {:?}", e))?;
+
+    let account_to = Account::from(to_principal);
+    let account_from = Account::from(caller);
+
+    let from_balance = check_balance(account_from, from_token).await?;
+    let to_balance = check_balance(account_to, to_token).await?;
+
+    // Check if balances are sufficient
+    if amount_from > from_balance {
+        return Err("Insufficient Bella balance".to_string());
+    }
+
+    if amount_to as u64 > to_balance {
+        return Err("Insufficient Tommy balance".to_string());
+    }
+
+    deposit_token(amount_from,from_token).await?;
+
+    Ok("Swapped Successfully!".to_string())
+}
+
 ic_cdk::export_candid!();

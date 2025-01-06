@@ -8,13 +8,9 @@ const ActionsOptions = () => {
 
     const [currentTab, setCurrentTab] = useState('Buy'); // Manage the current tab
 
-   
-
     const handleTabClick = (tabName) => {
         setCurrentTab(tabName);
     };
-
-
 
     return (
         <div className="min-h-screen bg-gray-900">
