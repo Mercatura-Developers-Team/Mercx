@@ -28,6 +28,11 @@ const Sell = () => {
     //Handling swapping time
     const [notSwapped, setNotSwapped] = useState(true);
 
+
+
+    const canisterId = process.env.CANISTER_ID_TOMMY_ICRC1_LEDGER;
+
+console.log("Canister ID:", canisterId);
     async function handleAmountChange(e) {
         const inputValue = Number(e.target.value);
         if (inputValue < 0) {

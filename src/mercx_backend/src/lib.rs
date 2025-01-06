@@ -214,6 +214,8 @@ async fn check_balance_mercx(account: Account) -> NumTokens {
     balance_result
 }
 
+
+
 #[ic_cdk::update]
 async fn get_token_name() -> String {
     let (token_name,): (String,) = ic_cdk::call(
@@ -250,6 +252,8 @@ async fn get_token_name() -> String {
 
 //     Err("Logo URL not found in metadata".to_string())
 // }
+
+
 
 #[ic_cdk::update]
 async fn get_logo_url() -> String {
