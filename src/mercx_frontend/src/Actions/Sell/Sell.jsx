@@ -15,7 +15,7 @@ const Sell = () => {
     const [amountTommy, setAmountTommy] = useState('0.0');
     const [inputBella, setInputBella] = useState('');
     //const [logoUrl, setLogoUrl] = useState("");//not used 
-    const [rate, setRate] = useState("0");
+    //const [rate, setRate] = useState("0");
     const [canisterBalance, setCanisterBalance] = useState(""); //swap canister balance
     // Add state for fetchingRate at the top level of your component 
     // Loading upper rate 
@@ -42,7 +42,6 @@ const Sell = () => {
         }
         try {
             // const rateResponse = await mercx_Actor.get_icp_rate();
-            // console.log('Rate fetched:', rateResponse);
 
             // Ensure rate.Ok is a number and not undefined or NaN
             // if (!rateResponse.Ok || isNaN(rateResponse.Ok)) {
@@ -110,9 +109,9 @@ const Sell = () => {
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
         const backend_canister = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
-        let amountBella = Number(Math.floor((inputBella) * 1e8));
+        let amountBella = Number(Math.floor((inputBella + 0.0002) * 1e8));
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
-
+       // let amounttBella = (Math.floor((amountBella) * 1e8));
 
         let tommyAmount = Math.floor(amountTommy * 1e8);
         try {
