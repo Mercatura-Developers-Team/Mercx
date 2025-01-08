@@ -107,12 +107,10 @@ const Buy = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const icp_swap_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
         let m = Math.floor(inputIcp * 1e8);
         let amount = Number(m); // Assume icpAmount` is a string input from the user
         // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
-
-        let amountFormatApprove = Math.floor(amount * 1e8); // Adding 10000 transferring fees if needed, and ensuring it's a Number
 
         let mercxAmountFormat = Math.floor(amountMercx * 1e8);
         try {
@@ -154,14 +152,14 @@ const Buy = () => {
                 return;
             }
 
-            if (BigInt(currentAllowance) < BigInt(amountFormatApprove)) {
+            if (BigInt(currentAllowance) < BigInt(amount)) {
 
                 const resultIcpApprove = await icpActor.icrc2_approve({
                     spender: {
                         owner: Principal.fromText(icp_swap_canister_id),
                         subaccount: [],
                     },
-                    amount: BigInt(amountFormatApprove),
+                    amount: BigInt(amount),
                     fee: [BigInt(10000)], // Optional fee, set as needed
                     memo: [],  // Optional memo field
                     from_subaccount: [],  // From subaccount, if any

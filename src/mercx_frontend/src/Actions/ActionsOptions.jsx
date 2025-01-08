@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '.././use-auth-client';
-//import Swap from '../Actions/Swap/Swap';
 import Sell from '../Actions/Sell/Sell';
 import Buy from './Buy/Buy';
 
 
 const ActionsOptions = () => {
 
-    const [currentTab, setCurrentTab] = useState('Swap'); // Manage the current tab
-
-   
+    const [currentTab, setCurrentTab] = useState('Buy'); // Manage the current tab
 
     const handleTabClick = (tabName) => {
         setCurrentTab(tabName);
     };
-
-
 
     return (
         <div className="min-h-screen bg-gray-900">
@@ -54,10 +49,12 @@ const ActionsOptions = () => {
                               
                         )}
                         {currentTab === 'Swap' && (
-                            <div>
-                                {/* Existing Swap logic and UI */}
-                                <p className="text-center text-gray-200 ">Comming Soon</p>
-                            </div>
+                           <div class="p-9 h-[480px] flex flex-col items-center justify-center">
+                           <h1 class="text-5xl animate-pulse text-white font-bold mb-8">
+                               Coming Soon
+                           </h1>
+                        
+                       </div>
                         )}
                         {/* Other components and logic */}
                     </div>
