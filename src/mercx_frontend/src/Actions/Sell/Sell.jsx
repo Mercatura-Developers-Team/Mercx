@@ -3,7 +3,7 @@ import { useState } from "react";
 import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
-import SuccessModal from '../Swap/SuccessModel';
+import SuccessModal from '../SuccessModel';
 
 const Sell = () => {
     const { whoamiActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
@@ -114,9 +114,9 @@ const Sell = () => {
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
         const backend_canister = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
-        let amountBella = Math.floor((inputBella) * 1e8);
+        let amountBella = (inputBella) * 1e8; // Approximate
         let approvedBella = Number((amountBella) + 20000); //0.0001 lel approve we 0.0001 lel transfer lw mafesh approve 0.0001 el hatetkhesem bas 
-
+        
         //const totalAmountBigInt = BigInt(Math.floor((inputAmount + 0.0002) * 1e8));
 
         let amountBellaFormatted = Number(amountBella);
