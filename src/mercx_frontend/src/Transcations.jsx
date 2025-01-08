@@ -93,8 +93,8 @@ function Transcations() {
                       timestamp = new Date(Number(transaction.timestamp / 1_000_000n)).toLocaleString();
 
                       // Check if the owner ID matches the specific ID and replace name
-                      if (fromOwner === "avqkn-guaaa-aaaaa-qaaea-cai") fromOwner = "MercX Link";
-                      if (toOwner === "avqkn-guaaa-aaaaa-qaaea-cai") toOwner = "MercX Link";
+                      if (fromOwner === "zoa6c-riaaa-aaaan-qzmta-cai") fromOwner = "MercX Link";
+                      if (toOwner === "zoa6c-riaaa-aaaan-qzmta-cai") toOwner = "MercX Link";
 
                     } else if (transaction.mint && transaction.mint.length > 0) {
                       const mint = transaction.mint[0];
@@ -103,7 +103,7 @@ function Transcations() {
                       timestamp = new Date(Number(transaction.timestamp / 1_000_000n)).toLocaleString();
 
                       // Check if the owner ID matches the specific ID and replace name
-                      if (toOwner === "avqkn-guaaa-aaaaa-qaaea-cai") toOwner = "MercX Link";
+                      if (toOwner === "zoa6c-riaaa-aaaan-qzmta-cai") toOwner = "MercX Link";
                     }
 
                     return (

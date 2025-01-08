@@ -3,7 +3,7 @@ import { useState } from "react";
 import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
-import SuccessModal from '../SuccessModel';
+import SuccessModal from './SuccessSell';
 
 const Sell = () => {
     const { whoamiActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
@@ -26,8 +26,6 @@ const Sell = () => {
     const [inputError, setInputError] = useState("");
     //Handling swapping time
     const [notSwapped, setNotSwapped] = useState(true);
-
-
 
     const canisterId = process.env.CANISTER_ID_TOMMY_ICRC1_LEDGER;
 
