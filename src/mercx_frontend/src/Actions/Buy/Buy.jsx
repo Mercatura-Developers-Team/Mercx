@@ -29,8 +29,8 @@ const Buy = () => {
 
     async function handleAmountChange(e) {
         const inputValue = Number(e.target.value);
-        if (inputValue < 0) {
-            setInputError("Amount must be greater than zero.");
+        if (inputValue < 0.0001 && inputValue !== 0) {
+            setInputError("Amount must be greater than 0.0001");
             setInputIcp('');  // Reset the input field
             return;
         }
@@ -227,7 +227,8 @@ const Buy = () => {
                                 <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} />
                                 <input
                                     type="number"
-                                    min='0'
+                                     min="0.0001"
+                                    step="0.0001"
                                     inputMode="decimal"
                                     name="amount"
                                     id="amount"

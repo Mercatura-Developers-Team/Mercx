@@ -24,13 +24,7 @@ pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 pub const CANISTER_ID_MERCX_BACKEND: &str = "avqkn-guaaa-aaaaa-qaaea-cai";
 pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
 
-//N Ids
-// pub const CANISTER_ID_MERCX_BACKEND :&str="b77ix-eeaaa-aaaaa-qaada-cai";
-// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="bkyz2-fmaaa-aaaaa-qaaaq-cai";
-// pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="be2us-64aaa-aaaaa-qaabq-cai";
-// pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="br5f7-7uaaa-aaaaa-qaaca-cai";
-// pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
-// pub const CANISTER_ID_XRC :&str="avqkn-guaaa-aaaaa-qaaea-cai";
+
 
 //The function allows you to query the principal ID of the caller of the function
 #[query]
@@ -238,6 +232,8 @@ async fn check_balance_mercx(account: Account) -> NumTokens {
     balance_result
 }
 
+
+
 #[ic_cdk::update]
 async fn check_balance(account: Account, token_info: Principal) -> Result<NumTokens, String> {
     // Perform the call to icrc1_balance_of canister method
@@ -286,6 +282,8 @@ async fn get_token_name() -> String {
 
 //     Err("Logo URL not found in metadata".to_string())
 // }
+
+
 
 #[ic_cdk::update]
 async fn get_logo_url() -> String {
@@ -499,6 +497,46 @@ async fn send_mercx(amount: u64) -> Result<BlockIndex, String> {
     .map_err(|e| format!("ledger transfer mercx error {:?}", e))
 }
 
+#[ic_cdk::update]
+async fn send_token(amount: u64, token_info: Principal) -> Result<BlockIndex, String> {
+    let caller: Principal = ic_cdk::caller();
+    let amount = Nat::from(amount);
+
+    let transfer_args: TransferArg = TransferArg {
+        // can be used to distinguish between transactions
+        // the amount we want to transfer
+        amount,
+        // we want to transfer tokens from the default subaccount of the canister
+        from_subaccount: None,
+        // if not specified, the default fee for the canister is used
+        fee: None,
+        // the account we want to transfer tokens to
+        to: caller.into(),
+        // a timestamp indicating when the transaction was created by the caller; if it is not specified by the caller then this is set to the current ICP time
+        created_at_time: None,
+        memo: None,
+    };
+
+    ic_cdk::api::call::call::<(TransferArg,), (Result<BlockIndex, TransferError>,)>(
+        // 2. Convert a textual representation of a Principal into an actual Principal object. The principal is the one we specified in dfx.json.
+        //    expect will panic if the conversion fails, ensuring the code does not proceed with an invalid principal.
+        token_info,
+        // 3. Specify the method name on the target canister to be called, in this case, "icrc1_transfer".
+        "icrc1_transfer",
+        // 4. Provide the arguments for the call in a tuple, here transfer_args is encapsulated as a single-element tuple.
+        (transfer_args,),
+    )
+    .await // 5. Await the completion of the asynchronous call, pausing the execution until the future is resolved.
+    // 6. Apply map_err to transform any network or system errors encountered during the call into a more readable string format.
+    //    The ? operator is then used to propagate errors: if the result is an Err, it returns from the function with that error,
+    //    otherwise, it unwraps the Ok value, allowing the chain to continue.
+    .map_err(|e| format!("failed to call ledger: {:?}", e))?
+    // 7. Access the first element of the tuple, which is the Result<BlockIndex, TransferError>, for further processing.
+    .0
+    // 8. Use map_err again to transform any specific ledger transfer errors into a readable string format, facilitating error handling and debugging.
+    .map_err(|e| format!("ledger transfer tommy error {:?}", e))
+}
+
 // #[ic_cdk::update]
 // async fn send_tommy(amount: u64) -> Result<BlockIndex, String> {
 //     let caller: Principal = ic_cdk::caller();
@@ -602,12 +640,24 @@ pub async fn sell(
     if amount_from > from_balance {
         return Err("Insufficient Bella balance".to_string());
     }
-
+    
     if amount_to as u64 > to_balance {
         return Err("Insufficient Tommy balance".to_string());
     }
 
+
     deposit_token(amount_from,from_token).await?;
+
+    match send_token(amount_to,to_token).await {
+        Ok(block_index) => {
+            // Mint was successful
+            ic_cdk::println!("Successful, block index: {:?}", block_index);
+        }
+        Err(e) => {
+            // If there was an error, log it in archive trx and return an error result
+            return Err(e);
+        } // };
+    }
 
     Ok("Swapped Successfully!".to_string())
 }

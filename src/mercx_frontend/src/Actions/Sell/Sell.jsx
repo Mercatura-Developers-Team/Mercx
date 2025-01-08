@@ -27,10 +27,15 @@ const Sell = () => {
     //Handling swapping time
     const [notSwapped, setNotSwapped] = useState(true);
 
+
+
+    const canisterId = process.env.CANISTER_ID_TOMMY_ICRC1_LEDGER;
+
+    console.log("Canister ID:", canisterId);
     async function handleAmountChange(e) {
         const inputValue = Number(e.target.value);
-        if (inputValue < 0) {
-            setInputError("Amount must be greater than zero.");
+        if (inputValue < 0.0001 && inputValue !== 0) {
+            setInputError("Amount must be greater than 0.001");
             setInputBella('');  // Reset the input field
             return;
         }
@@ -49,18 +54,18 @@ const Sell = () => {
             //     setAmountTommy(0);  // Set Mercx amount to zero if rate is invalid
             //     setLoadingRate(false);  // Stop fetching, hide loading indicator
             //     return;
-           // }
+            // }
 
             const inputBella = Number(e.target.value);
-           // const rate = Number(rateResponse.Ok);
+            // const rate = Number(rateResponse.Ok);
             // Fetching rate up 
-        //    setRate(rate);
+            //    setRate(rate);
             // Fetching rate down 
             setFetchingRate(true);
             // Calculating and setting amount of Mercx, rounding to 4 decimal places
             // const amountMercx = (inputIcp * rate);
- 
-            const amountTommy = (inputBella*10);
+
+            const amountTommy = (inputBella * 10);
             setAmountTommy(amountTommy);
             console.log('Calculated Tommy Amount:', amountTommy);
         } catch (error) {
@@ -109,10 +114,13 @@ const Sell = () => {
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
         const backend_canister = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
-        let amountBella = Number(Math.floor((inputBella + 0.0002) * 1e8));
-        // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
-       // let amounttBella = (Math.floor((amountBella) * 1e8));
+        let amountBella = Math.floor((inputBella) * 1e8);
+        let approvedBella = Number((amountBella) + 20000); //0.0001 lel approve we 0.0001 lel transfer lw mafesh approve 0.0001 el hatetkhesem bas 
 
+        //const totalAmountBigInt = BigInt(Math.floor((inputAmount + 0.0002) * 1e8));
+
+        let amountBellaFormatted = Number(amountBella);
+        // Convert the user input into a Number, then multiply by 1e8 to convert ICP to e8s
         let tommyAmount = Math.floor(amountTommy * 1e8);
         try {
 
@@ -136,7 +144,7 @@ const Sell = () => {
 
             const numericBalanceTommy = Number(balanceResult);
             const after_ap = numericBalanceTommy / 1e8;
-           // setCanisterBalance(after_ap);
+            // setCanisterBalance(after_ap);
 
 
             //no enough tommy token in mercx canister //3ashan may3melsh approve 
@@ -153,14 +161,14 @@ const Sell = () => {
                 return;
             }
 
-            if (BigInt(currentAllowance) < BigInt(amountBella)) {
+            if (BigInt(currentAllowance) < BigInt(approvedBella)) {
 
                 const resultBellaApprove = await whoamiActor.icrc2_approve({
                     spender: {
                         owner: Principal.fromText(backend_canister),
                         subaccount: [],
                     },
-                    amount: BigInt(amountBella),
+                    amount: BigInt(approvedBella),
                     fee: [BigInt(10000)], // Optional fee, set as needed
                     memo: [],  // Optional memo field
                     from_subaccount: [],  // From subaccount, if any
@@ -179,17 +187,18 @@ const Sell = () => {
                     alert("Approval failed: " + resultBellaApprove.Err);
                 }
             }
-            let bella_ledger= process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER;
-            let tommy_ledger= process.env.CANISTER_ID_TOMMY_ICRC1_LEDGER;
-            let bella_principal=Principal.fromText(bella_ledger);
-            let tommy_principal=Principal.fromText(tommy_ledger);
+            let bella_ledger = process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER;
+            let tommy_ledger = process.env.CANISTER_ID_TOMMY_ICRC1_LEDGER;
+            let bella_principal = Principal.fromText(bella_ledger);
+            let tommy_principal = Principal.fromText(tommy_ledger);
             // Call the backend function
-             const backendResponse = await mercx_Actor.sell(amountBella,bella_principal, tommyAmount,tommy_principal);
-            // setInputBella("");
-            // setAmountTommy('0.0');
-             console.log('Backend response:', backendResponse);
+            console.log(amountBellaFormatted);
+            const backendResponse = await mercx_Actor.sell(amountBellaFormatted, bella_principal, tommyAmount, tommy_principal);
+            setInputBella("");
+            setAmountTommy('0.0');
+            console.log('Backend response:', backendResponse);
 
-           // Check the backend response for success confirmation
+            // Check the backend response for success confirmation
             if (backendResponse && backendResponse.Ok === 'Swapped Successfully!') {
                 setIsModalVisible(true); // Show modal on successful swap
                 setNotSwapped(true);
@@ -232,7 +241,8 @@ const Sell = () => {
                                 <TokenData TokenBalance={balance} TokenName={tokenName} TokenLogo={"./Bella.jpeg"} />
                                 <input
                                     type="number"
-                                    min='0'
+                                    min="0.0001"
+                                    step="0.0001"
                                     inputMode="decimal"
                                     name="amount"
                                     id="amount"
