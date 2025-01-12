@@ -10,7 +10,7 @@ const Transfer = () => {
     return (
         <div className='md:py-10 bg-gray-900 py-8'>
 
-            <section className=" p-4 m-4  rounded-lg shadow  bg-slate-800 text-gray-900 border border-gray-700   ">
+            <section className=" p-4 m-4  rounded-lg shadow  bg-slate-800 text-gray-900 border border-gray-700">
                 <h2 className="font-bold text-lg text-white">Transfer Bella</h2>
                 <form className="  flex flex-col gap-4  "
                     onSubmit={async (event) => {
@@ -64,7 +64,7 @@ const Transfer = () => {
                         }
                     }}
                 >
-                    <label className="m-4 block text-sm font-medium text-white  w-full ">
+                    <label className="block text-sm font-medium text-white w-full ">
                         To Account (Principal ID):
                         <input
                             type="text"
@@ -75,7 +75,7 @@ const Transfer = () => {
                         />
                     </label>
 
-                    <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white w-full">
+                    <label className=" block text-sm font-medium text-gray-900 dark:text-white w-full">
                         Amount:
                         <input
                             type="number"
@@ -147,7 +147,7 @@ const Transfer = () => {
                         }
                     }}
                 >
-                    <label className='m-4 block text-sm font-medium text-white  w-full '>
+                    <label className=' block text-sm font-medium text-white  w-full '>
                         To Account (Principal ID):
                         <input
                             type="text"
@@ -157,7 +157,7 @@ const Transfer = () => {
                             className="w-full mt-3 rounded-lg border border-gray-300 p-2.5 bg-gray-50 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500 "
                         />
                     </label>
-                    <label className='mb-2 block text-sm font-medium text-white w-full '>
+                    <label className='block text-sm font-medium text-white w-full '>
                         Amount:
                         <input
                             type="number"
