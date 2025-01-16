@@ -26,10 +26,6 @@ MercX revolutionizes asset trading by facilitating faster transactions, providin
 
 Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secure, scalable, and decentralized platform capable of handling high transaction volumes with advanced security measures essential for financial operations.
 
-## MercX Architecture
-
-The MercX architecture includes several key canisters deployed on the Internet Computer, handling different aspects of the system:
-
 ### MercX Backend Canister
 - **Candid Path**: `src/mercx_backend/mercx_backend.did`
 - **Type**: Rust
