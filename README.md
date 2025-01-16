@@ -26,6 +26,53 @@ MercX revolutionizes asset trading by facilitating faster transactions, providin
 
 Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secure, scalable, and decentralized platform capable of handling high transaction volumes with advanced security measures essential for financial operations.
 
+## MercX Architecture
+
+The MercX architecture includes several key canisters deployed on the Internet Computer, handling different aspects of the system:
+
+### MercX Backend Canister
+- **Candid Path**: `src/mercx_backend/mercx_backend.did`
+- **Type**: Rust
+- **Description**: Serves as the core business logic canister for the MercX platform, handling asset management and tokenization processes. It interacts with other canisters to perform operations related to asset registration, management, and the token lifecycle.
+
+### XRC Canister
+- **Candid Path**: `xrc/xrc.did`
+- **WASM**: Compressed WebAssembly module path `xrc/xrc.wasm.gz`
+- **Description**: Provides extended functionalities for token operations that go beyond the standard protocols. It may include features like token customization, additional tokenomics mechanisms, and enhanced security features.
+
+### ICRC1 Ledger Canister
+- **Candid Path**: Remote URL to Candid interface
+- **WASM**: Remote URL to the compressed WebAssembly module
+- **Description**: Implements the ICRC1 token standard, managing the lifecycle of tokens including issuance, transfer, and balance tracking. This canister is crucial for ensuring compliance with the ICRC1 standard across the MercX platform.
+
+### ICRC1 Index Canister
+- **Candid Path**: Remote URL to Candid interface
+- **WASM**: Remote URL to the compressed WebAssembly module
+- **Description**: Provides indexing and query functionalities for ICRC1 token transactions, enhancing the accessibility and auditability of token operations within the MercX ecosystem.
+
+### Tommy ICRC1 Ledger and Index Canisters
+- **Description**: Similar to the ICRC1 ledger and index canisters but specific to the "Tommy" token, providing dedicated management and indexing for transactions involving this particular token.
+
+### ICP Ledger Canister
+- **Candid Path**: Remote URL to Candid interface
+- **WASM**: Remote URL to the compressed WebAssembly module
+- **Description**: Manages transactions involving ICP tokens. It facilitates operations like token transfers, balance checks, and transaction logging on the network.
+
+### ICP Index Canister
+- **Description**: Provides indexing and querying capabilities for transactions involving ICP tokens, which is essential for operational transparency and efficiency in handling ICP-related activities on the platform.
+
+### Internet Identity
+- **Candid Path**: Remote URL to Candid interface
+- **WASM**: Remote URL to the compressed WebAssembly module
+- **Description**: Provides decentralized identity verification services, allowing users to authenticate securely without relying on traditional centralized identity providers. This canister supports user privacy and security across the MercX platform.
+
+### MercX Frontend
+- **Source**: Location of the frontend distribution files
+- **Type**: Assets
+- **Description**: Delivers the user interface directly from the Internet Computer, ensuring that users interact with a responsive and secure frontend. It connects seamlessly to the backend and other canisters to provide a comprehensive user experience.
+
+
+
 To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
 
 To learn more before you start working with `mercx`, see the following documentation available online:
