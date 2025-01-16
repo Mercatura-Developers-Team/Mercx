@@ -29,7 +29,7 @@ Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secu
 ### MercX Backend Canister
 - **Candid Path**: `src/mercx_backend/mercx_backend.did`
 - **Type**: Rust
-- **Description**:  serves as the core business logic hub for the MercX platform. It is responsible for managing the lifecycle of asset tokenization and ensures the secure and efficient processing of transactions within the platform. Key functionalities include handling Buy ,Sell ,  token swaps, maintaining ledger balances, and interfacing with other canisters such as the ICRC1 Ledger and ICRC1 Index canisters for comprehensive asset management.
+- **Description**:  Serves as the core business logic hub for the MercX platform. It is responsible for managing the lifecycle of asset tokenization and ensures the secure and efficient processing of transactions within the platform. Key functionalities include handling buy,sell,token swaps, maintaining ledger balances, and interfacing with other canisters such as the ICRC1 Ledger and ICRC1 Index canisters for comprehensive asset management.
 
 ### XRC Canister
 - **Candid Path**: `xrc/xrc.did`
@@ -44,7 +44,7 @@ Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secu
 ### ICRC1 Index Canister
 - **Candid Path**: Remote URL to Candid interface
 - **WASM**: Remote URL to the compressed WebAssembly module
-- **Description**: Provides indexing and query functionalities for ICRC1 token transactions, enhancing the accessibility and auditability of token operations within the MercX ecosystem.
+- **Description**: Provides indexing and query functionalities for BELLA token transactions, enhancing the accessibility and auditability of token operations within the MercX ecosystem.
 
 ### Tommy ICRC1 Ledger and Index Canisters
 - **Description**: Similar to the ICRC1 ledger and index canisters but specific to the "Tommy" token, providing dedicated management and indexing for transactions involving this particular token.
