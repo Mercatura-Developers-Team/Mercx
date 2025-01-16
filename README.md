@@ -12,37 +12,19 @@ Transactions on the MercX platform are settled instantaneously, allowing for sea
 
 ### Enhanced Accessibility
 
-The platform democratizes financial participation by enabling fractional ownership, which allows small savers to engage in investment opportunities traditionally reserved for larger investors through manageable investment sizes and diversified portfolios.
-
-### Dual Utility of MercX Tokens
-
-- **Transaction Fees:** Tokens are used to facilitate various transaction fees, ensuring efficient operational flows within the platform.
-- **Medium for Asset Exchange:** Tokens may also be used as a medium of exchange, enhancing their utility and value within the MercX ecosystem.
-- **24-Hour Redemption:** Features a robust infrastructure that supports 24-hour redemption, providing token holders with exceptional liquidity and flexibility.
+By tokenizing assets, MercX enables fractional ownership, making it possible for small investors to participate in investment opportunities traditionally reserved for larger capital bases.
 
 ### Regulatory Compliance
 
 MercX adheres to regulations set by the Financial Regulatory Authority of Egypt, ensuring a secure, transparent, and trustworthy environment for all users.
 
-### Fund Issuances
-
-- **Venture Capital Fund:** The initial issuance, focused on Web3 and digital assets, is projected at $15 million USD. This venture capital fund targets emerging technologies and represents a pioneering effort to bridge innovative startups with traditional capital markets.
-- **Exchange-Traded Fund (ETF):** Following the venture capital fund, an ETF with a target of $50 million USD is planned within the first year. This fund aims to broaden investment opportunities and enhance market accessibility.
-
-## Target Audience
-
-- **Fund Managers:** Seek innovative asset management and distribution technologies.
-- **End Users:** Individuals looking to invest, trade, or leverage their assets in a regulated and dynamic marketplace.
-
-## Technical Architecture
-
-Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secure, scalable, and decentralized platform capable of handling high transaction volumes with advanced security measures essential for financial operations.
-
 ## Business Impact
 
 MercX revolutionizes asset trading by facilitating faster transactions, providing access to a wider range of investors through tokenization, and integrating cutting-edge fund management technologies into the financial sector.
 
+## Technical Architecture
 
+Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secure, scalable, and decentralized platform capable of handling high transaction volumes with advanced security measures essential for financial operations.
 
 To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
 
