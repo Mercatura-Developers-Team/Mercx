@@ -33,17 +33,14 @@ Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secu
 
 ### XRC Canister
 - **Candid Path**: `xrc/xrc.did`
-- **WASM**: Compressed WebAssembly module path `xrc/xrc.wasm.gz`
 - **Description**:  Exchange Rate Canister calculates exchange rates using a unique aggregation method and it's  essential for executing transactions on the platform, ensuring that all trades are conducted at fair and accurate market rates.
 
 ### ICRC1 Ledger Canister
 - **Candid Path**: Remote URL to Candid interface
-- **WASM**: Remote URL to the compressed WebAssembly module
 - **Description**: Implements  BELLA token standard, managing the lifecycle of tokens including issuance, transfer, and balance tracking. This canister is crucial for ensuring compliance with the ICRC1 standard across the MercX platform.
 
 ### ICRC1 Index Canister
 - **Candid Path**: Remote URL to Candid interface
-- **WASM**: Remote URL to the compressed WebAssembly module
 - **Description**: Provides indexing and query functionalities for BELLA token transactions, enhancing the accessibility and auditability of token operations within the MercX ecosystem.
 
 ### Tommy ICRC1 Ledger and Index Canisters
@@ -51,7 +48,6 @@ Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secu
 
 ### ICP Ledger Canister
 - **Candid Path**: Remote URL to Candid interface
-- **WASM**: Remote URL to the compressed WebAssembly module
 - **Description**: Manages transactions involving ICP tokens. It facilitates operations like token transfers, balance checks, and transaction logging on the network.
 
 ### ICP Index Canister
@@ -59,7 +55,6 @@ Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secu
 
 ### Internet Identity
 - **Candid Path**: Remote URL to Candid interface
-- **WASM**: Remote URL to the compressed WebAssembly module
 - **Description**: Provides decentralized identity verification services, allowing users to authenticate securely without relying on traditional centralized identity providers. This canister supports user privacy and security across the MercX platform.
 
 ### MercX Frontend
