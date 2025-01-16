@@ -29,7 +29,7 @@ Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secu
 ### MercX Backend Canister
 - **Candid Path**: `src/mercx_backend/mercx_backend.did`
 - **Type**: Rust
-- **Description**: Serves as the core business logic canister for the MercX platform, handling asset management and tokenization processes. It interacts with other canisters to perform operations related to asset registration, management, and the token lifecycle.
+- **Description**:  serves as the core business logic hub for the MercX platform. It is responsible for managing the lifecycle of asset tokenization and ensures the secure and efficient processing of transactions within the platform. Key functionalities include handling Buy ,Sell ,  token swaps, maintaining ledger balances, and interfacing with other canisters such as the ICRC1 Ledger and ICRC1 Index canisters for comprehensive asset management.
 
 ### XRC Canister
 - **Candid Path**: `xrc/xrc.did`
