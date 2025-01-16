@@ -34,12 +34,12 @@ Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secu
 ### XRC Canister
 - **Candid Path**: `xrc/xrc.did`
 - **WASM**: Compressed WebAssembly module path `xrc/xrc.wasm.gz`
-- **Description**: Provides extended functionalities for token operations that go beyond the standard protocols. It may include features like token customization, additional tokenomics mechanisms, and enhanced security features.
+- **Description**:  Exchange Rate Canister calculates exchange rates using a unique aggregation method and it's  essential for executing transactions on the platform, ensuring that all trades are conducted at fair and accurate market rates.
 
 ### ICRC1 Ledger Canister
 - **Candid Path**: Remote URL to Candid interface
 - **WASM**: Remote URL to the compressed WebAssembly module
-- **Description**: Implements the ICRC1 token standard, managing the lifecycle of tokens including issuance, transfer, and balance tracking. This canister is crucial for ensuring compliance with the ICRC1 standard across the MercX platform.
+- **Description**: Implements  BELLA token standard, managing the lifecycle of tokens including issuance, transfer, and balance tracking. This canister is crucial for ensuring compliance with the ICRC1 standard across the MercX platform.
 
 ### ICRC1 Index Canister
 - **Candid Path**: Remote URL to Candid interface
