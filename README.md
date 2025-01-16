@@ -18,7 +18,7 @@ By tokenizing assets, MercX enables fractional ownership, making it possible for
 
 MercX adheres to regulations set by the Financial Regulatory Authority of Egypt, ensuring a secure, transparent, and trustworthy environment for all users.
 
-## Business Impact
+### Business Impact
 
 MercX revolutionizes asset trading by facilitating faster transactions, providing access to a wider range of investors through tokenization, and integrating cutting-edge fund management technologies into the financial sector.
 
