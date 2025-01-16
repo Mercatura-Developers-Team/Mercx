@@ -8,7 +8,7 @@
 
 ### Real-Time Settlement
 
-MercX streamlines the settlement process, reducing the traditional 24-72 hour timeframe to instantaneous transactions. This acceleration supports capital efficiency and allows for continuous trading around the clock, empowering participants to leverage market opportunities as they arise.
+Transactions on the MercX platform are settled instantaneously, allowing for seamless asset management and trading without traditional banking delays.
 
 ### Enhanced Accessibility
 
