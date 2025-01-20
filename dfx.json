@@ -4,9 +4,11 @@
       "candid": "src/mercx_backend/mercx_backend.did",
       "package": "mercx_backend",
       "type": "rust",
-      "dependencies": ["icrc1_ledger_canister", "internet_identity"]
+      "dependencies": [
+        "icrc1_ledger_canister",
+        "internet_identity"
+      ]
     },
-
     "xrc": {
       "type": "custom",
       "candid": "xrc/xrc.did",
@@ -18,7 +20,6 @@
         }
       }
     },
-  
     "icrc1_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
@@ -39,7 +40,6 @@
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
     },
-    
     "icp_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/ledger.did",
@@ -48,18 +48,18 @@
         "id": {
           "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
         }
-  } }
-,
-"icp_index_canister": {
-  "type": "custom",
-  "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/index/index.did",
-  "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icp-index-canister.wasm.gz",
-        "remote": {
-    "id": {
-      "ic": "qhbym-qaaaa-aaaaa-aaafq-cai"
-    }
-  }
-},
+      }
+    },
+    "icp_index_canister": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/index/index.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icp-index-canister.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "qhbym-qaaaa-aaaaa-aaafq-cai"
+        }
+      }
+    },
     "internet_identity": {
       "type": "custom",
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
@@ -71,7 +71,6 @@
       },
       "frontend": {}
     },
-
     "mercx_frontend": {
       "dependencies": [
         "mercx_backend",
@@ -79,7 +78,9 @@
         "internet_identity",
         "icp_ledger_canister"
       ],
-      "source": ["src/mercx_frontend/dist"],
+      "source": [
+        "src/mercx_frontend/dist"
+      ],
       "type": "assets",
       "workspace": "mercx_frontend"
     }
@@ -88,7 +89,8 @@
     "local": {
       "bind": "127.0.0.1:4943",
       "type": "ephemeral"
-    }},
+    }
+  },
   "defaults": {
     "replica": {
       "subnet_type": "system"
