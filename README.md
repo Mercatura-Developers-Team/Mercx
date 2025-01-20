@@ -8,39 +8,59 @@
 
 ### Real-Time Settlement
 
-MercX streamlines the settlement process, reducing the traditional 24-72 hour timeframe to instantaneous transactions. This acceleration supports capital efficiency and allows for continuous trading around the clock, empowering participants to leverage market opportunities as they arise.
+Transactions on the MercX platform are settled instantaneously, allowing for seamless asset management and trading without traditional banking delays.
 
 ### Enhanced Accessibility
 
-The platform democratizes financial participation by enabling fractional ownership, which allows small savers to engage in investment opportunities traditionally reserved for larger investors through manageable investment sizes and diversified portfolios.
-
-### Dual Utility of MercX Tokens
-
-- **Transaction Fees:** Tokens are used to facilitate various transaction fees, ensuring efficient operational flows within the platform.
-- **Medium for Asset Exchange:** Tokens may also be used as a medium of exchange, enhancing their utility and value within the MercX ecosystem.
-- **24-Hour Redemption:** Features a robust infrastructure that supports 24-hour redemption, providing token holders with exceptional liquidity and flexibility.
+By tokenizing assets, MercX enables fractional ownership, making it possible for small investors to participate in investment opportunities traditionally reserved for larger capital bases.
 
 ### Regulatory Compliance
 
 MercX adheres to regulations set by the Financial Regulatory Authority of Egypt, ensuring a secure, transparent, and trustworthy environment for all users.
 
-### Fund Issuances
+## Business Impact
 
-- **Venture Capital Fund:** The initial issuance, focused on Web3 and digital assets, is projected at $15 million USD. This venture capital fund targets emerging technologies and represents a pioneering effort to bridge innovative startups with traditional capital markets.
-- **Exchange-Traded Fund (ETF):** Following the venture capital fund, an ETF with a target of $50 million USD is planned within the first year. This fund aims to broaden investment opportunities and enhance market accessibility.
-
-## Target Audience
-
-- **Fund Managers:** Seek innovative asset management and distribution technologies.
-- **End Users:** Individuals looking to invest, trade, or leverage their assets in a regulated and dynamic marketplace.
+MercX revolutionizes asset trading by facilitating faster transactions, providing access to a wider range of investors through tokenization, and integrating cutting-edge fund management technologies into the financial sector.
 
 ## Technical Architecture
 
 Built on the Internet Computer Protocol with the Rust SDK, MercX provides a secure, scalable, and decentralized platform capable of handling high transaction volumes with advanced security measures essential for financial operations.
 
-## Business Impact
+### MercX Backend Canister
+- **Candid Path**: `src/mercx_backend/mercx_backend.did`
+- **Type**: Rust
+- **Description**:  Serves as the core business logic hub for the MercX platform. It is responsible for managing the lifecycle of asset tokenization and ensures the secure and efficient processing of transactions within the platform. Key functionalities include handling buy,sell,token swaps, maintaining ledger balances, and interfacing with other canisters such as the ICRC1 Ledger and ICRC1 Index canisters for comprehensive asset management.
 
-MercX revolutionizes asset trading by facilitating faster transactions, providing access to a wider range of investors through tokenization, and integrating cutting-edge fund management technologies into the financial sector.
+### XRC Canister
+- **Candid Path**: `xrc/xrc.did`
+- **Description**:  Exchange Rate Canister calculates exchange rates using a unique aggregation method and it's  essential for executing transactions on the platform, ensuring that all trades are conducted at fair and accurate market rates.
+
+### ICRC1 Ledger Canister
+- **Candid Path**: Remote URL to Candid interface
+- **Description**: Implements  BELLA token standard, managing the lifecycle of tokens including issuance, transfer, and balance tracking. This canister is crucial for ensuring compliance with the ICRC1 standard across the MercX platform.
+
+### ICRC1 Index Canister
+- **Candid Path**: Remote URL to Candid interface
+- **Description**: Provides indexing and query functionalities for BELLA token transactions, enhancing the accessibility and auditability of token operations within the MercX ecosystem.
+
+### Tommy ICRC1 Ledger and Index Canisters
+- **Description**: Similar to the ICRC1 ledger and index canisters but specific to the "Tommy" token, providing dedicated management and indexing for transactions involving this particular token.
+
+### ICP Ledger Canister
+- **Candid Path**: Remote URL to Candid interface
+- **Description**: Manages transactions involving ICP tokens. It facilitates operations like token transfers, balance checks, and transaction logging on the network.
+
+### ICP Index Canister
+- **Description**: Provides indexing and querying capabilities for transactions involving ICP tokens, which is essential for operational transparency and efficiency in handling ICP-related activities on the platform.
+
+### Internet Identity
+- **Candid Path**: Remote URL to Candid interface
+- **Description**: Provides decentralized identity verification services, allowing users to authenticate securely without relying on traditional centralized identity providers. This canister supports user privacy and security across the MercX platform.
+
+### MercX Frontend
+- **Source**: Location of the frontend distribution files
+- **Type**: Assets
+- **Description**: Delivers the user interface directly from the Internet Computer, ensuring that users interact with a responsive and secure frontend. It connects seamlessly to the backend and other canisters to provide a comprehensive user experience.
 
 
 
