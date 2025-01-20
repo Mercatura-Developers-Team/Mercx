@@ -6,6 +6,12 @@
       "type": "rust",
       "dependencies": ["icrc1_ledger_canister", "internet_identity"]
     },
+    "kyc": {
+      "candid": "src/kyc/kyc.did",
+      "package": "kyc",
+      "type": "rust",
+      "dependencies": ["icrc1_ledger_canister", "internet_identity"]
+    },
 
     "xrc": {
       "type": "custom",
@@ -86,8 +92,7 @@
   },
   "networks": {
     "local": {
-      "bind": "127.0.0.1:4943",
-      "type": "ephemeral"
+   
     }},
   "defaults": {
     "replica": {

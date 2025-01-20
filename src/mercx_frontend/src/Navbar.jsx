@@ -57,9 +57,9 @@ function MyNavbar() {
               {isOpen ? <HiX className="block h-6 w-6" /> : <HiMenu className="block h-6 w-6" />}
             </button>
           </div>
-          <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
-            <div className="flex-shrink-0 flex items-center">
-              {/* Your Logo Here */}
+          <div className="flex-1 flex items-center justify-center sm:justify-start">
+          <div className="flex-shrink-0 flex items-center">
+              <img src={'j.png'} alt="Logo" className="logo-class h-16  mt-6 mr-8  "/>
             </div>
             <div className="hidden sm:block sm:ml-6">
               <div className="flex space-x-4">
