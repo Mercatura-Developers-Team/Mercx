@@ -1,10 +1,10 @@
 import { AuthClient } from "@dfinity/auth-client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-//import { canisterId as MercxId, createActor as createMercxActor} from "../../declarations/mercx_backend";
+import { canisterId as MercxId, createActor as createMercxActor} from "../../declarations/mercx_backend";
 import { canisterId, createActor } from "../../declarations/icrc1_ledger_canister";
-// import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
-// import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
-// import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
+import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
+//import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
+import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
 
 
 // Create a React Context for sharing authentication status across the component tree
@@ -23,10 +23,10 @@ export const getIdentityProvider = () => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     if (isLocal && isSafari) {
   // Safari handling for local development environment
-      idpProvider = `http://localhost:4943/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
+      idpProvider = `http://localhost:8001/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
     } else if (isLocal) {
       // General handling for non-Safari browsers in local development
-      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943`;
+      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:8001`;
     }
   }
   return idpProvider;
@@ -66,11 +66,11 @@ export const useAuthClient = (options = defaultOptions) => {
   const [authClient, setAuthClient] = useState(null);
   const [identity, setIdentity] = useState(null);
   const [principal, setPrincipal] = useState(null);
-   const [whoamiActor, setWhoamiActor] = useState(null);
-//   const [icrcIndexActor, setIcrcIndexActor] = useState(null);
-//   const [icpActor, setIcpActor] = useState(null);
-//   const [mercx_Actor, setMercxActor] = useState(null);
-//   const [tommy_Actor, setTommyActor] = useState(null);
+  const [whoamiActor, setWhoamiActor] = useState(null);
+  const [icrcIndexActor, setIcrcIndexActor] = useState(null);
+  const [icpActor, setIcpActor] = useState(null);
+  const [mercx_Actor, setMercxActor] = useState(null);
+  const [tommy_Actor, setTommyActor] = useState(null);
 
 
   useEffect(() => {
@@ -110,13 +110,13 @@ export const useAuthClient = (options = defaultOptions) => {
       },
     });
 
-    // setWhoamiActor(actor);
-    // const indexActor = createIndexActor(icrcIndexCanisterId, {
-    //   agentOptions: {
-    //     identity,
-    //   },
-    // });
-    // setIcrcIndexActor(indexActor);
+    setWhoamiActor(actor);
+    const indexActor = createIndexActor(icrcIndexCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setIcrcIndexActor(indexActor);
 
     // const IcpActor = createIcpActor(icpCanisterId, {
     //   agentOptions: {
@@ -125,19 +125,19 @@ export const useAuthClient = (options = defaultOptions) => {
     // });
     // setIcpActor(IcpActor);
 
-    // const MercxActor = createMercxActor(MercxId, {
-    //   agentOptions: {
-    //     identity,
-    //   },
-    // });
-    // setMercxActor(MercxActor);
+    const MercxActor = createMercxActor(MercxId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setMercxActor(MercxActor);
 
-    // const tommyActor = createTommyActor(tommyCanisterId, {
-    //   agentOptions: {
-    //     identity,
-    //   },
-    // });
-    // setTommyActor(tommyActor);
+    const tommyActor = createTommyActor(tommyCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setTommyActor(tommyActor);
   }
 
   async function logout() {
@@ -153,10 +153,10 @@ export const useAuthClient = (options = defaultOptions) => {
     identity,
     principal,
     whoamiActor,
-    // icrcIndexActor,
+    icrcIndexActor,
     // icpActor,
-    // mercx_Actor,
-    // tommy_Actor,
+    mercx_Actor,
+    tommy_Actor,
   };
 };
 

@@ -6,7 +6,6 @@ import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
-
 const navigation = [
   { name: "Home", to: "/" },
   { name: "Trade", to: "/trade" },

@@ -3,8 +3,9 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import environment from 'vite-plugin-environment';
 import dotenv from 'dotenv';
-
 dotenv.config({ path: '../../.env' });
+import tailwind from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 
 export default defineConfig({
   build: {
@@ -18,12 +19,20 @@ export default defineConfig({
     },
   },
   server: {
+  
+      open: true, // Automatically opens the browser
+      watch: {
+        usePolling: true // Fixes file watching in Docker or remote dev containers
+      }, // Bind to all network interfaces
+    port: 3000,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:4943",
+        target: "http://127.0.0.1:8001",
         changeOrigin: true,
       },
     },
+    host:true
+     
   },
   plugins: [
     react(),
@@ -39,6 +48,15 @@ export default defineConfig({
         ),
       },
     ],
-    dedupe: ['@dfinity/agent'],
+  },
+  css: {
+    postcss: {
+      plugins: [
+        tailwind,
+        autoprefixer,
+      ],
+    },
   },
 });
+
+

@@ -1,7 +1,7 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 .navbar {
     background-color: #375072; /* bg-gray-800 */
