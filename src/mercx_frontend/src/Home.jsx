@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 
 import { Principal } from "@dfinity/principal"; // Import Principal
 
-
 import { useAuth } from "./use-auth-client";
 import './index.css';
 

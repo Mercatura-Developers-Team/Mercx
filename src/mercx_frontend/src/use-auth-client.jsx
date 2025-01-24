@@ -23,10 +23,10 @@ export const getIdentityProvider = () => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     if (isLocal && isSafari) {
   // Safari handling for local development environment
-      idpProvider = `http://localhost:8000/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
+      idpProvider = `http://localhost:5043/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
     } else if (isLocal) {
       // General handling for non-Safari browsers in local development
-      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:8000`;
+      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:5043`;
     }
   }
   return idpProvider;
