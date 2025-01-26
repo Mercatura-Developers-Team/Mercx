@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./use-auth-client";
 import './index.css';
-import { HiOutlineLogout, HiMenu, HiX } from "react-icons/hi";
+import { HiOutlineLogout, HiMenu, HiX, HiClipboardCopy } from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+
 
 const navigation = [
   { name: "Home", to: "/" },
@@ -15,6 +17,8 @@ function MyNavbar() {
   const { isAuthenticated, login, logout, principal } = useAuth();
   const [principals, setPrincipal] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  //const [copySuccess, setCopySuccess] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -26,6 +30,17 @@ function MyNavbar() {
       }
     }
   }, [isAuthenticated, principal]);
+
+  // const copyToClipboard = () => {
+  //   const textField = document.createElement('textarea');
+  //   textField.innerText = principal;
+  //   document.body.appendChild(textField);
+  //   textField.select();
+  //   const successful = document.execCommand('copy');
+  //   textField.remove();
+  //   setCopySuccess(successful ? 'Copied!' : 'Failed to copy!');
+  // };
+  
 
   return (
     <nav className="bg-gray-900">
@@ -42,9 +57,9 @@ function MyNavbar() {
               {isOpen ? <HiX className="block h-6 w-6" /> : <HiMenu className="block h-6 w-6" />}
             </button>
           </div>
-          <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
-            <div className="flex-shrink-0 flex items-center">
-              {/* Your Logo Here */}
+          <div className="flex-1 flex items-center justify-center sm:justify-start">
+          <div className="flex-shrink-0 flex items-center">
+              <img src={'j.png'} alt="Logo" className="logo-class h-16  mt-6 mr-8  "/>
             </div>
             <div className="hidden sm:block sm:ml-6">
               <div className="flex space-x-4">
@@ -70,10 +85,22 @@ function MyNavbar() {
                 <input
                   type="text"
                   readOnly
-                  className="text-gray-900 pl-4 pr-4 py-2 border rounded-lg"
+                  className="text-gray-900 pl-4 pr-4 py-2 border rounded-lg text-xs sm:text-sm"
                   value={principals || "Fetching..."}
                 />
-                <button onClick={logout} className="ml-4 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2">
+             <CopyToClipboard text={principals} onCopy={() => {
+  setCopied(true);
+  setTimeout(() => {
+    setCopied(false);
+  }, 3000); 
+}}>
+                  <button className="ml-4 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 ">
+                    <HiClipboardCopy size={24} style={{ color: 'currentColor' }} />
+                  </button>
+                </CopyToClipboard>
+                {copied && <span className="text-xs p-1" style={{ color: 'lightblue' }}>Copied</span>}
+                       
+                <button onClick={logout} className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2">
                   <HiOutlineLogout size={24} style={{ color: 'currentColor' }} />
                 </button>
               </>

@@ -30,16 +30,6 @@
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
     },
-    "tommy_icrc1_ledger": {
-      "type": "custom",
-      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-ledger.wasm.gz"
-    },
-    "tommy_icrc1_index": {
-      "type": "custom",
-      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
-      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
-    },
     "icp_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/ledger.did",
@@ -60,6 +50,16 @@
         }
       }
     },
+    "tommy_icrc1_ledger": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-ledger.wasm.gz"
+    },
+    "tommy_icrc1_index": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
+    },
     "internet_identity": {
       "type": "custom",
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
@@ -71,7 +71,7 @@
       },
       "frontend": {}
     },
-    "mercx_frontend": {
+    "mercx_frontendd": {
       "dependencies": [
         "mercx_backend",
         "icrc1_ledger_canister",
@@ -79,16 +79,15 @@
         "icp_ledger_canister"
       ],
       "source": [
-        "src/mercx_frontend/dist"
+        "src/mercx_frontendd/dist"
       ],
       "type": "assets",
-      "workspace": "mercx_frontend"
+      "workspace": "mercx_frontendd"
     }
   },
   "networks": {
     "local": {
-      "bind": "127.0.0.1:4943",
-      "type": "ephemeral"
+      "bind": "127.0.0.1:4943"
     }
   },
   "defaults": {

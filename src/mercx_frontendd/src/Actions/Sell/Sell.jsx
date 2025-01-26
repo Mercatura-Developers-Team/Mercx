@@ -111,7 +111,7 @@ const Sell = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const backend_canister = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
+        const backend_canister = "zoa6c-riaaa-aaaan-qzmta-cai"; // Placeholder for actual canister ID
         let amountBella = (inputBella) * 1e8; // Approximate
         let approvedBella = Number((amountBella) + 20000); //0.0001 lel approve we 0.0001 lel transfer lw mafesh approve 0.0001 el hatetkhesem bas 
         
@@ -177,7 +177,7 @@ const Sell = () => {
 
                 // If the approval was successful, call the backend function
                 if (resultBellaApprove && "Ok" in resultBellaApprove) {
-                    alert('Approval successful!');
+                   // alert('Approval successful!');
                 }
 
                 else {
@@ -309,7 +309,7 @@ const Sell = () => {
 
                             <dl className="flex items-center gap-4">
                                 <dt className="text-sm font-normal text-gray-400">Network Fees</dt>
-                                <dd className="text-sm font-medium text-white">0.0002 ICP</dd>
+                                <dd className="text-sm font-medium text-white">0.0002 BELLA</dd>
                             </dl>
                         </div>
 

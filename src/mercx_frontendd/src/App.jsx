@@ -16,7 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/trade" element={<ActionsOptions />} />
         <Route path="/transactions" element={ <Transcations />} />
-        <Route path="/transfer" element={ <Transfer/>} />
+        <Route path="/transfer"  element={ <Transfer/>} />
       </Routes>
     </div>
     </AuthProvider>

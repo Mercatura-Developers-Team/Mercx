@@ -108,7 +108,7 @@ const Buy = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const icp_swap_canister_id = "avqkn-guaaa-aaaaa-qaaea-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = "zoa6c-riaaa-aaaan-qzmta-cai"; // Placeholder for actual canister ID
          let amount = (inputIcp * 1e8);
         let ApprovedIcp = Number(amount+20000); 
        
@@ -170,7 +170,7 @@ const Buy = () => {
 
                 // If the approval was successful, call the backend function
                 if (resultIcpApprove && "Ok" in resultIcpApprove) {
-                    alert('Approval successful!');
+                  //  alert('Approval successful!');
                 }
 
                 else {

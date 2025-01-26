@@ -9,20 +9,21 @@ use serde::Serialize;
 pub mod xrc_mock;
 pub use xrc_mock::get_icp_rate;
 
-// pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
-// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="7p6gu-biaaa-aaaap-aknta-cai";
-// pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="7i7aa-mqaaa-aaaap-akntq-cai";
-// pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="ryjl3-tyaaa-aaaaa-aaaba-cai";
-// pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
-// pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
+pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
+pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="7p6gu-biaaa-aaaap-aknta-cai";
+pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="7i7aa-mqaaa-aaaap-akntq-cai";
+pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="ryjl3-tyaaa-aaaaa-aaaba-cai";
+pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
+pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
+pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "j47wy-ciaaa-aaaan-qzqyq-cai";
 
-pub const CANISTER_ID_XRC: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
-pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
-pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
-pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "b77ix-eeaaa-aaaaa-qaada-cai";
-pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
-pub const CANISTER_ID_MERCX_BACKEND: &str = "avqkn-guaaa-aaaaa-qaaea-cai";
-pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
+// pub const CANISTER_ID_XRC: &str = "a4tbr-q4aaa-aaaaa-qaafq-cai";
+// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+// pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
+// pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
+// pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
+// pub const CANISTER_ID_MERCX_BACKEND: &str = "by6od-j4aaa-aaaaa-qaadq-cai";
+// pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
 
 
 

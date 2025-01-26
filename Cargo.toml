@@ -1,5 +1,5 @@
 [workspace]
-members = [
+members = [ "src/kyc",
     "src/mercx_backend"
 ]
 resolver = "2"

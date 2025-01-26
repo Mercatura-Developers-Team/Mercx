@@ -32,6 +32,7 @@ export const getIdentityProvider = () => {
   return idpProvider;
 };
 
+
 // Default options for the authentication client
 export const defaultOptions = {
   /**
