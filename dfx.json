@@ -45,8 +45,16 @@
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
     },
-    
-   
+ "icp_ledger_canister": {
+  "type": "custom",
+  "candid": "https://raw.githubusercontent.com/dfinity/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/rs/ledger_suite/icp/ledger.did",
+  "wasm": "https://download.dfinity.systems/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/canisters/ledger-canister.wasm.gz",
+  "remote": {
+    "id": {
+      "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+    }
+  }
+},
 
     "mercx2_frontend": {
       "dependencies": [

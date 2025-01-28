@@ -8,7 +8,7 @@ import './index.css';
 function Home() {
   //token names
   const [tokenName, setTokenName] = useState("");
- //const [icptokenName, setIcpTokenName] = useState("");
+ const [icptokenName, setIcpTokenName] = useState("");
   const [TommytokenName, setTommyName] = useState("");
   //const [logoUrl, setLogoUrl] = useState("");
   //token balances
@@ -31,8 +31,8 @@ function Home() {
       const name = await whoamiActor.icrc1_name();
       setTokenName(name);
 
-      // const icptokenname = await icpActor.icrc1_symbol();
-      // setIcpTokenName(icptokenname);
+      const icptokenname = await icpActor.icrc1_symbol();
+      setIcpTokenName(icptokenname);
 
       const tommyTokenname = await tommy_Actor.icrc1_name();
       setTommyName(tommyTokenname);
@@ -51,13 +51,13 @@ function Home() {
       setBalance(after_ap);
 
       // Fetch icp balance
-      // const balanceicp = await icpActor.icrc1_balance_of({
-      //   owner, // Use the Principal object directly
-      //   subaccount: [],
-      // });
-      // const numericBalanceIcp = Number(balanceicp);
-      // const after_app = numericBalanceIcp / 1e8;
-      // setIcpBalance(after_app);
+      const balanceicp = await icpActor.icrc1_balance_of({
+        owner, // Use the Principal object directly
+        subaccount: [],
+      });
+      const numericBalanceIcp = Number(balanceicp);
+      const after_app = numericBalanceIcp / 1e8;
+      setIcpBalance(after_app);
 
       const balanceTommy = await tommy_Actor.icrc1_balance_of({
         owner, // Use the Principal object directly
@@ -192,7 +192,7 @@ function Home() {
           <h2 className="text-lg font-bold">Your Balance</h2>
           <p className="text-xl">{!isAuthenticated ? `0 ${tokenName}` : `${balance.toString()} ${tokenName}`}</p>
           <p className="text-xl">{!isAuthenticated ? `0 ${TommytokenName}` : `${Tommybalance.toString()} ${TommytokenName}`}</p>
-          {/* <p className="text-xl"> {!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p> */}
+          <p className="text-xl"> {!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
 
         </section>
         {/* <section>

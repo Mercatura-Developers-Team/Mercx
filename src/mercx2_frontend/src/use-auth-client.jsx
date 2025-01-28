@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { canisterId as MercxId, createActor as createMercxActor} from "../../declarations/mercx_backend";
 import { canisterId, createActor } from "../../declarations/icrc1_ledger_canister";
 import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
-//import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
+import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
 import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
 
 
@@ -118,12 +118,12 @@ export const useAuthClient = (options = defaultOptions) => {
     });
     setIcrcIndexActor(indexActor);
 
-    // const IcpActor = createIcpActor(icpCanisterId, {
-    //   agentOptions: {
-    //     identity,
-    //   },
-    // });
-    // setIcpActor(IcpActor);
+    const IcpActor = createIcpActor(icpCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setIcpActor(IcpActor);
 
     const MercxActor = createMercxActor(MercxId, {
       agentOptions: {
@@ -154,7 +154,7 @@ export const useAuthClient = (options = defaultOptions) => {
     principal,
     whoamiActor,
     icrcIndexActor,
-    // icpActor,
+     icpActor,
     mercx_Actor,
     tommy_Actor,
   };
