@@ -8,6 +8,12 @@
   "icrc1_ledger_canister": {
     "ic": "7p6gu-biaaa-aaaap-aknta-cai"
   },
+  "kyc": {
+    "ic": "x2lku-6yaaa-aaaan-qzvia-cai"
+  },
+  "mercx2_frontend": {
+    "ic": "xpm3z-7qaaa-aaaan-qzvlq-cai"
+  },
   "mercx_backend": {
     "ic": "zoa6c-riaaa-aaaan-qzmta-cai"
   },

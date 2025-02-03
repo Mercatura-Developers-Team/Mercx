@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { canisterId as MercxId, createActor as createMercxActor} from "../../declarations/mercx_backend";
 import { canisterId, createActor } from "../../declarations/icrc1_ledger_canister";
 import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
-import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
+//import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
 import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
 
 
@@ -23,15 +23,14 @@ export const getIdentityProvider = () => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     if (isLocal && isSafari) {
   // Safari handling for local development environment
-      idpProvider = `http://localhost:5043/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
+      idpProvider = `http://localhost:8001/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
     } else if (isLocal) {
       // General handling for non-Safari browsers in local development
-      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:5043`;
+      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:8001`;
     }
   }
   return idpProvider;
 };
-
 
 // Default options for the authentication client
 export const defaultOptions = {
@@ -119,12 +118,12 @@ export const useAuthClient = (options = defaultOptions) => {
     });
     setIcrcIndexActor(indexActor);
 
-    const IcpActor = createIcpActor(icpCanisterId, {
-      agentOptions: {
-        identity,
-      },
-    });
-    setIcpActor(IcpActor);
+    // const IcpActor = createIcpActor(icpCanisterId, {
+    //   agentOptions: {
+    //     identity,
+    //   },
+    // });
+    // setIcpActor(IcpActor);
 
     const MercxActor = createMercxActor(MercxId, {
       agentOptions: {
@@ -155,7 +154,7 @@ export const useAuthClient = (options = defaultOptions) => {
     principal,
     whoamiActor,
     icrcIndexActor,
-    icpActor,
+    // icpActor,
     mercx_Actor,
     tommy_Actor,
   };
