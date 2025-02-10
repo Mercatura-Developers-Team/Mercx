@@ -5,7 +5,7 @@ import { Principal } from "@dfinity/principal";
 
 
 const Transfer = () => {
-    const { whoamiActor, icpActor } = useAuth();
+    const { whoamiActor, icpActor , mercx_Actor} = useAuth();
     const { principal } = useAuth();
     return (
         <div className='md:py-10 bg-gray-900 py-8'>
@@ -38,8 +38,8 @@ const Transfer = () => {
                             const senderPrincipal = principal;  // principal should be available from useAuthClient()
 
                             // Call the backend transfer function
-                            const transferResult = await whoamiActor.icrc1_transfer({
-                                to: {
+                            const transferResult = await mercx_Actor.transfer({
+                                to_account: {
                                     owner: recipientPrincipal,   // Use `to` instead of `to_account`
                                     subaccount: [],              // Optional, set subaccount if required
                                 },

@@ -59,9 +59,9 @@ function MyNavbar() {
           </div>
           <div className="flex-1 flex items-center justify-center sm:justify-start">
           <div className="flex-shrink-0 flex items-center">
-          <NavLink to="/" className="focus:outline-none">
-    <img src={'j.png'} alt="Logo" className="logo-class h-16 mt-6 mr-8" />
-  </NavLink>
+          <NavLink to="/" className="focus:outline-none  hidden sm:flex items-center">
+          <img src={'j.png'} alt="Logo" className="h-10 sm:h-12 mt-2 mr-8 " />
+        </NavLink>
             </div>
             <div className="hidden sm:block sm:ml-6">
               <div className="flex space-x-4">
@@ -121,6 +121,9 @@ function MyNavbar() {
       {isOpen && (
         <div className="sm:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1">
+          <NavLink to="/" className="focus:outline-none">
+    <img src={'j.png'} alt="Logo" className="logo-class h-16 mt-6 " />
+  </NavLink>
             {navigation.map((item) => (
               <NavLink
                 key={item.name}
