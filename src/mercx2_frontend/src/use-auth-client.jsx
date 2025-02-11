@@ -5,6 +5,7 @@ import { canisterId, createActor } from "../../declarations/icrc1_ledger_caniste
 import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
 import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
 import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
+import { canisterId as kycCanisterId, createActor as createKycActor } from "../../declarations/kyc"; 
 
 
 // Create a React Context for sharing authentication status across the component tree
@@ -71,7 +72,7 @@ export const useAuthClient = (options = defaultOptions) => {
   const [icpActor, setIcpActor] = useState(null);
   const [mercx_Actor, setMercxActor] = useState(null);
   const [tommy_Actor, setTommyActor] = useState(null);
-
+  const [kycActor, setKycActor] = useState(null);    // ✅ KYC actor
 
   useEffect(() => {
     // Initialize AuthClient
@@ -138,6 +139,15 @@ export const useAuthClient = (options = defaultOptions) => {
       },
     });
     setTommyActor(tommyActor);
+
+       // ✅ Create the KYC Actor
+       const kycActor = createKycActor(kycCanisterId, {
+        agentOptions: {
+          identity,
+        },
+      });
+      setKycActor(kycActor);
+  
   }
 
   async function logout() {
@@ -157,6 +167,8 @@ export const useAuthClient = (options = defaultOptions) => {
      icpActor,
     mercx_Actor,
     tommy_Actor,
+    kycActor,     // ✅ Return KYC actor
+
   };
 };
 
