@@ -8,6 +8,9 @@ use serde::Serialize;
 //use ic_cdk::caller;
 pub mod xrc_mock;
 pub use xrc_mock::get_icp_rate;
+use std::cell::RefCell;
+use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
+use ic_stable_structures::{StableBTreeMap, DefaultMemoryImpl};
 
 // pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
 // pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="7p6gu-biaaa-aaaap-aknta-cai";
@@ -27,6 +30,22 @@ pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "a3shf-5eaaa-aaaaa-qaafa-cai
 
 
 
+type Memory = VirtualMemory<DefaultMemoryImpl>;
+const WHITELIST_MEM_ID: MemoryId = MemoryId::new(1);
+
+thread_local! {
+
+    // Initialize memory manager
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
+        MemoryManager::init(DefaultMemoryImpl::default())
+    );
+
+    // Initialize the whitelist
+    static WHITELIST: RefCell<StableBTreeMap<Principal, bool, Memory>> = RefCell::new(
+        StableBTreeMap::init(MEMORY_MANAGER.with(|m| m.borrow().get(WHITELIST_MEM_ID)))
+    );
+}
+
 //The function allows you to query the principal ID of the caller of the function
 #[query]
 fn whoami() -> Principal {
@@ -40,6 +59,32 @@ pub struct TransferArgs {
 }
 
 #[ic_cdk::update]
+fn add_to_whitelist(principal: Principal) {
+    WHITELIST.with(|whitelist| {
+        whitelist.borrow_mut().insert(principal, true);
+    });
+    ic_cdk::println!("Added {} to whitelist", principal.to_text());
+}
+
+#[ic_cdk::update]
+fn remove_from_whitelist(principal: Principal) {
+    WHITELIST.with(|whitelist| {
+        whitelist.borrow_mut().remove(&principal);
+    });
+    ic_cdk::println!("Removed {} from whitelist", principal.to_text());
+}
+
+#[ic_cdk::query]
+fn get_whitelisted_principals() -> Vec<String> {
+    WHITELIST.with(|whitelist| {
+        whitelist.borrow()
+            .iter()
+            .map(|(principal, _)| principal.to_text()) // Convert Principal to String
+            .collect()
+    })
+}
+
+#[ic_cdk::update]
 async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
     ic_cdk::println!(
         "Transferring {} tokens to account {}",
@@ -49,6 +94,18 @@ async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
 
     let caller_principal = ic_cdk::caller();
     ic_cdk::println!("Caller Principal: {}", caller_principal.to_text());
+
+        // Check if the recipient is whitelisted
+        let is_whitelisted = WHITELIST.with(|whitelist| {
+            whitelist.borrow().get(&args.to_account.owner).unwrap_or(false)
+        });
+    
+        if !is_whitelisted {
+            return Err(format!(
+                "Transfer failed: recipient {} is not whitelisted.",
+                args.to_account.owner
+            ));
+        }
 
     let transfer_args: TransferArg = TransferArg {
         // can be used to distinguish between transactions

@@ -65,6 +65,17 @@
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
     },
 
+"internet_identity": {
+  "type": "custom",
+  "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+  "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+  "remote": {
+    "id": {
+      "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+    }
+  },
+  "frontend": {}
+},
 
     "mercx2_frontend": {
       "dependencies": [
