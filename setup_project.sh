@@ -49,7 +49,7 @@ record {
 
 # Mainnet 
 # dfx deploy icrc1_index_canister --argument '(opt variant{Init = record {ledger_id = principal "bkyz2-fmaaa-aaaaa-qaaaq-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 10}})'
-dfx deploy icrc1_index_canister --argument '(opt variant{Init = record {ledger_id = principal "br5f7-7uaaa-aaaaa-qaaca-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 10}})'
+dfx deploy icrc1_index_canister --argument '(opt variant{Init = record {ledger_id = principal "bkyz2-fmaaa-aaaaa-qaaaq-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 10}})'
 
 dfx deploy tommy_icrc1_ledger --argument "(variant { Init =
 record {
@@ -70,7 +70,7 @@ record {
  }
 })"
 
-dfx deploy tommy_icrc1_index --argument '(opt variant{Init = record {ledger_id = principal "a3shf-5eaaa-aaaaa-qaafa-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 86400}})'
+dfx deploy tommy_icrc1_index --argument '(opt variant{Init = record {ledger_id = principal "br5f7-7uaaa-aaaaa-qaaca-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 86400}})'
 
 export MINTER_ACCOUNT_ID=$(dfx --identity anonymous ledger account-id)
 export DEFAULT_ACCOUNT_ID=$(dfx ledger account-id)

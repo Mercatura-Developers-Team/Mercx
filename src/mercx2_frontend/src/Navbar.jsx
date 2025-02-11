@@ -59,7 +59,9 @@ function MyNavbar() {
           </div>
           <div className="flex-1 flex items-center justify-center sm:justify-start">
           <div className="flex-shrink-0 flex items-center">
-              <img src={'j.png'} alt="Logo" className="logo-class h-16  mt-6 mr-8  "/>
+          <NavLink to="/" className="focus:outline-none">
+    <img src={'j.png'} alt="Logo" className="logo-class h-16 mt-6 mr-8" />
+  </NavLink>
             </div>
             <div className="hidden sm:block sm:ml-6">
               <div className="flex space-x-4">

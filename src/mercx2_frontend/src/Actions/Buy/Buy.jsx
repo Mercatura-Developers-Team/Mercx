@@ -108,7 +108,8 @@ const Buy = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const icp_swap_canister_id = "zoa6c-riaaa-aaaan-qzmta-cai"; // Placeholder for actual canister ID
+
+        const icp_swap_canister_id = "asrmz-lmaaa-aaaaa-qaaeq-cai"; // Placeholder for actual canister ID
          let amount = (inputIcp * 1e8);
         let ApprovedIcp = Number(amount+20000); 
        
@@ -277,7 +278,7 @@ const Buy = () => {
                         <div className="flex justify-center">
                             <button
                                 type="button"
-                                className="place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90 disabled:bg-indigo-400"
+                                className="place-content-center my-6 py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90 disabled:bg-indigo-400"
                                 disabled={!isAuthenticated || inputIcp === '0' || inputIcp === '' || isloadingRate || !notSwapped}
                                 onClick={() => handleIcpApprove()}
                             >
@@ -291,13 +292,13 @@ const Buy = () => {
                         </div>
                         {/*transfer fees*/}
 
-                        <div className=" p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
+                        {/* <div className=" p-2 m-2 border-gray-700 bg-gray-800 flex justify-center ">
 
                             <dl className="flex items-center gap-4">
                                 <dt className="text-sm font-normal text-gray-400">Network Fees</dt>
                                 <dd className="text-sm font-medium text-white">0.0002 ICP</dd>
                             </dl>
-                        </div>
+                        </div> */}
 
 
 
