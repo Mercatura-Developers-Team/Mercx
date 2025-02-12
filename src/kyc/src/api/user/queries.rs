@@ -58,17 +58,26 @@ pub fn check_username_availability(username: String) -> Result<UsernameAvailabil
 }
 
 #[query]
-pub fn get_all_users() -> Vec<UserPrincipalInfo> {
+
+pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
     USERS.with(|users| {
-        users.borrow()
-            .iter()
-            .map(|(principal, user)| UserPrincipalInfo {
-                principal,
-                username: user.username.clone(),
-            })
-            .collect()
+        users.borrow().iter().map(|(principal, user)| {
+            if user.email.is_empty() || user.phone_number.is_empty() || user.full_name.is_empty() {
+                Err("User data integrity error: Required fields are missing".to_string())
+            } else {
+                Ok(UserPrincipalInfo {
+                    principal,
+                    username: user.username.clone(),
+                    email: user.email.clone(),
+                    phone_number: user.phone_number.clone(),
+                    full_name: user.full_name.clone(),
+                })
+            }
+        }).collect()
     })
 }
+
+
 
 #[query]
 pub fn check_kyc_status(principal: Principal) -> Result<bool, String> {

@@ -38,8 +38,14 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
         Ok::<(), String>(())
     })?;
 
-    let user = User::new(caller, username.clone());
 
+    let user = User::new(
+        caller,
+        username.clone(),
+        request.full_name.clone(),
+        request.email.clone(),
+        request.phone_number.clone(),
+    );
     // Insert user data
     USERS.with(|users| {
         let mut users = users.borrow_mut();

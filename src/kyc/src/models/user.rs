@@ -20,6 +20,9 @@ use serde::{Deserialize, Serialize};
 pub struct User {
     pub principal: Principal,
     pub username: String,
+    pub full_name: String,         // ✅ Added full name
+    pub email: String,             // ✅ Added email
+    pub phone_number: String,      // ✅ Added phone number
     pub name: String,
     pub avatar: String,
     pub librarian: bool,
@@ -29,11 +32,14 @@ pub struct User {
 }
 
 impl User {
-    pub fn new(principal: Principal, username: String) -> Self {
+    pub fn new(principal: Principal, username: String, full_name: String, email: String, phone_number: String) -> Self {
         let now = time();
         Self {
             principal,
             username,
+            full_name,
+            email,
+            phone_number,
             name: String::new(),
             avatar: String::new(),
             librarian: false,
@@ -56,6 +62,9 @@ impl User {
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct SignupRequest {
     pub username: String,
+    pub full_name: String,        // ✅ Full Name
+    pub email: String,            // ✅ Email
+    pub phone_number: String,     // ✅ Phone Number
 }
 
 /// Request payload for updating user profile
@@ -71,6 +80,7 @@ pub struct SignupRequest {
 pub struct UpdateUserRequest {
     pub name: Option<String>,
     pub avatar: Option<String>,
+   
 }
 
 /// Response for username availability check
@@ -95,4 +105,7 @@ pub struct UsernameAvailabilityResponse {
 pub struct UserPrincipalInfo {
     pub principal: Principal,
     pub username: String,
+    pub full_name: String,
+    pub email: String,
+    pub phone_number: String,
 }
