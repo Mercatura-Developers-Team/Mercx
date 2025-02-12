@@ -72,9 +72,7 @@ export const useAuthClient = (options = defaultOptions) => {
   const [icpActor, setIcpActor] = useState(null);
   const [mercx_Actor, setMercxActor] = useState(null);
   const [tommy_Actor, setTommyActor] = useState(null);
-  const [kycStatus, setKycStatus] = useState(false); // ✅ Track KYC status
   const [kycActor, setKycActor] = useState(null);    // ✅ KYC actor
-
 
   useEffect(() => {
     // Initialize AuthClient
@@ -141,16 +139,15 @@ export const useAuthClient = (options = defaultOptions) => {
       },
     });
     setTommyActor(tommyActor);
-          // ✅ Create the KYC Actor
-          const kycActor = createKycActor(kycCanisterId, {
-            agentOptions: {
-              identity,
-            },
-          });
-          setKycActor(kycActor);
-      
-    
-    
+
+       // ✅ Create the KYC Actor
+       const kycActor = createKycActor(kycCanisterId, {
+        agentOptions: {
+          identity,
+        },
+      });
+      setKycActor(kycActor);
+  
   }
 
   async function logout() {
@@ -170,8 +167,8 @@ export const useAuthClient = (options = defaultOptions) => {
      icpActor,
     mercx_Actor,
     tommy_Actor,
-    kycActor,  
-    kycStatus
+    kycActor,     // ✅ Return KYC actor
+
   };
 };
 

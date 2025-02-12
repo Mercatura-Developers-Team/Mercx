@@ -1,7 +1,7 @@
 type Result = variant { Ok : bool; Err : text };
 type Result_1 = variant { Ok : UsernameAvailabilityResponse; Err : text };
-type Result_2 = variant { Ok : User; Err : text };
-type Result_3 = variant { Ok : text; Err : text };
+type Result_2 = variant { Ok : text; Err : text };
+type Result_3 = variant { Ok : User; Err : text };
 type SignupRequest = record { username : text };
 type UpdateUserRequest = record { name : opt text; avatar : opt text };
 type User = record {
@@ -23,12 +23,13 @@ type UsernameAvailabilityResponse = record {
 service : {
   check_kyc_status : (principal) -> (Result) query;
   check_username_availability : (text) -> (Result_1) query;
+  delete_user : (principal) -> (Result_2);
   get_all_users : () -> (vec UserPrincipalInfo) query;
-  get_current_user : () -> (Result_2) query;
-  get_user : (principal) -> (Result_2) query;
-  signup : (SignupRequest) -> (Result_2);
-  update_profile : (UpdateUserRequest) -> (Result_2);
-  upgrade_to_librarian : () -> (Result_2);
-  verify_kyc : (principal) -> (Result_3);
+  get_current_user : () -> (Result_3) query;
+  get_user : (principal) -> (Result_3) query;
+  signup : (SignupRequest) -> (Result_3);
+  update_profile : (UpdateUserRequest) -> (Result_3);
+  upgrade_to_librarian : () -> (Result_3);
+  verify_kyc : (principal) -> (Result_2);
   whoami : () -> (principal) query;
 }

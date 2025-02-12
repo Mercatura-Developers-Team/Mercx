@@ -6,6 +6,7 @@ import ActionsOptions from './Actions/ActionsOptions';
 import {  AuthProvider } from "./use-auth-client";
 import Transcations from './Transcations';
 import Transfer from './Transfer';
+import SignupForm from './SignupForm';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/trade" element={<ActionsOptions />} />
         <Route path="/transactions" element={ <Transcations />} />
         <Route path="/transfer" element={ <Transfer/>} />
+        <Route path="/signup" element={ <SignupForm/>} />
       </Routes>
     </div>
     </AuthProvider>

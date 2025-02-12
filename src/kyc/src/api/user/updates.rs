@@ -134,6 +134,37 @@ pub fn verify_kyc(principal: Principal) -> Result<String, String> {
     })
 }
 
+#[update]
+pub fn delete_user(principal: Principal) -> Result<String, String> {
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        
+        // Check if the user exists
+        if let Some(user) = users.remove(&principal) {
+            
+            // Remove the username associated with the principal
+            USERNAMES.with(|usernames| {
+                let mut usernames = usernames.borrow_mut();
+                
+                // Find the username associated with this principal
+                let username_to_remove = usernames.iter()
+                    .find_map(|(username, p)| if p == principal { Some(username.clone()) } else { None });
+                
+                // Remove the username if found
+                if let Some(username) = username_to_remove {
+                    usernames.remove(&username);
+                }
+            });
+
+            Ok(format!("User '{}' deleted successfully.", user.username))
+        } else {
+            Err("User not found.".to_string())
+        }
+    })
+}
+
+
+
 // Optional: Helper function for future use
 // fn is_authorized(principal: Principal) -> bool {
 //     // Add authorization logic here
