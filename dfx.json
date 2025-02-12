@@ -7,7 +7,7 @@
       "dependencies": ["icrc1_ledger_canister"]
     },
     "kyc": {
-      "candid": "src/kyc/kyc.did",
+      "candid": "src/kyc/kyc.did",          
       "package": "kyc",
       "type": "rust",
       "dependencies": ["icrc1_ledger_canister"]
