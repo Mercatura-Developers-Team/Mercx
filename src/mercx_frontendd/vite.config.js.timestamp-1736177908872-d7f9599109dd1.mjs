@@ -7,7 +7,7 @@ import dotenv from "file:///workspaces/Mercx/node_modules/dotenv/lib/main.js";
 import postcss from "file:///workspaces/Mercx/node_modules/postcss/lib/postcss.mjs";
 import tailwind from "file:///workspaces/Mercx/node_modules/tailwindcss/lib/index.js";
 import autoprefixer from "file:///workspaces/Mercx/node_modules/autoprefixer/lib/autoprefixer.js";
-var __vite_injected_original_import_meta_url = "file:///workspaces/Mercx/src/mercx_frontend/vite.config.js";
+var __vite_injected_original_import_meta_url = "file:///workspaces/Mercx/src/mercx_frontendd/vite.config.js";
 dotenv.config({ path: "../../.env" });
 var vite_config_default = defineConfig({
   build: {

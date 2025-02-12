@@ -7,7 +7,7 @@
       "dependencies": ["icrc1_ledger_canister"]
     },
     "kyc": {
-      "candid": "src/kyc/kyc.did",
+      "candid": "src/kyc/kyc.did",          
       "package": "kyc",
       "type": "rust",
       "dependencies": ["icrc1_ledger_canister"]
@@ -24,7 +24,6 @@
         }
       }
     },
-  
     "icrc1_ledger_canister": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
@@ -34,6 +33,26 @@
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
+    },
+    "icp_ledger_canister": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ledger-canister.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+        }
+      }
+    },
+    "icp_index_canister": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icp_ledger/index/index.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icp-index-canister.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "qhbym-qaaaa-aaaaa-aaafq-cai"
+        }
+      }
     },
     "tommy_icrc1_ledger": {
       "type": "custom",
@@ -45,16 +64,7 @@
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
     },
- "icp_ledger_canister": {
-  "type": "custom",
-  "candid": "https://raw.githubusercontent.com/dfinity/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/rs/ledger_suite/icp/ledger.did",
-  "wasm": "https://download.dfinity.systems/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/canisters/ledger-canister.wasm.gz",
-  "remote": {
-    "id": {
-      "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
-    }
-  }
-},
+
 "internet_identity": {
   "type": "custom",
   "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
