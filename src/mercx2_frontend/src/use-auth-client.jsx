@@ -87,6 +87,7 @@ export const useAuthClient = (options = defaultOptions) => {
       ...options.loginOptions,
       onSuccess: () => {
         updateClient(authClient);
+        
       },
     });
   };
@@ -147,6 +148,8 @@ export const useAuthClient = (options = defaultOptions) => {
         },
       });
       setKycActor(kycActor);
+
+    
   
   }
 

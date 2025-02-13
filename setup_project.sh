@@ -96,7 +96,7 @@ dfx deploy icp_ledger_canister --argument "
   })
 "
 
-dfx deploy icp_index_canister --specified-id qhbym-qaaaa-aaaaa-aaafq-cai --argument '(record {ledger_id = principal "bd3sg-teaaa-aaaaa-qaaba-cai"})'
+dfx deploy icp_index_canister --specified-id qhbym-qaaaa-aaaaa-aaafq-cai --argument '(record {ledger_id = principal "b77ix-eeaaa-aaaaa-qaada-cai"})'
 
 
 

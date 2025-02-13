@@ -1,8 +1,14 @@
 type Result = variant { Ok : bool; Err : text };
 type Result_1 = variant { Ok : UsernameAvailabilityResponse; Err : text };
 type Result_2 = variant { Ok : text; Err : text };
-type Result_3 = variant { Ok : User; Err : text };
-type SignupRequest = record { username : text };
+type Result_3 = variant { Ok : vec UserPrincipalInfo; Err : text };
+type Result_4 = variant { Ok : User; Err : text };
+type SignupRequest = record {
+  username : text;
+  email : text;
+  phone_number : text;
+  full_name : text;
+};
 type UpdateUserRequest = record { name : opt text; avatar : opt text };
 type User = record {
   updated_at : nat64;
@@ -11,10 +17,19 @@ type User = record {
   username : text;
   name : text;
   created_at : nat64;
+  email : text;
   kyc_status : bool;
+  phone_number : text;
+  full_name : text;
   avatar : text;
 };
-type UserPrincipalInfo = record { "principal" : principal; username : text };
+type UserPrincipalInfo = record {
+  "principal" : principal;
+  username : text;
+  email : text;
+  phone_number : text;
+  full_name : text;
+};
 type UsernameAvailabilityResponse = record {
   username : text;
   available : bool;
@@ -24,12 +39,12 @@ service : {
   check_kyc_status : (principal) -> (Result) query;
   check_username_availability : (text) -> (Result_1) query;
   delete_user : (principal) -> (Result_2);
-  get_all_users : () -> (vec UserPrincipalInfo) query;
-  get_current_user : () -> (Result_3) query;
-  get_user : (principal) -> (Result_3) query;
-  signup : (SignupRequest) -> (Result_3);
-  update_profile : (UpdateUserRequest) -> (Result_3);
-  upgrade_to_librarian : () -> (Result_3);
+  get_all_users : () -> (Result_3) query;
+  get_current_user : () -> (Result_4) query;
+  get_user : (principal) -> (Result_4) query;
+  signup : (SignupRequest) -> (Result_4);
+  update_profile : (UpdateUserRequest) -> (Result_4);
+  upgrade_to_librarian : () -> (Result_4);
   verify_kyc : (principal) -> (Result_2);
   whoami : () -> (principal) query;
 }
