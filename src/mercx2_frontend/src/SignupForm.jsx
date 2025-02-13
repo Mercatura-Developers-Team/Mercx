@@ -66,9 +66,9 @@ const SignupForm = () => {
       try {
         const response = await kycActor.signup({
           username: values.username,
-          fullname: values.fullname,
-          phone: values.phone,
-          email: email.phone,
+          full_name: values.fullname,
+          phone_number: values.phone,
+          email: values.phone,
         });
 
         if (response && response.Ok) {
