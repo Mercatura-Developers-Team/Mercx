@@ -4,7 +4,8 @@ import './index.css';
 import { HiOutlineLogout, HiMenu, HiX, HiClipboardCopy } from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-
+// Import useNavigate for redirection
+import { useNavigate } from "react-router-dom";
 
 const navigation = [
   { name: "Home", to: "/" },
@@ -14,11 +15,31 @@ const navigation = [
 ];
 
 function MyNavbar() {
-  const { isAuthenticated, login, logout, principal } = useAuth();
+  const { isAuthenticated, login, logout, principal,kycActor } = useAuth();
   const [principals, setPrincipal] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   //const [copySuccess, setCopySuccess] = useState('');
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    await login(); // Ensure login completes
+
+    // Check if the user exists
+    try {
+      const userExists = await kycActor.get_user(principal);
+      if (userExists) {
+        setPrincipal(principal); 
+         console.log("dakhal");
+        // Set principal if user exists
+       // navigate('/dashboard'); // Redirect to dashboard
+      } else {
+        navigate('/signup'); // Redirect to signup if user does not exist
+      }
+    } catch (error) {
+      console.error("Error checking user existence:", error);
+    }
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -108,7 +129,7 @@ function MyNavbar() {
               </>
             ) : (
               <button
-                onClick={login}
+                onClick={handleLogin}
                 className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg  py-2 px-4 rounded"
               >
                 Connect to Wallet
