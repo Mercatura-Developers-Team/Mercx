@@ -89,5 +89,13 @@ pub fn check_kyc_status(principal: Principal) -> Result<bool, String> {
     })
 }
 
+#[query]
+pub fn has_username_for_principal(principal: Principal) -> bool {
+    USERS.with(|users| {
+        users.borrow().contains_key(&principal)
+    })
+}
+
+
 
 
