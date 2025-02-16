@@ -6,7 +6,7 @@ import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { useNavigate } from 'react-router-dom';  // Ensure useNavigate is imported
 import { Principal } from "@dfinity/principal"; // Import Principal
-
+import { FaCopy } from "react-icons/fa";
 
 const navigation = [
   { name: "Home", to: "/" },
@@ -35,7 +35,6 @@ function MyNavbar() {
           navigate('/signup');  // Redirect to signup if no user
         } else {
           navigate('/');
-          console.log("tamam")  // Redirect to the dashboard if user exists
         }
       } catch (error) {
         console.error("Error checking user existence:", error);
@@ -110,7 +109,7 @@ function MyNavbar() {
                   }, 3000);
                 }}>
                   <button className="ml-4 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 ">
-                    <HiClipboardCopy size={24} style={{ color: 'currentColor' }} />
+                    <FaCopy size={19} style={{ color: 'currentColor' }} />
                   </button>
                 </CopyToClipboard>
                 {copied && <span className="text-xs p-1" style={{ color: 'lightblue' }}>Copied</span>}
