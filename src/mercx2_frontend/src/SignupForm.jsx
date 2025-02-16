@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "./use-auth-client";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useNavigate } from 'react-router-dom';  // Ensure useNavigate is imported
 
 
 // Validation schema
@@ -35,6 +36,7 @@ const SignupForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { principal } = useAuth();
+  const navigate = useNavigate();  // Use navigate for redirection
 
   // Check KYC Status
   useEffect(() => {
@@ -73,6 +75,7 @@ const SignupForm = () => {
 
         if (response && response.Ok) {
           alert("Signup successful!");
+          navigate('/');
         } else {
           throw new Error(response.Err || "Signup failed");
         }
