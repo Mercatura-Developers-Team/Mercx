@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "./use-auth-client";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useNavigate } from 'react-router-dom';  // Ensure useNavigate is imported
 
 
 // Validation schema
@@ -35,6 +36,7 @@ const SignupForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { principal } = useAuth();
+  const navigate = useNavigate();  // Use navigate for redirection
 
   // Check KYC Status
   useEffect(() => {
@@ -73,6 +75,7 @@ const SignupForm = () => {
 
         if (response && response.Ok) {
           alert("Signup successful!");
+         navigate('/');
         } else {
           throw new Error(response.Err || "Signup failed");
         }
@@ -89,7 +92,9 @@ const SignupForm = () => {
     return <p>Please connect your wallet to sign up.</p>;
   }
   return (<>
-    <div className="max-w-md mx-auto bg-gray-900 p-6 rounded shadow-md m-20">
+                      <div className="relative overflow-hidden min-h-screen border-t-[1px] border-slate-800 bg-gray-900">
+
+   <div className="max-w-md mx-auto rounded-3xl bg-slate-800 p-6 shadow-md m-20">
       <h2 className="text-2xl font-bold text-white mb-4">Signup</h2>
 
       {error && <p className="text-red-500">{error}</p>}
@@ -154,10 +159,20 @@ const SignupForm = () => {
         </div>
 
 
-        <button className="text-white  focus:ring-4 focus:outline-none  font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800" type="submit" disabled={loading}>
-          {loading ? "loading" : "Sign Up"}
-        </button>
+        <button className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white py-2 px-4 font-bold rounded-lg text-sm flex items-center justify-center" type="submit" disabled={loading}>
+    {loading ? (
+        <>
+            <span>Loading</span>
+            <svg className="animate-spin h-5 w-5 ml-2" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.86 1.861 7.298 4.708 9.291l1.292-1.292z"></path>
+            </svg>
+        </>
+    ) : "Sign Up"}
+</button>
+
       </form>
+    </div>
     </div>
   </>);
 }

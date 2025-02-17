@@ -42,6 +42,7 @@ service : {
   get_all_users : () -> (Result_3) query;
   get_current_user : () -> (Result_4) query;
   get_user : (principal) -> (Result_4) query;
+  has_username_for_principal : (principal) -> (bool) query;
   signup : (SignupRequest) -> (Result_4);
   update_profile : (UpdateUserRequest) -> (Result_4);
   upgrade_to_librarian : () -> (Result_4);
