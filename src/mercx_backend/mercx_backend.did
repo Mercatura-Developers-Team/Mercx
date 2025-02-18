@@ -69,6 +69,7 @@ service : {
   get_token_name : () -> (text);
   get_transactions : (nat, nat) -> (Result_3);
   get_whitelisted_principals : () -> (vec text) query;
+  is_whitelisted : (principal) -> (bool) query;
   remove_from_whitelist : (principal) -> ();
   sell : (nat64, principal, nat64, principal) -> (Result_4);
   send_mercx : (nat64) -> (Result);

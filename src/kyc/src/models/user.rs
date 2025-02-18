@@ -26,6 +26,7 @@ pub struct User {
     pub name: String,
     pub avatar: String,
     pub librarian: bool,
+    pub admin: bool, // Added admin flag
     pub kyc_status: bool,
     pub created_at: u64,
     pub updated_at: u64,
@@ -43,6 +44,7 @@ impl User {
             name: String::new(),
             avatar: String::new(),
             librarian: false,
+             admin: false, // Added admin flag
             kyc_status: false,
             created_at: now,
             updated_at: now,

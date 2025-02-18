@@ -7,9 +7,12 @@ use crate::errors::user::UserError;
 use crate::store::{USERS, USERNAMES};
 use crate::models::user::{SignupRequest, UpdateUserRequest, User};
 use crate::validations::user::{validate_username, validate_name, validate_avatar_url};
+use crate::user_queries::get_user;
+use crate::user_queries::is_admin;
 
 #[update]
 pub fn signup(request: SignupRequest) -> Result<User, String> {
+
     let caller = caller();
 
     if caller == Principal::anonymous() {
@@ -64,6 +67,7 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
 
 #[update]
 pub fn update_profile(request: UpdateUserRequest) -> Result<User, String> {
+
     let caller = caller();
 
     if caller == Principal::anonymous() {
@@ -125,6 +129,7 @@ pub fn upgrade_to_librarian() -> Result<User, String> {
 // ✅ KYC Verification (Admin-Only)
 #[update]
 pub fn verify_kyc(principal: Principal) -> Result<String, String> {
+    is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         if let Some(mut user) = users.get(&principal) {
@@ -142,6 +147,7 @@ pub fn verify_kyc(principal: Principal) -> Result<String, String> {
 
 #[update]
 pub fn delete_user(principal: Principal) -> Result<String, String> {
+    is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         
@@ -168,6 +174,21 @@ pub fn delete_user(principal: Principal) -> Result<String, String> {
         }
     })
 }
+
+#[update]
+fn add_admin(principal: Principal) -> Result<(), String> {
+    
+    let mut user = get_user(principal)?;
+    user.admin = true;
+
+    USERS.with(|users| {
+        users.borrow_mut().insert(principal, user);
+    });
+
+    Ok(())
+}
+
+
 
 
 

@@ -1,8 +1,9 @@
-type Result = variant { Ok : bool; Err : text };
-type Result_1 = variant { Ok : UsernameAvailabilityResponse; Err : text };
-type Result_2 = variant { Ok : text; Err : text };
-type Result_3 = variant { Ok : vec UserPrincipalInfo; Err : text };
-type Result_4 = variant { Ok : User; Err : text };
+type Result = variant { Ok; Err : text };
+type Result_1 = variant { Ok : bool; Err : text };
+type Result_2 = variant { Ok : UsernameAvailabilityResponse; Err : text };
+type Result_3 = variant { Ok : text; Err : text };
+type Result_4 = variant { Ok : vec UserPrincipalInfo; Err : text };
+type Result_5 = variant { Ok : User; Err : text };
 type SignupRequest = record {
   username : text;
   email : text;
@@ -14,6 +15,7 @@ type User = record {
   updated_at : nat64;
   "principal" : principal;
   librarian : bool;
+  admin : bool;
   username : text;
   name : text;
   created_at : nat64;
@@ -36,16 +38,18 @@ type UsernameAvailabilityResponse = record {
   message : text;
 };
 service : {
-  check_kyc_status : (principal) -> (Result) query;
-  check_username_availability : (text) -> (Result_1) query;
-  delete_user : (principal) -> (Result_2);
-  get_all_users : () -> (Result_3) query;
-  get_current_user : () -> (Result_4) query;
-  get_user : (principal) -> (Result_4) query;
+  add_admin : (principal) -> (Result);
+  check_kyc_status : (principal) -> (Result_1) query;
+  check_username_availability : (text) -> (Result_2) query;
+  delete_user : (principal) -> (Result_3);
+  get_all_users : () -> (Result_4) query;
+  get_current_user : () -> (Result_5) query;
+  get_user : (principal) -> (Result_5) query;
   has_username_for_principal : (principal) -> (bool) query;
-  signup : (SignupRequest) -> (Result_4);
-  update_profile : (UpdateUserRequest) -> (Result_4);
-  upgrade_to_librarian : () -> (Result_4);
-  verify_kyc : (principal) -> (Result_2);
+  is_admin : () -> (Result) query;
+  signup : (SignupRequest) -> (Result_5);
+  update_profile : (UpdateUserRequest) -> (Result_5);
+  upgrade_to_librarian : () -> (Result_5);
+  verify_kyc : (principal) -> (Result_3);
   whoami : () -> (principal) query;
 }
