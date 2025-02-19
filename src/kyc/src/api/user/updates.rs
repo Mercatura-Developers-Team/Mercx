@@ -15,9 +15,9 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
 
     let caller = caller();
 
-    if caller == Principal::anonymous() {
-        return Err(GeneralError::AnonymousNotAllowed.to_string());
-    }
+    // if caller == Principal::anonymous() {
+    //     return Err(GeneralError::AnonymousNotAllowed.to_string());
+    // }
 
     let username = request.username.trim().to_lowercase();
     
@@ -42,20 +42,21 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
         Ok::<(), String>(())
     })?;
 
-    let valid_refered_by = if let Some(refered_by_username) = &request.refered_by {
+    let mut valid_refered_by: Option<String> = None;
+
+    if let Some(refered_by_username) = &request.refered_by {
         let refered_by_username = refered_by_username.trim().to_lowercase();
 
         USERNAMES.with(|usernames| {
-            if usernames.borrow().contains_key(&refered_by_username) {
-                Ok(Some(refered_by_username))
+            if let Some(refered_by_principal) = usernames.borrow().get(&refered_by_username) {
+                // If the username exists, store it
+                valid_refered_by = Some(refered_by_username);
             } else {
-                Err("Referred username does not exist.".to_string())
+                return Err("Referred username does not exist.".to_string());
             }
-        })?
-    } else {
-        None
-    };
-
+            Ok::<(), String>(())
+        })?;
+    }
     let user = User::new(
         caller,
         username.clone(),
@@ -162,7 +163,7 @@ pub fn verify_kyc(principal: Principal) -> Result<String, String> {
 
 #[update]
 pub fn delete_user(principal: Principal) -> Result<String, String> {
-    is_admin()?; // Admin check
+    //is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         
