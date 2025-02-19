@@ -20,6 +20,7 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
     }
 
     let username = request.username.trim().to_lowercase();
+    
 
     if let Err(err) = validate_username(&username) {
         return Err(err.to_string());
@@ -41,13 +42,28 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
         Ok::<(), String>(())
     })?;
 
+    let mut valid_refered_by: Option<String> = None;
 
+    if let Some(refered_by_username) = &request.refered_by {
+        let refered_by_username = refered_by_username.trim().to_lowercase();
+
+        USERNAMES.with(|usernames| {
+            if let Some(refered_by_principal) = usernames.borrow().get(&refered_by_username) {
+                // If the username exists, store it
+                valid_refered_by = Some(refered_by_username);
+            } else {
+                return Err("Referred username does not exist.".to_string());
+            }
+            Ok::<(), String>(())
+        })?;
+    }
     let user = User::new(
         caller,
         username.clone(),
         request.full_name.clone(),
         request.email.clone(),
         request.phone_number.clone(),
+        request.refered_by.clone(),
     );
     // Insert user data
     USERS.with(|users| {
