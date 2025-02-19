@@ -148,9 +148,6 @@ export const useAuthClient = (options = defaultOptions) => {
         },
       });
       setKycActor(kycActor);
-
-    
-  
   }
 
   async function logout() {

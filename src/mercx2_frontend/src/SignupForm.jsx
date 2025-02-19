@@ -28,6 +28,8 @@ const SignupSchema = Yup.object().shape({
     )
     .required("Phone number is required"),
 
+    referredBy: Yup.string().optional(),
+
 });
 
 const SignupForm = () => {
@@ -59,11 +61,17 @@ const SignupForm = () => {
       fullname: "",
       phone: "",
       email: "",
+      referredBy: "",
     },
     validationSchema: SignupSchema,
     onSubmit: async (values) => {
       setLoading(true);
       setError("");
+
+      // Correctly format the `referredBy` field for Candid (optional text)
+      const referral = values.referredBy && values.referredBy.trim() !== ""
+        ? [values.referredBy.trim()]  // ✅ Wrap in an array for `Some(value)`
+        : [];  // ✅ Use an empty array for `None`
 
       try {
         const response = await kycActor.signup({
@@ -71,6 +79,7 @@ const SignupForm = () => {
           full_name: values.fullname,
           phone_number: values.phone,
           email: values.email,
+          refered_by: referral,  // ✅ Properly formatted
         });
 
         if (response && response.Ok) {
@@ -80,8 +89,7 @@ const SignupForm = () => {
           throw new Error(response.Err || "Signup failed");
         }
       } catch (err) {
-        // console.error("Signup Error:", err);
-        setError(err.message || "Signup failed. Please try again."); // ✅ Show error message
+        setError(err.message || "Signup failed. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -171,7 +179,27 @@ const SignupForm = () => {
             )}
           </div>
 
-
+          <div className="relative z-0 w-full mb-5 group">
+  <input
+    id="referredBy"
+    name="referredBy"
+    type="text"
+    onChange={formik.handleChange}
+    onBlur={formik.handleBlur}
+    value={formik.values.referredBy}
+    className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 text-white border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-0 peer"
+    placeholder=" "
+  />
+  <label
+    htmlFor="referredBy"
+    className="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+  >
+ Referral Username (optional)
+  </label>
+  {formik.touched.referredBy && formik.errors.referredBy && (
+    <p className="text-red-400 text-xs">{formik.errors.referredBy}</p>
+  )}
+</div>
           <button className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white py-2 px-4 font-bold rounded-lg text-sm flex items-center justify-center" type="submit" disabled={loading}>
             {loading ? (
               <>

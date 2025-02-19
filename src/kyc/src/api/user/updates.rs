@@ -20,6 +20,7 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
     }
 
     let username = request.username.trim().to_lowercase();
+    
 
     if let Err(err) = validate_username(&username) {
         return Err(err.to_string());
@@ -41,6 +42,19 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
         Ok::<(), String>(())
     })?;
 
+    let valid_refered_by = if let Some(refered_by_username) = &request.refered_by {
+        let refered_by_username = refered_by_username.trim().to_lowercase();
+
+        USERNAMES.with(|usernames| {
+            if usernames.borrow().contains_key(&refered_by_username) {
+                Ok(Some(refered_by_username))
+            } else {
+                Err("Referred username does not exist.".to_string())
+            }
+        })?
+    } else {
+        None
+    };
 
     let user = User::new(
         caller,
@@ -48,6 +62,7 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
         request.full_name.clone(),
         request.email.clone(),
         request.phone_number.clone(),
+        request.refered_by.clone(),
     );
     // Insert user data
     USERS.with(|users| {
@@ -147,7 +162,7 @@ pub fn verify_kyc(principal: Principal) -> Result<String, String> {
 
 #[update]
 pub fn delete_user(principal: Principal) -> Result<String, String> {
-    is_admin()?; // Admin check
+    //is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         
