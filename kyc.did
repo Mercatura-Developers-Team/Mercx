@@ -6,6 +6,7 @@ type Result_4 = variant { Ok : vec UserPrincipalInfo; Err : text };
 type Result_5 = variant { Ok : User; Err : text };
 type SignupRequest = record {
   username : text;
+  referred_by : opt text;
   email : text;
   phone_number : text;
   full_name : text;
@@ -18,6 +19,7 @@ type User = record {
   admin : bool;
   username : text;
   name : text;
+  referred_by : opt text;
   created_at : nat64;
   email : text;
   kyc_status : bool;
@@ -28,6 +30,7 @@ type User = record {
 type UserPrincipalInfo = record {
   "principal" : principal;
   username : text;
+  referred_by : opt text;
   email : text;
   phone_number : text;
   full_name : text;

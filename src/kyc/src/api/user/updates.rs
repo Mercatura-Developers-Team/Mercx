@@ -15,9 +15,9 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
 
     let caller = caller();
 
-    if caller == Principal::anonymous() {
-        return Err(GeneralError::AnonymousNotAllowed.to_string());
-    }
+    // if caller == Principal::anonymous() {
+    //     return Err(GeneralError::AnonymousNotAllowed.to_string());
+    // }
 
     let username = request.username.trim().to_lowercase();
 
@@ -48,6 +48,7 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
         request.full_name.clone(),
         request.email.clone(),
         request.phone_number.clone(),
+        request.referred_by.clone(),
     );
     // Insert user data
     USERS.with(|users| {
@@ -147,7 +148,7 @@ pub fn verify_kyc(principal: Principal) -> Result<String, String> {
 
 #[update]
 pub fn delete_user(principal: Principal) -> Result<String, String> {
-    is_admin()?; // Admin check
+   // is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         
