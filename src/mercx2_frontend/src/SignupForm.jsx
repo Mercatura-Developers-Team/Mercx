@@ -43,7 +43,7 @@ const SignupForm = () => {
     if (isAuthenticated) {
       (async () => {
         try {
-          const status = await kycActor.check_kyc_status(principal);
+          const status = await kycActor.check_kyc_status(principal.toText());
           console.log(status);
           setKycStatus(status);
         } catch (err) {

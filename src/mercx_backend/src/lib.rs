@@ -12,21 +12,21 @@ use std::cell::RefCell;
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::{StableBTreeMap, DefaultMemoryImpl};
 
-pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
-pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="7p6gu-biaaa-aaaap-aknta-cai";
-pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="7i7aa-mqaaa-aaaap-akntq-cai";
-pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="ryjl3-tyaaa-aaaaa-aaaba-cai";
-pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
-pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
-pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "j47wy-ciaaa-aaaan-qzqyq-cai";
+// pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
+// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="7p6gu-biaaa-aaaap-aknta-cai";
+// pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="7i7aa-mqaaa-aaaap-akntq-cai";
+// pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="ryjl3-tyaaa-aaaaa-aaaba-cai";
+// pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
+// pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
+// pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "j47wy-ciaaa-aaaan-qzqyq-cai";
 
-// pub const CANISTER_ID_XRC: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
-// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
-// pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
-// pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "aovwi-4maaa-aaaaa-qaagq-cai";
-// pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
-// pub const CANISTER_ID_MERCX_BACKEND: &str = "asrmz-lmaaa-aaaaa-qaaeq-cai";
-// pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
+pub const CANISTER_ID_XRC: &str = "a4tbr-q4aaa-aaaaa-qaafq-cai";
+pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
+pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "aovwi-4maaa-aaaaa-qaagq-cai";
+pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
+pub const CANISTER_ID_MERCX_BACKEND: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
+pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
 
 
 
@@ -83,6 +83,7 @@ fn get_whitelisted_principals() -> Vec<String> {
             .collect()
     })
 }
+
 
 #[ic_cdk::update]
 async fn transfer(args: TransferArgs) -> Result<BlockIndex, String> {
@@ -641,8 +642,18 @@ async fn send_token(amount: u64, token_info: Principal) -> Result<BlockIndex, St
 
 #[ic_cdk::update]
 pub async fn swap(amount_icp: u64, amount_mercx: u64) -> Result<String, String> {
+   
     let caller = ic_cdk::caller();
+    let is_whitelisted = WHITELIST.with(|whitelist| {
+        whitelist.borrow().get(&caller).unwrap_or(false)
+    });
 
+    if !is_whitelisted {
+        return Err(format!(
+            " Swap failed: recipient {} is not whitelisted.",
+            caller
+        ));
+    }
     let principal = Principal::from_text(CANISTER_ID_MERCX_BACKEND)
         .map_err(|e| format!("Error parsing principal: {:?}", e))?;
     let account = Account::from(principal);
