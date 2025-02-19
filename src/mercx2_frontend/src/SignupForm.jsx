@@ -27,7 +27,6 @@ const SignupSchema = Yup.object().shape({
       "Invalid phone number"
     )
     .required("Phone number is required"),
-    referred_by: Yup.string().nullable().optional(), 
 
 });
 
@@ -60,7 +59,6 @@ const SignupForm = () => {
       fullname: "",
       phone: "",
       email: "",
-      referred_by: "", // Add this line
     },
     validationSchema: SignupSchema,
     onSubmit: async (values) => {
@@ -73,7 +71,6 @@ const SignupForm = () => {
           full_name: values.fullname,
           phone_number: values.phone,
           email: values.email,
-          referred_by: values.referred_by || null,
         });
 
         if (response && response.Ok) {
@@ -173,25 +170,6 @@ const SignupForm = () => {
               <p className="text-red-400 text-xs">{formik.errors.email}</p>
             )}
           </div>
-
-          <div className="relative z-0 w-full mb-5 group">
-  <input
-    id="referred_by"
-    name="referred_by"
-    type="text"
-    onChange={formik.handleChange}
-    onBlur={formik.handleBlur}
-    value={formik.values.referred_by}
-    className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 appearance-none text-white border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-0 peer"
-    placeholder=" "
-  />
-  <label htmlFor="referred_by" className="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-    Referred By (optional)
-  </label>
-  {formik.touched.referred_by && formik.errors.referred_by && (
-    <p className="text-red-400 text-xs">{formik.errors.referred_by}</p>
-  )}
-</div>
 
 
           <button className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white py-2 px-4 font-bold rounded-lg text-sm flex items-center justify-center" type="submit" disabled={loading}>

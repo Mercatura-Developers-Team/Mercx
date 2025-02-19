@@ -28,14 +28,12 @@ pub struct User {
     pub librarian: bool,
     pub admin: bool, // Added admin flag
     pub kyc_status: bool,
-    pub referred_by: Option<String>, // New optional field
     pub created_at: u64,
     pub updated_at: u64,
 }
 
 impl User {
-    pub fn new(principal: Principal, username: String, full_name: String, email: String, phone_number: String,        referred_by: Option<String>, // Add this parameter
-    ) -> Self {
+    pub fn new(principal: Principal, username: String, full_name: String, email: String, phone_number: String) -> Self {
         let now = time();
         Self {
             principal,
@@ -48,7 +46,6 @@ impl User {
             librarian: false,
              admin: false, // Added admin flag
             kyc_status: false,
-            referred_by, // Set the referred_by field
             created_at: now,
             updated_at: now,
         }
@@ -70,8 +67,6 @@ pub struct SignupRequest {
     pub full_name: String,        // ✅ Full Name
     pub email: String,            // ✅ Email
     pub phone_number: String,     // ✅ Phone Number
-    pub referred_by: Option<String>, // New optional field
-
 }
 
 /// Request payload for updating user profile
@@ -115,5 +110,4 @@ pub struct UserPrincipalInfo {
     pub full_name: String,
     pub email: String,
     pub phone_number: String,
-    pub referred_by: Option<String>,
 }
