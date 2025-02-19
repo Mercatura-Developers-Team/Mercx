@@ -8,15 +8,35 @@ use crate::models::user::{User, UsernameAvailabilityResponse, UserPrincipalInfo}
 use crate::validations::user::validate_username;
 
 #[query]
+pub fn is_admin() -> Result<(), String> {
+    let caller_principal = caller();
+    let is_admin = USERS.with(|users| {
+        users.borrow()
+            .get(&caller_principal)
+            .map(|user| user.admin)
+            .unwrap_or(false) // Assume not admin if not found
+    });
+
+    if is_admin {
+        Ok(())
+    } else {
+        Err("Unauthorized: Only admins can perform this operation.".to_string())
+    }
+}
+
+
+#[query]
 pub fn whoami() -> Principal {
     caller()
 }
 
 #[query]
 pub fn get_user(principal: Principal) -> Result<User, String> {
+    is_admin()?; // Admin check
     if principal == Principal::anonymous() {
         return Err(GeneralError::AnonymousNotAllowed.to_string())
     }
+
     USERS.with(|users| {
         users.borrow()
             .get(&principal)
@@ -26,11 +46,13 @@ pub fn get_user(principal: Principal) -> Result<User, String> {
 
 #[query]
 pub fn get_current_user() -> Result<User, String> {
+    is_admin()?; // Admin check
     get_user(caller())
 }
 
 #[query]
 pub fn check_username_availability(username: String) -> Result<UsernameAvailabilityResponse, String> {
+    is_admin()?; // Admin check
     let username = username.trim().to_lowercase();
 
     if let Err(error) = validate_username(&username) {
@@ -58,8 +80,9 @@ pub fn check_username_availability(username: String) -> Result<UsernameAvailabil
 }
 
 #[query]
-
 pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
+    
+    is_admin()?; // Admin check
     USERS.with(|users| {
         users.borrow().iter().map(|(principal, user)| {
             if user.email.is_empty() || user.phone_number.is_empty() || user.full_name.is_empty() {
@@ -81,6 +104,7 @@ pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
 
 #[query]
 pub fn check_kyc_status(principal: Principal) -> Result<bool, String> {
+    is_admin()?; // Admin check
     USERS.with(|users| {
         users.borrow()
             .get(&principal)
@@ -91,6 +115,7 @@ pub fn check_kyc_status(principal: Principal) -> Result<bool, String> {
 
 #[query]
 pub fn has_username_for_principal(principal: Principal) -> bool {
+    
     USERS.with(|users| {
         users.borrow().contains_key(&principal)
     })

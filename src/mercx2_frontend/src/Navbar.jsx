@@ -5,7 +5,7 @@ import { HiOutlineLogout, HiMenu, HiX, HiClipboardCopy } from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { useNavigate } from 'react-router-dom';  // Ensure useNavigate is imported
-import { Principal } from "@dfinity/principal"; // Import Principal
+//import { Principal } from "@dfinity/principal"; // Import Principal
 import { FaCopy } from "react-icons/fa";
 
 const navigation = [
@@ -22,22 +22,20 @@ function MyNavbar() {
   //const [copySuccess, setCopySuccess] = useState('');
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();  // Use navigate for redirection
+  const [userExists, setUserExists] = useState(false);  // State to track if user exists
+  const [isUserChecked, setIsUserChecked] = useState(false);  // State to track if the user check is complete
+
 
   const handleLogin = async () => {
-    // Perform login
     await login();
-    // Check if the user exists
     if (principal) {
       try {
-        const userExists = await kycActor.has_username_for_principal(principal);
-        console.log(userExists);
-        if (!userExists) {
-          navigate('/signup');  // Redirect to signup if no user
-        } else {
-          navigate('/');
-        }
+        const exists = await kycActor.has_username_for_principal(principal);
+        setUserExists(exists);
+        setIsUserChecked(true);  // Mark the user check as complete
       } catch (error) {
         console.error("Error checking user existence:", error);
+        setIsUserChecked(true);  // Ensure we handle error state
       }
     }
   };
@@ -53,6 +51,17 @@ function MyNavbar() {
       }
     }
   }, [isAuthenticated, principal]);
+
+  // Effect to handle redirection based on user existence
+  useEffect(() => {
+    if (isUserChecked) {  // Ensure we navigate only after checking the user status
+      if (!userExists) {
+        navigate('/signup');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [userExists, isUserChecked]);  // Depend on userExists and isUserChecked
 
   return (
     <nav className="bg-gray-900">

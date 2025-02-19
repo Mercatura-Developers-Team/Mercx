@@ -70,7 +70,7 @@ const SignupForm = () => {
           username: values.username,
           full_name: values.fullname,
           phone_number: values.phone,
-          email: values.phone,
+          email: values.email,
         });
 
         if (response && response.Ok) {

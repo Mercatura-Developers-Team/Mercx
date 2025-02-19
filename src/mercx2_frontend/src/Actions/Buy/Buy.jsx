@@ -110,9 +110,23 @@ const Buy = () => {
         setNotSwapped(false);
 
         const icp_swap_canister_id = "a3shf-5eaaa-aaaaa-qaafa-cai"; // Placeholder for actual canister ID
-         let amount = (inputIcp * 1e8);
-        let ApprovedIcp = Number(amount+20000); 
-       
+        let amount = (inputIcp * 1e8);
+        let ApprovedIcp = Number(amount + 20000);
+
+         // Check if the principal is whitelisted before proceeding
+    try {
+        const isWhitelisted = await mercx_Actor.is_whitelisted(principal);
+
+        if (!isWhitelisted) {
+            alert("You are not whitelisted to perform this operation.");
+            return;  // Exit the function early
+        }
+    } catch (error) {
+        console.error("Error checking whitelisted status:", error);
+        alert("Failed to check whitelisting status: " + error.message);
+        return;  // Exit the function on error
+    }
+
         let mercxAmountFormat = Math.floor(amountMercx * 1e8);
         try {
 
@@ -137,7 +151,6 @@ const Buy = () => {
             const numericBalanceMercx = Number(balanceResult);
             const after_ap = numericBalanceMercx / 1e8;
             setCanisterBalance(after_ap);
-
 
             //no enough mercx token in mercx canister //3ashan maykhosh approve 
             if (after_ap <= 0 || after_ap < amountMercx) {
@@ -171,7 +184,7 @@ const Buy = () => {
 
                 // If the approval was successful, call the backend function
                 if (resultIcpApprove && "Ok" in resultIcpApprove) {
-                  //  alert('Approval successful!');
+                    //  alert('Approval successful!');
                 }
 
                 else {
@@ -179,6 +192,7 @@ const Buy = () => {
                     alert("Approval failed: " + resultIcpApprove.Err);
                 }
             }
+
             // Call the backend function
             const backendResponse = await mercx_Actor.swap(amount, mercxAmountFormat);
             setInputIcp("");
@@ -227,7 +241,7 @@ const Buy = () => {
                                 <TokenData TokenBalance={!isAuthenticated ? `0` : Icpbalance.toString()} TokenName="ICP" TokenLogo={"./favicon.ico"} />
                                 <input
                                     type="number"
-                                     min="0.0001"
+                                    min="0.0001"
                                     step="0.0001"
                                     inputMode="decimal"
                                     name="amount"
