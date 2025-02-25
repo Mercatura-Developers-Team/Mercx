@@ -109,7 +109,7 @@ const Buy = () => {
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
 
-        const icp_swap_canister_id = "a3shf-5eaaa-aaaaa-qaafa-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = "zoa6c-riaaa-aaaan-qzmta-cai"; // Placeholder for actual canister ID
         let amount = (inputIcp * 1e8);
         let ApprovedIcp = Number(amount + 20000);
 
