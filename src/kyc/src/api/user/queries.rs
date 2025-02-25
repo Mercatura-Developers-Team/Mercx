@@ -105,7 +105,7 @@ pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
 
 #[query]
 pub fn check_kyc_status(principal: Principal) -> Result<bool, String> {
-    is_admin()?; // Admin check
+   
     USERS.with(|users| {
         users.borrow()
             .get(&principal)
