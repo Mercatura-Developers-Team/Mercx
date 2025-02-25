@@ -46,16 +46,17 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
 
     if let Some(refered_by_username) = &request.refered_by {
         let refered_by_username = refered_by_username.trim().to_lowercase();
-
-        USERNAMES.with(|usernames| {
-            if let Some(refered_by_principal) = usernames.borrow().get(&refered_by_username) {
-                // If the username exists, store it
-                valid_refered_by = Some(refered_by_username);
-            } else {
-                return Err("Referred username does not exist.".to_string());
-            }
-            Ok::<(), String>(())
-        })?;
+    
+        // Borrow usernames map before entering closure
+        let refered_by_exists = USERNAMES.with(|usernames| {
+            usernames.borrow().contains_key(&refered_by_username)
+        });
+    
+        if refered_by_exists {
+            valid_refered_by = Some(refered_by_username);
+        } else {
+            return Err("Referred username does not exist.".to_string());
+        }
     }
     let user = User::new(
         caller,
@@ -63,7 +64,7 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
         request.full_name.clone(),
         request.email.clone(),
         request.phone_number.clone(),
-        request.refered_by.clone(),
+        valid_refered_by,
     );
     // Insert user data
     USERS.with(|users| {
