@@ -12,7 +12,7 @@ const navigation = [
   { name: "Home", to: "/" },
   { name: "Trade", to: "/trade" },
   { name: "Transactions", to: "/transactions" },
-  { name: "Transfer", to: "/transfer" }
+  { name: "Wallet", to: "/wallet" }
 ];
 
 function MyNavbar() {
