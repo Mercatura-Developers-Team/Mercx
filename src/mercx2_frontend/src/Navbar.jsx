@@ -127,11 +127,12 @@ function MyNavbar() {
                   <HiOutlineLogout size={24} style={{ color: 'currentColor' }} />
                 </button>
               </>
+
             ) : (
               <button
                 onClick={handleLogin}
                 className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg  py-2 px-4 rounded"
-              >
+ >
                 Connect to Wallet
               </button>
             )}

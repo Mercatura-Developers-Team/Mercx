@@ -1,15 +1,43 @@
 import { AuthClient } from "@dfinity/auth-client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { canisterId as MercxId, createActor as createMercxActor} from "../../declarations/mercx_backend";
+import { canisterId as MercxId, createActor as createMercxActor } from "../../declarations/mercx_backend";
 import { canisterId, createActor } from "../../declarations/icrc1_ledger_canister";
 import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } from "../../declarations/icrc1_index_canister";
 import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
 import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
-import { canisterId as kycCanisterId, createActor as createKycActor } from "../../declarations/kyc"; 
+import { canisterId as kycCanisterId, createActor as createKycActor } from "../../declarations/kyc";
 
 
 // Create a React Context for sharing authentication status across the component tree
 const AuthContext = createContext();
+
+function openInExternalBrowser() {
+  const ua = navigator.userAgent.toLowerCase();
+
+  // Detect in-app browsers
+  if (
+    ua.includes("LinkedIn") ||
+    ua.includes("FBAN") || ua.includes("FBAV") ||  // Facebook
+    ua.includes("Instagram") ||                    // Instagram
+    ua.includes("Twitter") ||
+   //ua.includes("chrome") 
+    ua.includes("edge") || ua.includes("edg") // Twitter
+  ) {
+    alert("Please open this link in Safari or Chrome for authentication.");
+    //window.location.href = `googlechrome://${window.location.href.replace("https://xpm3z-7qaaa-aaaan-qzvlq-cai.icp0.io/")}`;
+      // Get the current URL without protocol
+      let formattedURL = window.location.href;
+    // Ensure the URL uses HTTPS (required for Edge redirection)
+      if (!formattedURL.startsWith("https")) {
+        formattedURL = formattedURL.replace(/^http:\/\//, "https://");
+      }
+  
+    //Redirect user to Microsoft Edge with the correct format
+      window.location.href = `googlechrome:${formattedURL}`;
+  
+  }
+}
+
 
 // Function to determine the correct identity provider URL based on environment and browser
 export const getIdentityProvider = () => {
@@ -17,13 +45,13 @@ export const getIdentityProvider = () => {
   // Safeguard against server rendering
   // Check if the code is running in a browser environment
   if (typeof window !== "undefined") {
-        // Determine if the environment is local (not production)
+    // Determine if the environment is local (not production)
     const isLocal = process.env.DFX_NETWORK !== "ic";
     // Safari does not support localhost subdomains
-        // Check if the user's browser is Safari to handle specific limitations
+    // Check if the user's browser is Safari to handle specific limitations
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     if (isLocal && isSafari) {
-  // Safari handling for local development environment
+      // Safari handling for local development environment
       idpProvider = `http://localhost:8001/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
     } else if (isLocal) {
       // General handling for non-Safari browsers in local development
@@ -41,7 +69,7 @@ export const defaultOptions = {
   createOptions: {
     idleOptions: {
       // Set to true if you do not want idle functionality
-            // Opt to disable idle functionality for the auth client
+      // Opt to disable idle functionality for the auth client
       disableIdle: true,
     },
   },
@@ -49,7 +77,7 @@ export const defaultOptions = {
    * @type {import("@dfinity/auth-client").AuthClientLoginOptions}
    */
   loginOptions: {
-        // Specify the identity provider determined by getIdentityProvider
+    // Specify the identity provider determined by getIdentityProvider
     identityProvider: getIdentityProvider(),
   },
 };
@@ -75,20 +103,26 @@ export const useAuthClient = (options = defaultOptions) => {
   const [kycActor, setKycActor] = useState(null);    // ✅ KYC actor
 
   useEffect(() => {
+    openInExternalBrowser();
     // Initialize AuthClient
-        // Create an AuthClient instance when the component mounts
+    // Create an AuthClient instance when the component mounts
     AuthClient.create(options.createOptions).then(async (client) => {
+
       updateClient(client);
+
     });
+
+
   }, []);
+
   // Function to handle user login
   const login = () => {
     authClient.login({
       ...options.loginOptions,
       onSuccess: () => {
         updateClient(authClient);
-        
       },
+
     });
   };
 
@@ -141,13 +175,13 @@ export const useAuthClient = (options = defaultOptions) => {
     });
     setTommyActor(tommyActor);
 
-       // ✅ Create the KYC Actor
-       const kycActor = createKycActor(kycCanisterId, {
-        agentOptions: {
-          identity,
-        },
-      });
-      setKycActor(kycActor);
+    // ✅ Create the KYC Actor
+    const kycActor = createKycActor(kycCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setKycActor(kycActor);
   }
 
   async function logout() {
@@ -164,10 +198,10 @@ export const useAuthClient = (options = defaultOptions) => {
     principal,
     whoamiActor,
     icrcIndexActor,
-     icpActor,
+    icpActor,
     mercx_Actor,
     tommy_Actor,
-    kycActor,     // ✅ Return KYC actor
+    kycActor,// ✅ Return KYC actor
 
   };
 };

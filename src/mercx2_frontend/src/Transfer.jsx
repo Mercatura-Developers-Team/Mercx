@@ -8,7 +8,7 @@ const Transfer = () => {
     const { whoamiActor, icpActor , mercx_Actor} = useAuth();
     const { principal } = useAuth();
     return (
-        <div className='md:py-10 bg-gray-900 py-8'>
+        <div className='md:py-10 bg-gray-900 py-8  overflow-y-hidden'>
 
             <section className=" p-4 m-4  rounded-lg shadow  bg-slate-800 text-gray-900 border border-gray-700">
                 <h2 className="font-bold text-lg text-white">Transfer Bella</h2>
@@ -38,7 +38,7 @@ const Transfer = () => {
                             const senderPrincipal = principal;  // principal should be available from useAuthClient()
 
                             // Call the backend transfer function
-                            const transferResult = await mercx_Actor.transfer({
+                            const transferResult = await whoamiActor.icrc1_transfer({
                                 to_account: {
                                     owner: recipientPrincipal,   // Use `to` instead of `to_account`
                                     subaccount: [],              // Optional, set subaccount if required

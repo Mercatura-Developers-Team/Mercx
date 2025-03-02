@@ -46,7 +46,7 @@ pub fn get_user(principal: Principal) -> Result<User, String> {
 
 #[query]
 pub fn get_current_user() -> Result<User, String> {
-    is_admin()?; // Admin check
+    //is_admin()?; // Admin check
     get_user(caller())
 }
 
@@ -105,7 +105,7 @@ pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
 
 #[query]
 pub fn check_kyc_status(principal: Principal) -> Result<bool, String> {
-    is_admin()?; // Admin check
+    //is_admin()?; // Admin check
     USERS.with(|users| {
         users.borrow()
             .get(&principal)
