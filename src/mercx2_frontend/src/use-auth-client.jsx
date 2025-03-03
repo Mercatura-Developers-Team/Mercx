@@ -6,6 +6,7 @@ import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } fr
 import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
 import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
 import { canisterId as kycCanisterId, createActor as createKycActor } from "../../declarations/kyc"; 
+import { canisterId as fxmxCanisterId, createActor as createFXMXActor } from "../../declarations/fxmx_icrc1_ledger"; 
 
 
 // Create a React Context for sharing authentication status across the component tree
@@ -73,6 +74,8 @@ export const useAuthClient = (options = defaultOptions) => {
   const [mercx_Actor, setMercxActor] = useState(null);
   const [tommy_Actor, setTommyActor] = useState(null);
   const [kycActor, setKycActor] = useState(null);    // ✅ KYC actor
+  const [fxmxActor, setFXMXActor] = useState(null);   
+
 
   useEffect(() => {
     // Initialize AuthClient
@@ -148,6 +151,13 @@ export const useAuthClient = (options = defaultOptions) => {
         },
       });
       setKycActor(kycActor);
+
+      const FxmxActor = createFXMXActor(fxmxCanisterId, {
+        agentOptions: {
+          identity,
+        },
+      });
+      setFXMXActor(FxmxActor);
   }
 
   async function logout() {
@@ -168,7 +178,7 @@ export const useAuthClient = (options = defaultOptions) => {
     mercx_Actor,
     tommy_Actor,
     kycActor,     // ✅ Return KYC actor
-
+    fxmxActor,
   };
 };
 

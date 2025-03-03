@@ -3,19 +3,23 @@ import { useAuth } from "./use-auth-client";
 import { Principal } from "@dfinity/principal";
 
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor ,fxmxActor} = useAuth();
     const { principal } = useAuth();
     const [tokenName, setTokenName] = useState("");
     const [icptokenName, setIcpTokenName] = useState("");
     const [TommytokenName, setTommyName] = useState("");
+    const [FXMXtokenName, setFXMXName] = useState("");
     const [balance, setBalance] = useState(0n);
     const [Icpbalance, setIcpBalance] = useState(0n);
     const [Tommybalance, setTommyBalance] = useState(0n);
+    const [FXMXbalance, setFXMXBalance] = useState(0n);
     const [selectedToken, setSelectedToken] = useState("BELLA"); // Default selected token
     const [tokens, setTokens] = useState([
         { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer" }, // Assuming mercx_Actor has a transfer method
         { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer" }, // Assuming icpActor has icrc1_transfer method
-        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer" } // Assuming tommy_Actor has a transfer method
+        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer" },
+        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer" } // Assuming tommy_Actor has a transfer method
+
     ]);
 
     async function fetchData(principalId) {
@@ -27,6 +31,8 @@ const Transfer = () => {
             setIcpTokenName(icptokenname);
             const tommyTokenname = await tommy_Actor.icrc1_name();
             setTommyName(tommyTokenname);
+            const fxmxTokenname = await fxmxActor.icrc1_symbol();
+            setFXMXName(fxmxTokenname);
 
             const balanceResult = await whoamiActor.icrc1_balance_of({ owner, subaccount: [] });
             const numericBalanceMercx = Number(balanceResult);
@@ -42,6 +48,11 @@ const Transfer = () => {
             const numericBalanceTommy = Number(balanceTommy);
             const after_ap_tommy = numericBalanceTommy / 1e8;
             setTommyBalance(after_ap_tommy);
+
+            const balanceFXMX = await fxmxActor.icrc1_balance_of({ owner, subaccount: [] });
+            const numericBalanceFXMX = Number(balanceFXMX);
+            const after_ap_fxmx = numericBalanceFXMX / 1e8;
+            setFXMXBalance(after_ap_fxmx);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -130,6 +141,8 @@ const Transfer = () => {
                 <p className="text-xl">{!isAuthenticated ? `0 ${tokenName}` : `${balance.toString()} ${tokenName}`}</p>
                 <p className="text-xl">{!isAuthenticated ? `0 ${TommytokenName}` : `${Tommybalance.toString()} ${TommytokenName}`}</p>
                 <p className="text-xl">{!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
+                <p className="text-xl">{!isAuthenticated ? `0 ${FXMXtokenName}` : `${FXMXbalance.toString()} ${FXMXtokenName}`}</p>
+
             </section>
 
             <section className="p-4 m-4 rounded-lg shadow bg-slate-800 text-gray-900 border border-gray-700">
