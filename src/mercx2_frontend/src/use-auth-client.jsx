@@ -11,32 +11,62 @@ import { canisterId as kycCanisterId, createActor as createKycActor } from "../.
 // Create a React Context for sharing authentication status across the component tree
 const AuthContext = createContext();
 
+// function openInExternalBrowser() {
+//   const ua = navigator.userAgent.toLowerCase();
+
+//   // Detect in-app browsers
+//   if (
+//     ua.includes("LinkedIn") ||
+//     ua.includes("FBAN") || ua.includes("FBAV") ||  // Facebook
+//     ua.includes("Instagram") ||                    // Instagram
+//     ua.includes("Twitter") ||
+//     //ua.includes("chrome") 
+//     ua.includes("edge") || ua.includes("edg") // Twitter
+//   ) {
+//     alert("Please open this link in Safari or Chrome for authentication.");
+//     //window.location.href = `googlechrome://${window.location.href.replace("https://xpm3z-7qaaa-aaaan-qzvlq-cai.icp0.io/")}`;
+//     // Get the current URL without protocol
+//     let formattedURL = window.location.href;
+//     // Ensure the URL uses HTTPS (required for Edge redirection)
+//     if (!formattedURL.startsWith("https")) {
+//       formattedURL = formattedURL.replace(/^http:\/\//, "https://");
+//     }
+
+
+//     //Redirect user to Microsoft Edge with the correct format
+//     window.location.href = `googlechrome:${formattedURL}`;
+
+//   }
+// }
 function openInExternalBrowser() {
   const ua = navigator.userAgent.toLowerCase();
 
   // Detect in-app browsers
   if (
-    ua.includes("LinkedIn") ||
-    ua.includes("FBAN") || ua.includes("FBAV") ||  // Facebook
-    ua.includes("Instagram") ||                    // Instagram
-    ua.includes("Twitter") ||
-   //ua.includes("chrome") 
-    ua.includes("edge") || ua.includes("edg") // Twitter
+    ua.includes("linkedin") || // LinkedIn
+    ua.includes("fban") || ua.includes("fbav") || // Facebook
+    ua.includes("instagram") || // Instagram
+    ua.includes("twitter") || // Twitter
+    ua.includes("edge") || ua.includes("edg")
   ) {
-    alert("Please open this link in Safari or Chrome for authentication.");
-    //window.location.href = `googlechrome://${window.location.href.replace("https://xpm3z-7qaaa-aaaan-qzvlq-cai.icp0.io/")}`;
-      // Get the current URL without protocol
-      let formattedURL = window.location.href;
-    // Ensure the URL uses HTTPS (required for Edge redirection)
-      if (!formattedURL.startsWith("https")) {
-        formattedURL = formattedURL.replace(/^http:\/\//, "https://");
-      }
-  
-    //Redirect user to Microsoft Edge with the correct format
-      window.location.href = `googlechrome:${formattedURL}`;
-  
+    // Show a message to the user
+    alert("Please open this link in Safari, Chrome, or Edge for authentication.");
+
+    // Optionally, provide a button or link for the user to manually open the URL
+    const confirmation = confirm("Do you want to copy the link and open it in an external browser?");
+    if (confirmation) {
+      // Copy the URL to the clipboard
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => {
+          alert("Link copied to clipboard. Please paste it into Safari, Chrome, or Edge.");
+        })
+        .catch(() => {
+          alert("Please manually copy the URL and open it in an external browser.");
+        });
+    }
   }
 }
+
 
 
 // Function to determine the correct identity provider URL based on environment and browser
