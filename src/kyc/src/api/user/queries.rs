@@ -82,7 +82,7 @@ pub fn check_username_availability(username: String) -> Result<UsernameAvailabil
 #[query]
 pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
     
-   is_admin()?; // Admin check
+    is_admin()?; // Admin check
     USERS.with(|users| {
         users.borrow().iter().map(|(principal, user)| {
             if user.email.is_empty() || user.phone_number.is_empty() || user.full_name.is_empty() {
@@ -100,7 +100,6 @@ pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
         }).collect()
     })
 }
-
 
 
 #[query]
