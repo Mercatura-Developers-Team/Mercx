@@ -1,4 +1,7 @@
 {
+  "fxmx_icrc1_ledger": {
+    "ic": "b7p2k-giaaa-aaaan-qzwta-cai"
+  },
   "icp_index_canister": {
     "ic": "ne7xn-waaaa-aaaan-qzpeq-cai"
   },

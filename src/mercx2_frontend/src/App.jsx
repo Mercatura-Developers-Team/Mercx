@@ -7,7 +7,7 @@ import { AuthProvider } from "./use-auth-client";
 import Transcations from './Transcations';
 import Transfer from './Transfer';
 import SignupForm from './SignupForm';
-
+import InappBrowser from './InappBrowser';
 function App() {
   return (
     <AuthProvider>
@@ -20,6 +20,7 @@ function App() {
           <Route path="/transactions" element={<Transcations />} />
           <Route path="/wallet" element={<Transfer />} />
           <Route path="/signup" element={<SignupForm />} />
+          <Route path="/InappBrowser" element={<InappBrowser/>} />
         </Routes>
       </div>
     </AuthProvider>

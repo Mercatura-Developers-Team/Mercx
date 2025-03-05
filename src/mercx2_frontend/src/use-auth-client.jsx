@@ -6,10 +6,32 @@ import { canisterId as icrcIndexCanisterId, createActor as createIndexActor } fr
 import { canisterId as icpCanisterId, createActor as createIcpActor } from "../../declarations/icp_ledger_canister";
 import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
 import { canisterId as kycCanisterId, createActor as createKycActor } from "../../declarations/kyc";
+import { canisterId as fxmxCanisterId, createActor as createFXMXActor } from "../../declarations/fxmx_icrc1_ledger";
 
 
 // Create a React Context for sharing authentication status across the component tree
 const AuthContext = createContext();
+function detectInAppBrowser() {
+  const ua = navigator.userAgent.toLowerCase();
+  return (
+    ua.includes("linkedin") ||
+    ua.includes("fban") || ua.includes("fbav") ||  // Facebook
+    ua.includes("instagram") ||
+    ua.includes("twitter") ||
+    ua.includes("edge") || ua.includes("edg")
+  );
+}
+
+function handleRedirect() {
+  if (detectInAppBrowser()) {
+    if (window.location.pathname !== "/InappBrowser") {
+      window.location.href = "/InappBrowser";  // Redirect only if NOT already there
+    }
+  }
+}
+
+// Run the function when the page loads
+
 
 // function openInExternalBrowser() {
 //   const ua = navigator.userAgent.toLowerCase();
@@ -38,34 +60,48 @@ const AuthContext = createContext();
 
 //   }
 // }
-function openInExternalBrowser() {
-  const ua = navigator.userAgent.toLowerCase();
+// function openInExternalBrowser() {
+//   const ua = navigator.userAgent.toLowerCase();
 
-  // Detect in-app browsers
-  if (
-    ua.includes("linkedin") || // LinkedIn
-    ua.includes("fban") || ua.includes("fbav") || // Facebook
-    ua.includes("instagram") || // Instagram
-    ua.includes("twitter") || // Twitter
-    ua.includes("edge") || ua.includes("edg")
-  ) {
-    // Show a message to the user
-    alert("Please open this link in Safari, Chrome, or Edge for authentication.");
+//   if (ua.includes("linkedin") || ua.includes("fban") || ua.includes("fbav") || ua.includes("instagram") || ua.includes("twitter")) {
+//     const formattedURL = window.location.href.replace(/^http:\/\//, "https://");
+//     const isIOS = /iphone|ipad|ipod/.test(ua);
 
-    // Optionally, provide a button or link for the user to manually open the URL
-    const confirmation = confirm("Do you want to copy the link and open it in an external browser?");
-    if (confirmation) {
-      // Copy the URL to the clipboard
-      navigator.clipboard.writeText(window.location.href)
-        .then(() => {
-          alert("Link copied to clipboard. Please paste it into Safari, Chrome, or Edge.");
-        })
-        .catch(() => {
-          alert("Please manually copy the URL and open it in an external browser.");
-        });
-    }
-  }
-}
+//     if (isIOS) {
+//       // Attempt to open in Safari (iOS only)
+//       window.location.href = `googlechrome://${formattedURL}`;
+//     } else {
+//       // Attempt to open in Chrome or Edge (Android/Desktop)
+//       window.location.href = `microsoft-edge://${formattedURL}`;
+//     }
+
+
+//   }
+// }
+// function openInExternalBrowser() {
+//   const ua = navigator.userAgent.toLowerCase();
+
+//   // Detect in-app browsers
+//   if (
+//     ua.includes("linkedin") || // LinkedIn
+//     ua.includes("fban") || ua.includes("fbav") || // Facebook
+//     ua.includes("instagram") || // Instagram
+//     ua.includes("twitter") || // Twitter
+//     ua.includes("edge") || ua.includes("edg")
+//   ) {
+//     // Show a message to the user
+//     alert("Please open this link in Safari, Chrome, or Edge for authentication.");
+//     const formattedURL = window.location.href.replace(/^http:\/\//, "https://");
+//     // Optionally, provide a button or link for the user to manually open the URL
+//     const confirmation = confirm("Do you want to copy the link and open it in an external browser?");
+//     if (confirmation) {
+//       // Copy the URL to the clipboard
+//       window.location.href = `googlechrome://${formattedURL}`;
+//       //alert("Please manually copy the URL and open it in an external browser.");
+
+//     }
+//   }
+// }
 
 
 
@@ -131,9 +167,12 @@ export const useAuthClient = (options = defaultOptions) => {
   const [mercx_Actor, setMercxActor] = useState(null);
   const [tommy_Actor, setTommyActor] = useState(null);
   const [kycActor, setKycActor] = useState(null);    // ✅ KYC actor
+  const [fxmxActor, setFXMXActor] = useState(null);
+
 
   useEffect(() => {
-    openInExternalBrowser();
+    handleRedirect();
+    // openInExternalBrowser();
     // Initialize AuthClient
     // Create an AuthClient instance when the component mounts
     AuthClient.create(options.createOptions).then(async (client) => {
@@ -212,6 +251,13 @@ export const useAuthClient = (options = defaultOptions) => {
       },
     });
     setKycActor(kycActor);
+
+    const FxmxActor = createFXMXActor(fxmxCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setFXMXActor(FxmxActor);
   }
 
   async function logout() {
@@ -231,8 +277,8 @@ export const useAuthClient = (options = defaultOptions) => {
     icpActor,
     mercx_Actor,
     tommy_Actor,
-    kycActor,// ✅ Return KYC actor
-
+    kycActor,     // ✅ Return KYC actor
+    fxmxActor,
   };
 };
 
