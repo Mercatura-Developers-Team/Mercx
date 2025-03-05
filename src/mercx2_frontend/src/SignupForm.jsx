@@ -34,25 +34,12 @@ const SignupSchema = Yup.object().shape({
 
 const SignupForm = () => {
   const { isAuthenticated, kycActor } = useAuth();
-  const [kycStatus, setKycStatus] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { principal } = useAuth();
   const navigate = useNavigate();  // Use navigate for redirection
 
   // Check KYC Status
   useEffect(() => {
-    if (isAuthenticated) {
-      (async () => {
-        try {
-          const status = await kycActor.check_kyc_status(principal);
-          console.log(status);
-          setKycStatus(status);
-        } catch (err) {
-          console.error("Error checking KYC:", err);
-        }
-      })();
-    }
   }, [isAuthenticated]);
 
   const formik = useFormik({

@@ -12,42 +12,47 @@ export default function InappBrowser() {
   // };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px", fontFamily: "Arial, sans-serif" }}>
-      <h2>Open This Page in Safari or Chrome</h2>
-      <p>To continue, open this page in your default browser:</p>
+    <div className="">
+
+      <div style={{ textAlign: "center", marginTop: "50px", fontFamily: "Arial, sans-serif" }}>
+        <h2>Open This Page in Safari or Chrome</h2>
+        <p>To continue, open this page in your default browser:</p>
 
 
 
-      <div>
+        <div>
 
 
 
-        <CopyToClipboard text={url} onCopy={() => {
-          setCopied(true);
-          setTimeout(() => {
-            setCopied(false);
-          }, 3000);
-        }}>
+          <CopyToClipboard text={url} onCopy={() => {
+            setCopied(true);
+            setTimeout(() => {
+              setCopied(false);
+            }, 3000);
+          }}>
 
-          <button
-            style={{
-              background: copied ? "#007bff" : "#6c757d",
+            <button
+              style={{
+                background: copied ? "#007bff" : "#6c757d",
 
-              color: "white",
-              padding: "10px 20px",
-              border: "none",
-              cursor: "pointer",
+                color: "white",
+                padding: "10px 20px",
+                border: "none",
+                cursor: "pointer",
 
-            }}
+              }}
 
-            className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg  py-2 px-4 rounded"
-          >
-            {copied ? "Copied!" : "Copy Link"}
-          </button>
+              className={`mt-4 px-6 py-2 rounded-lg text-white font-medium transition ${copied ? "bg-blue-500" : "bg-gray-500"
+                }text-white font-bold text-lg  py-2 px-4 rounded`}
+            >
+              {copied ? "Copied!" : "Copy Link"}
+            </button>
 
-        </CopyToClipboard>
+          </CopyToClipboard>
 
+        </div>
       </div>
+
     </div>
   );
 }

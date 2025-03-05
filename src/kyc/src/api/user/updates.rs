@@ -1,6 +1,7 @@
 use ic_cdk::api::{caller, time};
 use ic_cdk_macros::update;
 use candid::Principal;
+use ic_cdk::api::call::call;
 
 use crate::errors::general::GeneralError;
 use crate::errors::user::UserError;
@@ -143,10 +144,10 @@ pub fn upgrade_to_librarian() -> Result<User, String> {
     })
 }
 
-// ✅ KYC Verification (Admin-Only)
 #[update]
-pub fn verify_kyc(principal: Principal) -> Result<String, String> {
-    is_admin()?; // Admin check
+pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
+   // is_admin()?; // Ensure only admins can perform this action
+
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         if let Some(mut user) = users.get(&principal) {
@@ -157,9 +158,17 @@ pub fn verify_kyc(principal: Principal) -> Result<String, String> {
 
             Ok("KYC verification successful.".to_string())
         } else {
-            Err("User not found.".to_string())
+            return Err("User not found.".to_string());
         }
-    })
+    })?;
+
+    // Call `add_to_whitelist` in `mercx_backend`
+    let mercx_backend_canister_id: Principal = Principal::from_text("a3shf-5eaaa-aaaaa-qaafa-cai").unwrap();
+
+    match call::<(Principal,), ()>(mercx_backend_canister_id, "add_to_whitelist", (principal,)).await {
+        Ok(_) => Ok("KYC verified and user added to whitelist.".to_string()),
+        Err(err) => Err(format!("KYC verified, but failed to add to whitelist: {:?}", err)),
+    }
 }
 
 #[update]
