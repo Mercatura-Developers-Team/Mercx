@@ -46,7 +46,7 @@ pub fn get_user(principal: Principal) -> Result<User, String> {
 
 #[query]
 pub fn get_current_user() -> Result<User, String> {
-    is_admin()?; // Admin check
+    //is_admin()?; // Admin check
     get_user(caller())
 }
 
