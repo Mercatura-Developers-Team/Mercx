@@ -160,7 +160,7 @@ pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
         } else {
             return Err("User not found.".to_string());
         }
-    })?;
+    })?; 
 
     // Call `add_to_whitelist` in `mercx_backend`
     let mercx_backend_canister_id: Principal = Principal::from_text("a3shf-5eaaa-aaaaa-qaafa-cai").unwrap();

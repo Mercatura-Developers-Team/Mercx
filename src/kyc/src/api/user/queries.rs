@@ -121,6 +121,17 @@ pub fn has_username_for_principal(principal: Principal) -> bool {
     })
 }
 
+#[query]
+pub fn get_username_by_principal(principal: Principal) -> Result<String, String> {
+    USERS.with(|users| {
+        users.borrow()
+            .get(&principal)
+            .map(|user| user.username.clone())
+            .ok_or_else(|| "User not found.".to_string())
+    })
+}
+
+
 
 
 

@@ -48,6 +48,7 @@ service : {
   get_all_users : () -> (Result_4) query;
   get_current_user : () -> (Result_5) query;
   get_user : (principal) -> (Result_5) query;
+  get_username_by_principal : (principal) -> (Result_3) query;
   has_username_for_principal : (principal) -> (bool) query;
   is_admin : () -> (Result) query;
   signup : (SignupRequest) -> (Result_5);
