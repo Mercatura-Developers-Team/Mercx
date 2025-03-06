@@ -1,58 +1,46 @@
 import { useState } from "react";
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { CopyToClipboard } from "react-copy-to-clipboard";
+
 export default function InappBrowser() {
   const url = "https://xpm3z-7qaaa-aaaan-qzvlq-cai.icp0.io/";
   const [copied, setCopied] = useState(false);
 
-  // const copyToClipboard = () => {
-  //   navigator.clipboard.writeText(url).then(() => {
-  //     setCopied(true);
-  //     setTimeout(() => setCopied(false), 2000); // Reset after 2 sec
-  //   });
-  // };
-
   return (
-    <div className="">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white px-4">
+      <div className="text-center p-6 bg-gray-800 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 className="text-lg font-semibold">Enhanced Security Notice</h2>
 
-      <div style={{ textAlign: "center", marginTop: "50px", fontFamily: "Arial, sans-serif" }}>
-        <h2>Open This Page in Safari or Chrome</h2>
-        <p>To continue, open this page in your default browser:</p>
+        <p className="text-gray-300 mt-2 text-sm leading-tight">
+          For your protection, <span className="text-blue-400 font-medium">MercX</span> enforces the highest security standards.
+        </p>
 
+        <p className="text-gray-300 mt-4 text-sm">
+          Please <span className="font-semibold text-blue-400">open this page in Safari or Chrome</span> for a secure experience. 
+          Simply copy and paste the link into your browser to ensure a <span className="font-semibold">fully protected connection</span>.
+        </p>
 
-
-        <div>
-
-
-
-          <CopyToClipboard text={url} onCopy={() => {
-            setCopied(true);
-            setTimeout(() => {
-              setCopied(false);
-            }, 3000);
-          }}>
-
+        <div className="mt-6">
+          <CopyToClipboard
+            text={url}
+            onCopy={() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 3000); // Reset after 3 seconds
+            }}
+          >
             <button
-              style={{
-                background: copied ? "#007bff" : "#6c757d",
-
-                color: "white",
-                padding: "10px 20px",
-                border: "none",
-                cursor: "pointer",
-
-              }}
-
-              className={`mt-4 px-6 py-2 rounded-lg text-white font-medium transition ${copied ? "bg-blue-500" : "bg-gray-500"
-                }text-white font-bold text-lg  py-2 px-4 rounded`}
+              className={`px-6 py-3 text-sm rounded-lg font-medium transition duration-200 ${
+                copied ? "bg-blue-500" : "bg-gray-600 hover:bg-gray-700"
+              }`}
             >
               {copied ? "Copied!" : "Copy Link"}
             </button>
-
           </CopyToClipboard>
-
         </div>
-      </div>
 
+        <p className="mt-6 text-gray-400 text-xs">
+          Thank you for trusting <span className="text-blue-400 font-semibold">MercX</span> – Secure, Seamless, Trusted.
+        </p>
+      </div>
     </div>
   );
 }
