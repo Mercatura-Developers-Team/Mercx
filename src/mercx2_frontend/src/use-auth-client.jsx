@@ -7,6 +7,7 @@ import { canisterId as icpCanisterId, createActor as createIcpActor } from "../.
 import { canisterId as tommyCanisterId, createActor as createTommyActor } from "../../declarations/tommy_icrc1_ledger";
 import { canisterId as kycCanisterId, createActor as createKycActor } from "../../declarations/kyc";
 import { canisterId as fxmxCanisterId, createActor as createFXMXActor } from "../../declarations/fxmx_icrc1_ledger";
+import { canisterId as fxmxIndexId, createActor as createFXMXindexActor } from "../../declarations/fxmx_icrc1_index";
 
 
 // Create a React Context for sharing authentication status across the component tree
@@ -29,79 +30,6 @@ function handleRedirect() {
     }
   }
 }
-
-// Run the function when the page loads
-
-
-// function openInExternalBrowser() {
-//   const ua = navigator.userAgent.toLowerCase();
-
-//   // Detect in-app browsers
-//   if (
-//     ua.includes("LinkedIn") ||
-//     ua.includes("FBAN") || ua.includes("FBAV") ||  // Facebook
-//     ua.includes("Instagram") ||                    // Instagram
-//     ua.includes("Twitter") ||
-//     //ua.includes("chrome") 
-//     ua.includes("edge") || ua.includes("edg") // Twitter
-//   ) {
-//     alert("Please open this link in Safari or Chrome for authentication.");
-//     //window.location.href = `googlechrome://${window.location.href.replace("https://xpm3z-7qaaa-aaaan-qzvlq-cai.icp0.io/")}`;
-//     // Get the current URL without protocol
-//     let formattedURL = window.location.href;
-//     // Ensure the URL uses HTTPS (required for Edge redirection)
-//     if (!formattedURL.startsWith("https")) {
-//       formattedURL = formattedURL.replace(/^http:\/\//, "https://");
-//     }
-
-
-//     //Redirect user to Microsoft Edge with the correct format
-//     window.location.href = `googlechrome:${formattedURL}`;
-
-//   }
-// }
-// function openInExternalBrowser() {
-//   const ua = navigator.userAgent.toLowerCase();
-
-//   if (ua.includes("linkedin") || ua.includes("fban") || ua.includes("fbav") || ua.includes("instagram") || ua.includes("twitter")) {
-//     const formattedURL = window.location.href.replace(/^http:\/\//, "https://");
-//     const isIOS = /iphone|ipad|ipod/.test(ua);
-
-//     if (isIOS) {
-//       // Attempt to open in Safari (iOS only)
-//       window.location.href = `googlechrome://${formattedURL}`;
-//     } else {
-//       // Attempt to open in Chrome or Edge (Android/Desktop)
-//       window.location.href = `microsoft-edge://${formattedURL}`;
-//     }
-
-
-//   }
-// }
-// function openInExternalBrowser() {
-//   const ua = navigator.userAgent.toLowerCase();
-
-//   // Detect in-app browsers
-//   if (
-//     ua.includes("linkedin") || // LinkedIn
-//     ua.includes("fban") || ua.includes("fbav") || // Facebook
-//     ua.includes("instagram") || // Instagram
-//     ua.includes("twitter") || // Twitter
-//     ua.includes("edge") || ua.includes("edg")
-//   ) {
-//     // Show a message to the user
-//     alert("Please open this link in Safari, Chrome, or Edge for authentication.");
-//     const formattedURL = window.location.href.replace(/^http:\/\//, "https://");
-//     // Optionally, provide a button or link for the user to manually open the URL
-//     const confirmation = confirm("Do you want to copy the link and open it in an external browser?");
-//     if (confirmation) {
-//       // Copy the URL to the clipboard
-//       window.location.href = `googlechrome://${formattedURL}`;
-//       //alert("Please manually copy the URL and open it in an external browser.");
-
-//     }
-//   }
-// }
 
 
 
@@ -168,6 +96,7 @@ export const useAuthClient = (options = defaultOptions) => {
   const [tommy_Actor, setTommyActor] = useState(null);
   const [kycActor, setKycActor] = useState(null);    // ✅ KYC actor
   const [fxmxActor, setFXMXActor] = useState(null);
+  const [fxmxIndexActor, setFXMXindexActor] = useState(null);
 
 
   useEffect(() => {
@@ -258,6 +187,14 @@ export const useAuthClient = (options = defaultOptions) => {
       },
     });
     setFXMXActor(FxmxActor);
+
+    const FxmxindexActor = createFXMXindexActor(fxmxIndexId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setFXMXindexActor(FxmxindexActor);
+
   }
 
   async function logout() {
@@ -279,6 +216,7 @@ export const useAuthClient = (options = defaultOptions) => {
     tommy_Actor,
     kycActor,     // ✅ Return KYC actor
     fxmxActor,
+    fxmxIndexActor,
   };
 };
 
