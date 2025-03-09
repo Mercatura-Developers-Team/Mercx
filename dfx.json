@@ -4,15 +4,18 @@
       "candid": "src/mercx_backend/mercx_backend.did",
       "package": "mercx_backend",
       "type": "rust",
-      "dependencies": ["icrc1_ledger_canister"]
+      "dependencies": [
+        "icrc1_ledger_canister"
+      ]
     },
     "kyc": {
-      "candid": "src/kyc/kyc.did",          
+      "candid": "src/kyc/kyc.did",
       "package": "kyc",
       "type": "rust",
-      "dependencies": ["icrc1_ledger_canister"]
+      "dependencies": [
+        "icrc1_ledger_canister"
+      ]
     },
-
     "xrc": {
       "type": "custom",
       "candid": "xrc/xrc.did",
@@ -59,13 +62,25 @@
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
     },
-  
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      },
+      "frontend": {}
+    },
     "mercx2_frontend": {
       "dependencies": [
         "mercx_backend",
         "icrc1_ledger_canister"
       ],
-      "source": ["src/mercx2_frontend/dist"],
+      "source": [
+        "src/mercx2_frontend/dist"
+      ],
       "type": "assets",
       "workspace": "mercx2_frontend"
     }
@@ -73,7 +88,8 @@
   "networks": {
     "local": {
       "bind": "127.0.0.1:8001"
-    }},
+    }
+  },
   "defaults": {
     "replica": {
       "subnet_type": "system"

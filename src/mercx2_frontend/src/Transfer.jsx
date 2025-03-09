@@ -3,7 +3,7 @@ import { useAuth } from "./use-auth-client";
 import { Principal } from "@dfinity/principal";
 
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor ,fxmxActor} = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor ,fxmxActor, kycActor} = useAuth();
     const { principal } = useAuth();
     const [tokenName, setTokenName] = useState("");
     const [icptokenName, setIcpTokenName] = useState("");
@@ -70,12 +70,12 @@ const Transfer = () => {
         try {
             const toAccount = event.target.elements.to.value.trim();
             const amount = BigInt(event.target.elements.amount.value * 1e8); // Adjust for token decimals
-    
+        
             if (!toAccount || amount <= 0n) {
                 alert("Please provide valid inputs");
                 return;
             }
-    
+         
             let recipientPrincipal;
             try {
                 recipientPrincipal = Principal.fromText(toAccount);

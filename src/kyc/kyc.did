@@ -4,6 +4,7 @@ type Result_2 = variant { Ok : UsernameAvailabilityResponse; Err : text };
 type Result_3 = variant { Ok : text; Err : text };
 type Result_4 = variant { Ok : vec UserPrincipalInfo; Err : text };
 type Result_5 = variant { Ok : User; Err : text };
+type Result_6 = variant { Ok : principal; Err : text };
 type SignupRequest = record {
   refered_by : opt text;
   username : text;
@@ -47,7 +48,9 @@ service : {
   delete_user : (principal) -> (Result_3);
   get_all_users : () -> (Result_4) query;
   get_current_user : () -> (Result_5) query;
+  get_principal_by_username : (text) -> (Result_6) query;
   get_user : (principal) -> (Result_5) query;
+  get_username_by_principal : (principal) -> (Result_3) query;
   has_username_for_principal : (principal) -> (bool) query;
   is_admin : () -> (Result) query;
   signup : (SignupRequest) -> (Result_5);
