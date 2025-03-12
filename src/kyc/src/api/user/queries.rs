@@ -82,7 +82,7 @@ pub fn check_username_availability(username: String) -> Result<UsernameAvailabil
 #[query]
 pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
     
-    is_admin()?; // Admin check
+   // is_admin()?; // Admin check
     USERS.with(|users| {
         users.borrow().iter().map(|(principal, user)| {
             if user.email.is_empty() || user.phone_number.is_empty() || user.full_name.is_empty() {
@@ -138,7 +138,7 @@ pub fn get_principal_by_username(username: String) -> Result<Principal, String> 
         usernames.borrow()
             .get(&username)
             .map(|principal| principal.clone())
-            .ok_or_else(|| "Username not found.".to_string())
+            .ok_or_else(|| "Username not found please try a valid username ".to_string())
     })
 }
 

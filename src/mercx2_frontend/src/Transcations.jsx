@@ -5,7 +5,7 @@ import { useAuth } from "./use-auth-client";
 
 function Transcations() {
   const [accountTransactions, setAccountTransactions] = useState([]);
-  const { icrcIndexActor } = useAuth();
+  const { icrcIndexActor,fxmxIndexActor } = useAuth();
   const { principal } = useAuth();
 
 
@@ -26,7 +26,7 @@ function Transcations() {
         max_results: 30n,  // Pass max_results inside the same record
       };
 
-      const accountTxResponse = await icrcIndexActor.get_account_transactions(accountTransactionsArgs);
+      const accountTxResponse = await fxmxIndexActor.get_account_transactions(accountTransactionsArgs);
 
       if (accountTxResponse?.Ok?.transactions) {
         setAccountTransactions(accountTxResponse.Ok.transactions);

@@ -4,8 +4,7 @@ import './index.css';
 import { HiOutlineLogout, HiMenu, HiX, HiClipboardCopy } from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { useNavigate } from 'react-router-dom';  // Ensure useNavigate is imported
-//import { Principal } from "@dfinity/principal"; // Import Principal
+import { useNavigate } from 'react-router-dom';  
 import { FaCopy } from "react-icons/fa";
 
 const navigation = [
@@ -19,11 +18,12 @@ function MyNavbar() {
   const { isAuthenticated, login, logout, principal, kycActor } = useAuth();
   const [principals, setPrincipal] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  //const [copySuccess, setCopySuccess] = useState('');
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();  // Use navigate for redirection
   const [userExists, setUserExists] = useState(false);  // State to track if user exists
   const [isUserChecked, setIsUserChecked] = useState(false);  // State to track if the user check is complete
+  const [username, setUsername] = useState(""); // State to store the username
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 
   const handleLogin = async () => {
@@ -33,9 +33,24 @@ function MyNavbar() {
         const exists = await kycActor.has_username_for_principal(principal);
         setUserExists(exists);
         setIsUserChecked(true);  // Mark the user check as complete
+
+        if (exists) {
+          const fetchedUsername = await kycActor.get_username_by_principal(principal); // Fetch the username
+          setUsername(fetchedUsername.Ok || "Unknown User"); // Extract the Ok value, handle errors
+        }
       } catch (error) {
         console.error("Error checking user existence:", error);
+        console.error("Detailed Error:", error);
+        console.error("Principal:", principal);
+        console.error("KYC Actor:", kycActor);
         setIsUserChecked(true);  // Ensure we handle error state
+
+        // Handle specific errors
+        if (error.message.includes("Invalid certificate")) {
+          console.error("Certificate error: Please re-authenticate.");
+          // Optionally, prompt the user to log in again
+          await login();
+        }
       }
     }
   };
@@ -62,6 +77,14 @@ function MyNavbar() {
       }
     }
   }, [userExists, isUserChecked]);  // Depend on userExists and isUserChecked
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsDropdownOpen(false); // Close the dropdown when the user logs out
+    }
+  }, [isAuthenticated]);
+
+  const userInitial = username ? username.charAt(0).toUpperCase() : "U";
 
   return (
     <nav className="bg-gray-900">
@@ -108,31 +131,54 @@ function MyNavbar() {
                 <input
                   type="text"
                   readOnly
-                  className="text-gray-900 pl-4 pr-4 py-2 border rounded-lg text-xs sm:text-sm"
+                  className="text-gray-900 pl-4 pr-4 py-2 border rounded-3xl text-xs sm:text-sm"
                   value={principals || "Fetching..."}
                 />
+
                 <CopyToClipboard text={principals} onCopy={() => {
                   setCopied(true);
                   setTimeout(() => {
                     setCopied(false);
                   }, 3000);
                 }}>
-                  <button className="ml-4 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 ">
+                  <button className="m-3  bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 rounded-full">
                     <FaCopy size={19} style={{ color: 'currentColor' }} />
                   </button>
                 </CopyToClipboard>
                 {copied && <span className="text-xs p-1" style={{ color: 'lightblue' }}>Copied</span>}
 
-                <button onClick={logout} className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2">
-                  <HiOutlineLogout size={24} style={{ color: 'currentColor' }} />
-                </button>
-              </>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center justify-center w-10 h-10 bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker rounded-full text-white font-bold focus:outline-none"
+                  >
+                    {userInitial}
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                      <div className="py-1">
+                        <div className="block px-4 py-2 text-sm text-bold text-gray-700 text-center font-semibold">{username}</div>
+                        <button
+                          onClick={logout}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <HiOutlineLogout className="mr-2" /> {/* Logout icon */}
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
+                {/* <button onClick={logout} className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2">
+                  <HiOutlineLogout size={24} style={{ color: 'currentColor' }} />
+                </button> */}
+              </>
             ) : (
               <button
                 onClick={handleLogin}
                 className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg  py-2 px-4 rounded"
- >
+              >
                 Connect to Wallet
               </button>
             )}
@@ -166,3 +212,4 @@ function MyNavbar() {
 }
 
 export default MyNavbar;
+

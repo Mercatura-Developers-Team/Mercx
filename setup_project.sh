@@ -69,6 +69,9 @@ record {
 # dfx deploy icrc1_index_canister --argument '(opt variant{Init = record {ledger_id = principal "bkyz2-fmaaa-aaaaa-qaaaq-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 10}})'
 dfx deploy icrc1_index_canister --argument '(opt variant{Init = record {ledger_id = principal "bkyz2-fmaaa-aaaaa-qaaaq-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 10}})'
 
+dfx deploy fxmx_icrc1_index --argument '(opt variant{Init = record {ledger_id = principal "ajuq4-ruaaa-aaaaa-qaaga-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 10}})'
+
+
 dfx deploy tommy_icrc1_ledger --argument "(variant { Init =
 record {
      token_symbol = \"TOMMY\";
