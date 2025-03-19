@@ -179,6 +179,7 @@ export const useAuthClient = (options = defaultOptions) => {
         identity,
       },
     });
+    
     setKycActor(kycActor);
 
     const FxmxActor = createFXMXActor(fxmxCanisterId, {
