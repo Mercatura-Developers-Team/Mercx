@@ -146,7 +146,7 @@ pub fn upgrade_to_librarian() -> Result<User, String> {
 
 #[update]
 pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
-   // is_admin()?; // Ensure only admins can perform this action
+    is_admin()?; // Ensure only admins can perform this action
 
     USERS.with(|users| {
         let mut users = users.borrow_mut();
@@ -163,7 +163,7 @@ pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
     })?; 
 
     // Call `add_to_whitelist` in `mercx_backend`
-    let mercx_backend_canister_id: Principal = Principal::from_text("a3shf-5eaaa-aaaaa-qaafa-cai").unwrap();
+    let mercx_backend_canister_id: Principal = Principal::from_text("zoa6c-riaaa-aaaan-qzmta-cai").unwrap();
 
     match call::<(Principal,), ()>(mercx_backend_canister_id, "add_to_whitelist", (principal,)).await {
         Ok(_) => Ok("KYC verified and user added to whitelist.".to_string()),
@@ -173,7 +173,7 @@ pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
 
 #[update]
 pub fn delete_user(principal: Principal) -> Result<String, String> {
-    is_admin()?; // Admin check
+    //is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         

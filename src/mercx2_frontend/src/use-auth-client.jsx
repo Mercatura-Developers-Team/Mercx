@@ -174,12 +174,12 @@ export const useAuthClient = (options = defaultOptions) => {
     setTommyActor(tommyActor);
 
     // ✅ Create the KYC Actor
-    const kycActor = createKycActor(kycCanisterId, {
+    const KycActor = createKycActor(kycCanisterId, {
       agentOptions: {
         identity,
       },
     });
-    setKycActor(kycActor);
+    setKycActor(KycActor);
 
     const FxmxActor = createFXMXActor(fxmxCanisterId, {
       agentOptions: {

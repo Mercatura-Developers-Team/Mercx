@@ -16,7 +16,6 @@ const navigation = [
 
 function MyNavbar() {
   const { isAuthenticated, login, logout, principal, kycActor } = useAuth();
-  const [principals, setPrincipal] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();  // Use navigate for redirection
@@ -24,59 +23,76 @@ function MyNavbar() {
   const [isUserChecked, setIsUserChecked] = useState(false);  // State to track if the user check is complete
   const [username, setUsername] = useState(""); // State to store the username
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [initial,setInitial]  = useState("");
 
 
-  const handleLogin = async () => {
-    await login();
-    if (principal) {
-      try {
-        const exists = await kycActor.has_username_for_principal(principal);
-        setUserExists(exists);
-        setIsUserChecked(true);  // Mark the user check as complete
 
-        if (exists) {
-          const fetchedUsername = await kycActor.get_username_by_principal(principal); // Fetch the username
-          setUsername(fetchedUsername.Ok || "Unknown User"); // Extract the Ok value, handle errors
-        }
-      } catch (error) {
-        console.error("Error checking user existence:", error);
-        console.error("Detailed Error:", error);
-        console.error("Principal:", principal);
-        console.error("KYC Actor:", kycActor);
-        setIsUserChecked(true);  // Ensure we handle error state
-
-        // Handle specific errors
-        if (error.message.includes("Invalid certificate")) {
-          console.error("Certificate error: Please re-authenticate.");
-          // Optionally, prompt the user to log in again
-          await login();
-        }
-      }
-    }
-  };
+  // const handleLogin = async () => {
+  //   await login();
+   
+    
+  // };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      try {
-        handleLogin();
-        setPrincipal(principal);
-      } catch (error) {
-        console.error("Failed to fetch principal:", error);
-        setPrincipal("Error fetching principal");
-      }
-    }
-  }, [isAuthenticated, principal]);
+    const fetchUsername = async () => {
+      if (isAuthenticated && principal) {  
+        try {
+          const exists = await kycActor.has_username_for_principal(principal);
+          console.log("User exists:", exists); // Debug log
+  
+          setUserExists(exists);
+  
+          if (exists) {
+            const fetchedUsername = await kycActor.get_username_by_principal(principal);
+            console.log("Fetched username:", fetchedUsername); // Debug log
+  
+            setUsername(fetchedUsername?.Ok || "Unknown User");
 
-  // Effect to handle redirection based on user existence
-  useEffect(() => {
-    if (isUserChecked) {  // Ensure we navigate only after checking the user status
-      if (!userExists) {
-        navigate('/signup');
+            const username1 = fetchedUsername.Ok; // Extract the actual string
+            console.log("Extracted username:", username);
+
+            const userInitial = username1.charAt(0).toUpperCase(); // Use extracted string
+            setInitial(userInitial);
+            console.log("I:", userInitial); // Debug log
+
+          } else {
+            setUsername("Unknown User");
+            setInitial("U");
+
+          }
+        } catch (error) {
+          console.error("Error fetching username:", error);
+        }
       } else {
-        navigate('/');
+        console.log("Not authenticated or no principal yet.");
       }
-    }
-  }, [userExists, isUserChecked]);  // Depend on userExists and isUserChecked
+    };
+  
+    fetchUsername();
+  }, [isAuthenticated, principal]); // We should NOT add `userExists` to dependencies
+  
+
+  // useEffect(() => {
+  //   if (isAuthenticated && principal) {
+  //     try {
+  //       setPrincipal(principal);
+  //     } catch (error) {
+  //       console.error("Failed to fetch principal:", error);
+  //       setPrincipal("Error fetching principal");
+  //     }
+  //   }
+  // }, [isAuthenticated, principal]);
+
+  // // Effect to handle redirection based on user existence
+  // useEffect(() => {
+  //   if (isUserChecked) {  // Ensure we navigate only after checking the user status
+  //     if (!userExists) {
+  //       navigate('/signup');
+  //     } else {
+  //       navigate('/');
+  //     }
+  //   }
+  // }, [userExists, isUserChecked]);  // Depend on userExists and isUserChecked
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -84,7 +100,7 @@ function MyNavbar() {
     }
   }, [isAuthenticated]);
 
-  const userInitial = username ? username.charAt(0).toUpperCase() : "U";
+  //const userInitial = username ? username.charAt(0).toUpperCase() : "U";
 
   return (
     <nav className="bg-gray-900">
@@ -132,10 +148,10 @@ function MyNavbar() {
                   type="text"
                   readOnly
                   className="text-gray-900 pl-4 pr-4 py-2 border rounded-3xl text-xs sm:text-sm"
-                  value={principals || "Fetching..."}
+                  value={principal || "Fetching..."}
                 />
 
-                <CopyToClipboard text={principals} onCopy={() => {
+                <CopyToClipboard text={principal} onCopy={() => {
                   setCopied(true);
                   setTimeout(() => {
                     setCopied(false);
@@ -152,7 +168,7 @@ function MyNavbar() {
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center justify-center w-10 h-10 bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker rounded-full text-white font-bold focus:outline-none"
                   >
-                    {userInitial}
+                    {initial}
                   </button>
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
@@ -176,7 +192,7 @@ function MyNavbar() {
               </>
             ) : (
               <button
-                onClick={handleLogin}
+                onClick={login}
                 className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg  py-2 px-4 rounded"
               >
                 Connect to Wallet
