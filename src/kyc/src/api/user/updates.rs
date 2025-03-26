@@ -173,7 +173,7 @@ pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
 
 #[update]
 pub fn delete_user(principal: Principal) -> Result<String, String> {
-    //is_admin()?; // Admin check
+    is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         

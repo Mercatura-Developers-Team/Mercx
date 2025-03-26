@@ -52,7 +52,7 @@ pub fn get_current_user() -> Result<User, String> {
 
 #[query]
 pub fn check_username_availability(username: String) -> Result<UsernameAvailabilityResponse, String> {
-    is_admin()?; // Admin check
+    //is_admin()?; // Admin check
     let username = username.trim().to_lowercase();
 
     if let Err(error) = validate_username(&username) {
@@ -82,7 +82,7 @@ pub fn check_username_availability(username: String) -> Result<UsernameAvailabil
 #[query]
 pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
     
-    is_admin()?; // Admin check
+   // is_admin()?; // Admin check
     USERS.with(|users| {
         users.borrow().iter().map(|(principal, user)| {
             if user.email.is_empty() || user.phone_number.is_empty() || user.full_name.is_empty() {
@@ -128,10 +128,17 @@ pub fn get_username_by_principal(principal: Principal) -> Result<String, String>
             .get(&principal)
             .map(|user| user.username.clone())
             .ok_or_else(|| "User not found.".to_string())
-    })
+    
+})
 }
 
-
-
-
+#[query]
+pub fn get_principal_by_username(username: String) -> Result<Principal, String> {
+    USERNAMES.with(|usernames| {
+        usernames.borrow()
+            .get(&username)
+            .map(|principal| principal.clone())
+            .ok_or_else(|| "Username not found please try a valid username ".to_string())
+    })
+}
 

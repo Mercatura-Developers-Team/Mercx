@@ -28,19 +28,33 @@ const SignupSchema = Yup.object().shape({
     )
     .required("Phone number is required"),
 
-    referredBy: Yup.string().optional(),
+  referredBy: Yup.string().optional(),
 
 });
 
 const SignupForm = () => {
-  const { isAuthenticated, kycActor } = useAuth();
+  const { isAuthenticated, kycActor ,principal} = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();  // Use navigate for redirection
 
   // Check KYC Status
   useEffect(() => {
-  }, [isAuthenticated]);
+    const checkUser = async () => {
+      if (isAuthenticated && principal) {
+        try {
+          const exists = await kycActor.has_username_for_principal(principal);
+          if (exists) {
+            // Redirect if user is already registered
+            navigate('/');
+          }
+        } catch (error) {
+          console.error("Error checking user existence:", error);
+        }
+      }
+    };
+    checkUser();
+  }, [isAuthenticated, principal]);
 
   const formik = useFormik({
     initialValues: {
@@ -84,20 +98,20 @@ const SignupForm = () => {
   });
 
   if (!isAuthenticated) {
-    return (<div className="min-h-screen bg-gray-900 "> 
-    {/* <p className="  min-h-screen bg-gray-900 text-white ">Please connect your wallet to sign up.</p> */}
-    <div class=" flex items-center justify-center p-4  mb-4 text-sm  border rounded-lg bg-gray-800 text-blue-400 border-blue-800" role="alert">
-  <svg class="shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-  </svg>
-  <span class="sr-only">Info</span>
-  <div>
-   Please connect to wallet to sign up.
-  </div>
-</div>
+    return (<div className="min-h-screen bg-gray-900 ">
+      {/* <p className="  min-h-screen bg-gray-900 text-white ">Please connect your wallet to sign up.</p> */}
+      <div class=" flex items-center justify-center p-4  mb-4 text-sm  border rounded-lg bg-gray-800 text-blue-400 border-blue-800" role="alert">
+        <svg class="shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+        </svg>
+        <span class="sr-only">Info</span>
+        <div>
+          Please connect to wallet to sign up.
+        </div>
+      </div>
 
-</div>)
-    ;
+    </div>)
+      ;
   }
   return (<>
     <div className="relative overflow-hidden min-h-screen border-t-[1px] border-slate-800 bg-gray-900">
@@ -167,26 +181,26 @@ const SignupForm = () => {
           </div>
 
           <div className="relative z-0 w-full mb-5 group">
-  <input
-    id="referredBy"
-    name="referredBy"
-    type="text"
-    onChange={formik.handleChange}
-    onBlur={formik.handleBlur}
-    value={formik.values.referredBy}
-    className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 text-white border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-0 peer"
-    placeholder=" "
-  />
-  <label
-    htmlFor="referredBy"
-    className="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-  >
- Referral Username (optional)
-  </label>
-  {formik.touched.referredBy && formik.errors.referredBy && (
-    <p className="text-red-400 text-xs">{formik.errors.referredBy}</p>
-  )}
-</div>
+            <input
+              id="referredBy"
+              name="referredBy"
+              type="text"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.referredBy}
+              className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 text-white border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-0 peer"
+              placeholder=" "
+            />
+            <label
+              htmlFor="referredBy"
+              className="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+            >
+              Referral Username (optional)
+            </label>
+            {formik.touched.referredBy && formik.errors.referredBy && (
+              <p className="text-red-400 text-xs">{formik.errors.referredBy}</p>
+            )}
+          </div>
           <button className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white py-2 px-4 font-bold rounded-lg text-sm flex items-center justify-center" type="submit" disabled={loading}>
             {loading ? (
               <>
