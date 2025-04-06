@@ -1,12 +1,11 @@
 import React, { useState, useEffect,useRef } from 'react';
 import { useAuth } from "./use-auth-client";
 import { Principal } from "@dfinity/principal";
-import * as Yup from "yup";
 import { useNavigate } from 'react-router-dom'; 
 import ReceiveModal from './ReceiveModal'; // Add this import
 
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor, fxmxActor, kycActor } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor } = useAuth();
     const { principal } = useAuth();
     const navigate = useNavigate();  // Use navigate for redirection
     const transferSectionRef = useRef(null); // Add this ref
@@ -92,45 +91,52 @@ const Transfer = () => {
         event.preventDefault();
 
         try {
-            //const toAccount = event.target.elements.to.value.trim();
-            const toUsername = event.target.elements.to.value.trim();
+            const toAccount = event.target.elements.to.value.trim();
+            //const toUsername = event.target.elements.to.value.trim();
             const amount = BigInt(event.target.elements.amount.value * 1e8); // Adjust for token decimals
 
-            if (!toUsername || amount <= 0n) {
+            if (!toAccount || amount <= 0n) {
                 setErrorMessage("Please provide valid inputs");
                 return;
             }
 
             let recipientPrincipal;
             try {
-                const principalResponse = await kycActor.get_principal_by_username(toUsername);
-                console.log("Principal Response:", principalResponse);
+                // Check if the input is a valid Principal ID
+                recipientPrincipal = Principal.fromText(toAccount);
+                console.log("Input is a valid Principal ID:", recipientPrincipal.toString());
+                setErrorMessage(""); // Clear error if Principal ID is valid
 
-                // Check if the response contains an "Err" field
-                if (principalResponse.Err) {
-                    setErrorMessage(principalResponse.Err); // Display the error message
-                    return;
-                }
-
-
-
-                // Extract the Principal object from the "Ok" field
-                recipientPrincipal = principalResponse.Ok;
-
-                // Ensure the extracted value is a valid Principal object
-                if (!recipientPrincipal || !recipientPrincipal._isPrincipal) {
-                    console.log("Invalid Principal ID format received from the backend.");
-                    return;
-                }
-
-                // Convert the Principal object to a string (optional)
-                const principalText = recipientPrincipal.toString();
-                console.log("Principal as string:", principalText);
-                setErrorMessage(" ");
             } catch (err) {
-                console.error("Error fetching Principal ID:", err);
-                setErrorMessage("Invalid username Please try again.");
-                return;
+                // If not a valid Principal ID, assume it's a username
+                console.log("Input is a username. Fetching Principal ID...");
+
+                try {
+                    const principalResponse = await kycActor.get_principal_by_username(toAccount);
+                    console.log("Principal Response:", principalResponse);
+
+                    // Check if the response contains an "Err" field
+                    if (principalResponse.Err) {
+                        setErrorMessage(principalResponse.Err); // Display the error message
+                        return;
+                    }
+                    // Extract the Principal object from the "Ok" field
+                    recipientPrincipal = principalResponse.Ok;
+
+                    // Ensure the extracted value is a valid Principal object
+                    if (!recipientPrincipal || !recipientPrincipal._isPrincipal) {
+                        setErrorMessage("Invalid username. Please provide a valid username.");
+                        return;
+                    }
+
+                    console.log("Fetched Principal ID:", recipientPrincipal.toString());
+                    setErrorMessage(""); // Clear error if Principal ID is valid
+
+                } catch (error) {
+                    console.error("Error fetching Principal ID:", error);
+                    setErrorMessage("Invalid username. Please try again.");
+                    return;
+                }
             }
 
             // Check if the recipient is whitelisted
@@ -264,7 +270,7 @@ const Transfer = () => {
                         <input
                             type="text"
                             name="to"
-                            placeholder="Enter recipient's username"
+                            placeholder="Enter recipient's username or principal id "
                             required
                             className="w-full mt-3 rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500"
                         />
@@ -282,7 +288,6 @@ const Transfer = () => {
                         />
                     </label>
                     <span className="text-gray-500 text-sm">Network fees 0.0001 {selectedToken}</span>
-
 
                     <button type="submit" className="bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 hover:to-indigo-900 text-white py-2 px-4 font-bold rounded-lg text-sm flex items-center">
                         Send
