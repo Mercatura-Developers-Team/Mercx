@@ -1,68 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { useAuth } from "./use-auth-client";
 import { Principal } from "@dfinity/principal";
-
+import { useNavigate } from 'react-router-dom'; 
+import ReceiveModal from './ReceiveModal'; // Add this import
+import { useMemo } from 'react';
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, isAuthenticated, tommy_Actor, fxmxActor, kycActor } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor } = useAuth();
     const { principal } = useAuth();
-    const [tokenName, setTokenName] = useState("");
-    const [icptokenName, setIcpTokenName] = useState("");
-    const [TommytokenName, setTommyName] = useState("");
-    const [FXMXtokenName, setFXMXName] = useState("");
-    const [balance, setBalance] = useState(0n);
-    const [Icpbalance, setIcpBalance] = useState(0n);
-    const [Tommybalance, setTommyBalance] = useState(0n);
-    const [FXMXbalance, setFXMXBalance] = useState(0n);
-    const [selectedToken, setSelectedToken] = useState("BELLA"); // Default selected token
-    const [tokens, setTokens] = useState([
-        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive", "Transactions"] }, // Assuming mercx_Actor has a transfer method
-        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive", "Transactions"], }, // Assuming icpActor has icrc1_transfer method
-        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive", "Transactions"], },
-        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive", "Transactions"], } // Assuming tommy_Actor has a transfer method
+    const navigate = useNavigate();  // Use navigate for redirection
+    const transferSectionRef = useRef(null); // Add this ref
+    const [showReceiveModal, setShowReceiveModal] = useState(false); // Add this state
 
-    ]);
+    const [selectedToken, setSelectedToken] = useState("BELLA"); // Default selected token
+    const tokens = useMemo(() => [
+        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] },
+        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] },
+        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] },
+        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of", actions: ["Send", "Receive", "Transactions"] }
+      ], [whoamiActor, icpActor, tommy_Actor, fxmxActor]);
+      
     const [errorMessage, setErrorMessage] = useState("");
     const [tokenBalances, setTokenBalances] = useState({});
 
-    // Token data
-    const token = [
-        {
-            name: "TCP Internet Computer",
-            balance: "0.00",
-            price: "$5.80",
-            actions: ["Send", "Receive", "Transactions"],
-        },
-        {
-            name: "WICP Wrapped ICP",
-            balance: "0.00",
-            price: "$5.80",
-            actions: ["Send", "Receive", "Transactions", "Unwrap", "Wrap"],
-        },
-        {
-            name: "ICPSwap Token",
-            balance: "0.00",
-            price: "$0.0071",
-            actions: ["Swap", "Send", "Receive", "Transactions"],
-        },
-        {
-            name: "ckUSDC",
-            balance: "0.00",
-            price: "$1.00",
-            actions: ["Swap", "Send", "Receive", "Transactions", "Mint", "Dissolve"],
-        },
-        {
-            name: "ckBTC",
-            balance: "0.00",
-            price: "$84,528.02",
-            actions: ["Swap", "Send", "Receive", "Transactions", "Mint", "Dissolve"],
-        },
-        {
-            name: "ckETH",
-            balance: "0.00",
-            price: "$1,990.54",
-            actions: ["Swap", "Send", "Receive", "Transactions", "Mint", "Dissolve"],
-        },
-    ];
+     // Modify your token actions handler
+     const handleTokenAction = (action, tokenName) => {
+        if (action === "Send") {
+            setSelectedToken(tokenName);
+            transferSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+        } 
+        else if (action === "Swap") {
+            navigate('/trade');
+        }
+        else if (action === "Transactions") {
+            navigate('/transactions');
+        }
+        else if (action === "Receive") {
+            setShowReceiveModal(true); // Show receive modal
+        }
+    };
+
 
     async function fetchTokenBalances(principalId) {
         try {
@@ -105,11 +81,13 @@ const Transfer = () => {
 
 
     useEffect(() => {
-        if (principal) {
-            fetchTokenBalances(principal);
-            //fetchData(principal);
+        if (
+          principal &&
+          tokens.every(token => token.actor)
+        ) {
+          fetchTokenBalances(principal);
         }
-    }, [principal, tokens]);
+      }, [principal, tokens]);
 
     const handleTransfer = async (event) => {
         event.preventDefault();
@@ -214,29 +192,24 @@ const Transfer = () => {
 
     return (
         <div className='md:py-10 bg-gray-900 py-8'>
-            {/* <section className="p-4 m-4 rounded-lg shadow bg-slate-800 text-white border border-gray-700">
-<h2 className="text-lg font-bold">Your Balance</h2>
-<p className="text-xl">{!isAuthenticated ? `0 ${tokenName}` : `${balance.toString()} ${tokenName}`}</p>
-<p className="text-xl">{!isAuthenticated ? `0 ${TommytokenName}` : `${Tommybalance.toString()} ${TommytokenName}`}</p>
-<p className="text-xl">{!isAuthenticated ? `0 ${icptokenName}` : `${Icpbalance.toString()} ${icptokenName}`}</p>
-<p className="text-xl">{!isAuthenticated ? `0 ${FXMXtokenName}` : `${FXMXbalance.toString()} ${FXMXtokenName}`}</p>
 
-</section> */}
 
-            <div className="min-h-screen bg-gray-900 p-6">
+            <div className=" bg-gray-900 p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {tokens.map((token, index) => (
                         <div key={index} className="bg-slate-800 rounded-lg shadow-lg p-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                {token.logo && (
-                                    <img
-                                        src={token.logo}
-                                        alt={token.name}
-                                        className="h-6 w-6"
-                                    />
-                                )}
-                                <h2 className="text-xl font-bold text-white">{token.name}</h2>
-                            </div>
+                            <div className="flex items-center gap-3 mb-4">
+          {token.logo && (
+            <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
+              <img 
+                src={token.logo}
+                alt={token.name}
+                className="h-8 w-8 object-contain"
+              />
+            </div>
+          )}
+          <h2 className="text-xl font-bold text-white">{token.name}</h2>
+        </div>
                             <p className="text-gray-400">
                                 Balance: {tokenBalances[token.name] !== undefined ?
                                     `${tokenBalances[token.name].toFixed(4)}` :
@@ -246,11 +219,19 @@ const Transfer = () => {
                                 {token.actions.map((action, idx) => (
                                     <button
                                         key={idx}
-                                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+                                        className=" text-white px-4 py-1.5 text-sm rounded-lg transition duration-200 bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 "
+                                        onClick={() => handleTokenAction(action, token.name)}
                                     >
                                         {action}
                                     </button>
                                 ))}
+                                  {/* Add this at the bottom of your return */}
+            {showReceiveModal && (
+                <ReceiveModal 
+                    principal={principal} 
+                    onClose={() => setShowReceiveModal(false)} 
+                />
+            )}
                             </div>
                         </div>
                     ))}
@@ -258,7 +239,7 @@ const Transfer = () => {
             </div>
 
 
-            <section className="p-4 m-4 rounded-lg shadow bg-slate-800 text-gray-900 border border-gray-700">
+            <section ref={transferSectionRef}  className="p-4 m-4 rounded-lg shadow bg-slate-800 text-gray-900 border border-gray-700">
                 <h2 className="font-bold text-lg text-white">Transfer Token</h2>
                 <form className="flex flex-col gap-4" onSubmit={handleTransfer}>
                     <div className="flex items-center gap-2 mb-2">
@@ -309,6 +290,7 @@ const Transfer = () => {
                         />
                     </label>
                     <span className="text-gray-500 text-sm">Network fees 0.0001 {selectedToken}</span>
+
                     <button type="submit" className="bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 hover:to-indigo-900 text-white py-2 px-4 font-bold rounded-lg text-sm flex items-center">
                         Send
                     </button>
@@ -318,7 +300,6 @@ const Transfer = () => {
                             <span className="font-medium">{errorMessage}</span>
                         </div>
                     )}
-
 
                 </form>
 

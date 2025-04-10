@@ -33,14 +33,28 @@ const SignupSchema = Yup.object().shape({
 });
 
 const SignupForm = () => {
-  const { isAuthenticated, kycActor } = useAuth();
+  const { isAuthenticated, kycActor ,principal} = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();  // Use navigate for redirection
 
   // Check KYC Status
   useEffect(() => {
-  }, [isAuthenticated]);
+    const checkUser = async () => {
+      if (isAuthenticated && principal) {
+        try {
+          const exists = await kycActor.has_username_for_principal(principal);
+          if (exists) {
+            // Redirect if user is already registered
+            navigate('/');
+          }
+        } catch (error) {
+          console.error("Error checking user existence:", error);
+        }
+      }
+    };
+    checkUser();
+  }, [isAuthenticated, principal]);
 
   const formik = useFormik({
     initialValues: {
