@@ -3,7 +3,7 @@ import { useAuth } from "./use-auth-client";
 import { Principal } from "@dfinity/principal";
 import { useNavigate } from 'react-router-dom'; 
 import ReceiveModal from './ReceiveModal'; // Add this import
-import { useMemo } from 'react';
+
 const Transfer = () => {
     const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor,isAuthenticated,ckUSDTActor } = useAuth();
     const { principal } = useAuth();
@@ -13,11 +13,11 @@ const Transfer = () => {
     const [selectedToken, setSelectedToken] = useState("BELLA"); // Default selected token
     
     const tokens = useMemo(() => [
-        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] }, 
-        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"], }, 
-        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"], },
-        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of", actions: ["Send", "Receive", "Transactions"], } ,
-        { name: "ckUSDT", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo:"/ckUSDT.png" , balances: "icrc1_balance_of", actions: ["Send", "Receive"], } 
+        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"] }, 
+        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], }, 
+        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], },
+        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Send", "Receive", "Transactions"], } ,
+        { name: "ckUSDT", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo:"/ckUSDT.png" , balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Send", "Receive"], } 
 
     ], [whoamiActor, icpActor, tommy_Actor, fxmxActor,ckUSDTActor]);
 
@@ -77,7 +77,12 @@ const Transfer = () => {
                         owner,
                         subaccount: []
                     });
-                    const numericBalance = Number(balanceResult) / 1e8;
+
+                    //Decimals
+                    const decimalsResult = await token.actor[token.decimals]();
+                    const decimals = typeof decimalsResult === 'number' ? decimalsResult : 8; // fallback to 8
+
+                    const numericBalance = Number(balanceResult) / Math.pow(10, decimals);
                     balances[token.name] = numericBalance;
                 } catch (error) {
                     console.error(`Error fetching balance for ${token.name}:`, error);
@@ -105,13 +110,25 @@ const Transfer = () => {
 
         try {
             const toAccount = event.target.elements.to.value.trim();
-            //const toUsername = event.target.elements.to.value.trim();
-            const amount = BigInt(event.target.elements.amount.value * 1e8); // Adjust for token decimals
-
-            if (!toAccount || amount <= 0n) {
-                setErrorMessage("Please provide valid inputs");
-                return;
+            const amountInput = parseFloat(event.target.elements.amount.value);
+        
+            if (!toAccount || isNaN(amountInput) || amountInput <= 0) {
+              setErrorMessage("Please provide valid inputs");
+              return;
             }
+        
+            const selectedTokenData = tokens.find(token => token.name === selectedToken);
+            const selectedTokenActor = selectedTokenData.actor;
+            const transferMethod = selectedTokenData.transferMethod;
+            const decimalsMethod = selectedTokenData.decimals;
+        
+            // Get token decimals dynamically
+            const decimals = typeof selectedTokenActor[decimalsMethod] === "function"
+              ? await selectedTokenActor[decimalsMethod]()
+              : 8; // Default fallback
+        
+            const amount = BigInt(Math.round(amountInput * Math.pow(10, decimals)));
+        
 
             let recipientPrincipal;
             try {
@@ -165,9 +182,6 @@ const Transfer = () => {
                 setErrorMessage("You are not whitelisted to perform this operation.");
                 return; // Exit the function early
             }
-            const selectedTokenData = tokens.find(token => token.name === selectedToken);
-            const selectedTokenActor = selectedTokenData.actor;
-            const transferMethod = selectedTokenData.transferMethod;
 
             // Ensure the transfer method exists
             if (typeof selectedTokenActor[transferMethod] !== 'function') {
@@ -223,7 +237,7 @@ const Transfer = () => {
         </div>
                             <p className="text-gray-400">
                                 Balance: {tokenBalances[token.name] !== undefined ?
-                                    `${tokenBalances[token.name].toFixed(4)}` :
+                                    `${tokenBalances[token.name]}` :
                                     "Loading..."}
                             </p>
                             <div className="mt-4 flex flex-wrap gap-2">
