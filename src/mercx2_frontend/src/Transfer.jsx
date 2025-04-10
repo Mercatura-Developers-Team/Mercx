@@ -1,24 +1,26 @@
-import React, { useState, useEffect,useRef } from 'react';
+import React, { useState, useEffect,useRef,useMemo } from 'react';
 import { useAuth } from "./use-auth-client";
 import { Principal } from "@dfinity/principal";
 import { useNavigate } from 'react-router-dom'; 
 import ReceiveModal from './ReceiveModal'; // Add this import
 import { useMemo } from 'react';
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor,isAuthenticated,ckUSDTActor } = useAuth();
     const { principal } = useAuth();
     const navigate = useNavigate();  // Use navigate for redirection
     const transferSectionRef = useRef(null); // Add this ref
     const [showReceiveModal, setShowReceiveModal] = useState(false); // Add this state
-
     const [selectedToken, setSelectedToken] = useState("BELLA"); // Default selected token
+    
     const tokens = useMemo(() => [
-        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] },
-        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] },
-        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] },
-        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of", actions: ["Send", "Receive", "Transactions"] }
-      ], [whoamiActor, icpActor, tommy_Actor, fxmxActor]);
-      
+        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"] }, 
+        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"], }, 
+        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", actions: ["Swap", "Send", "Receive"], },
+        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of", actions: ["Send", "Receive", "Transactions"], } ,
+        { name: "ckUSDT", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo:"/ckUSDT.png" , balances: "icrc1_balance_of", actions: ["Send", "Receive"], } 
+
+    ], [whoamiActor, icpActor, tommy_Actor, fxmxActor,ckUSDTActor]);
+
     const [errorMessage, setErrorMessage] = useState("");
     const [tokenBalances, setTokenBalances] = useState({});
 
@@ -61,6 +63,16 @@ const Transfer = () => {
                         continue;
                     }
 
+                    if (!isAuthenticated) {
+                        const zeroBalances = {};
+                        tokens.forEach(token => {
+                            zeroBalances[token.name] = 0;
+                        });
+                        setTokenBalances(zeroBalances);
+                        return; // Stop here if not authenticated
+                    }
+                    
+
                     const balanceResult = await token.actor[token.balances]({
                         owner,
                         subaccount: []
@@ -81,13 +93,12 @@ const Transfer = () => {
 
 
     useEffect(() => {
-        if (
-          principal &&
-          tokens.every(token => token.actor)
-        ) {
-          fetchTokenBalances(principal);
+        if (principal && tokens.every(token => token.actor)) {
+            fetchTokenBalances(principal);
+            //fetchData(principal);
         }
       }, [principal, tokens]);
+
 
     const handleTransfer = async (event) => {
         event.preventDefault();
@@ -142,11 +153,11 @@ const Transfer = () => {
             }
 
             // Check if the recipient is whitelisted
-            const isRecipientWhitelisted = await mercx_Actor.is_whitelisted(recipientPrincipal);
-            if (!isRecipientWhitelisted) {
-                setErrorMessage("The recipient is not whitelisted to receive tokens.");
-                return; // Exit the function early
-            }
+            // const isRecipientWhitelisted = await mercx_Actor.is_whitelisted(recipientPrincipal);
+            // if (!isRecipientWhitelisted) {
+            //     setErrorMessage("The recipient is not whitelisted to receive tokens.");
+            //     return; // Exit the function early
+            // }
 
             // Check if the caller is whitelisted
             const isCallerWhitelisted = await mercx_Actor.is_whitelisted(principal);
