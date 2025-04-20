@@ -1,35 +1,38 @@
-import React, { useState, useEffect,useRef,useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from "./use-auth-client";
 import { Principal } from "@dfinity/principal";
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import ReceiveModal from './ReceiveModal'; // Add this import
+import SuccessModal from './SuccessModal'; // Adjust the path as needed
+
 
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor,isAuthenticated,ckUSDTActor } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor, isAuthenticated, ckUSDTActor } = useAuth();
     const { principal } = useAuth();
     const navigate = useNavigate();  // Use navigate for redirection
     const transferSectionRef = useRef(null); // Add this ref
     const [showReceiveModal, setShowReceiveModal] = useState(false); // Add this state
     const [selectedToken, setSelectedToken] = useState("BELLA"); // Default selected token
-    
-    const tokens = useMemo(() => [
-        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"] }, 
-        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], }, 
-        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], },
-        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Send", "Receive", "Transactions"], } ,
-        { name: "ckUSDT", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo:"/ckUSDT.png" , balances: "icrc1_balance_of",decimals: "icrc1_decimals", actions: ["Send", "Receive"], } 
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // Add this below useState declarations
 
-    ], [whoamiActor, icpActor, tommy_Actor, fxmxActor,ckUSDTActor]);
+    const tokens = useMemo(() => [
+        { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"] },
+        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], },
+        { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], },
+        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Send", "Receive", "Transactions"], },
+        { name: "ckUSDT", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo: "/ckUSDT.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Send", "Receive"], }
+
+    ], [whoamiActor, icpActor, tommy_Actor, fxmxActor, ckUSDTActor]);
 
     const [errorMessage, setErrorMessage] = useState("");
     const [tokenBalances, setTokenBalances] = useState({});
 
-     // Modify your token actions handler
-     const handleTokenAction = (action, tokenName) => {
+    // Modify your token actions handler
+    const handleTokenAction = (action, tokenName) => {
         if (action === "Send") {
             setSelectedToken(tokenName);
             transferSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-        } 
+        }
         else if (action === "Swap") {
             navigate('/trade');
         }
@@ -71,7 +74,7 @@ const Transfer = () => {
                         setTokenBalances(zeroBalances);
                         return; // Stop here if not authenticated
                     }
-                    
+
 
                     const balanceResult = await token.actor[token.balances]({
                         owner,
@@ -111,24 +114,24 @@ const Transfer = () => {
         try {
             const toAccount = event.target.elements.to.value.trim();
             const amountInput = parseFloat(event.target.elements.amount.value);
-        
+
             if (!toAccount || isNaN(amountInput) || amountInput <= 0) {
-              setErrorMessage("Please provide valid inputs");
-              return;
+                setErrorMessage("Please provide valid inputs");
+                return;
             }
-        
+
             const selectedTokenData = tokens.find(token => token.name === selectedToken);
             const selectedTokenActor = selectedTokenData.actor;
             const transferMethod = selectedTokenData.transferMethod;
             const decimalsMethod = selectedTokenData.decimals;
-        
+
             // Get token decimals dynamically
             const decimals = typeof selectedTokenActor[decimalsMethod] === "function"
-              ? await selectedTokenActor[decimalsMethod]()
-              : 8; // Default fallback
-        
+                ? await selectedTokenActor[decimalsMethod]()
+                : 8; // Default fallback
+
             const amount = BigInt(Math.round(amountInput * Math.pow(10, decimals)));
-        
+
 
             let recipientPrincipal;
             try {
@@ -204,7 +207,8 @@ const Transfer = () => {
             });
 
             if ("Ok" in transferResult) {
-                alert("Transfer successful: Block Index " + transferResult.Ok);
+                // alert("Transfer successful: Block Index " + transferResult.Ok);
+                setShowSuccessModal(true);
             } else {
                 console.error("Transfer failed: ", transferResult.Err);
                 alert("Transfer failed: " + transferResult.Err);
@@ -224,17 +228,17 @@ const Transfer = () => {
                     {tokens.map((token, index) => (
                         <div key={index} className="bg-slate-800 rounded-lg shadow-lg p-6">
                             <div className="flex items-center gap-3 mb-4">
-          {token.logo && (
-            <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
-              <img 
-                src={token.logo}
-                alt={token.name}
-                className="h-8 w-8 object-contain"
-              />
-            </div>
-          )}
-          <h2 className="text-xl font-bold text-white">{token.name}</h2>
-        </div>
+                                {token.logo && (
+                                    <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
+                                        <img
+                                            src={token.logo}
+                                            alt={token.name}
+                                            className="h-8 w-8 object-contain"
+                                        />
+                                    </div>
+                                )}
+                                <h2 className="text-xl font-bold text-white">{token.name}</h2>
+                            </div>
                             <p className="text-gray-400">
                                 Balance: {tokenBalances[token.name] !== undefined ?
                                     `${tokenBalances[token.name]}` :
@@ -250,13 +254,13 @@ const Transfer = () => {
                                         {action}
                                     </button>
                                 ))}
-                                  {/* Add this at the bottom of your return */}
-            {showReceiveModal && (
-                <ReceiveModal 
-                    principal={principal} 
-                    onClose={() => setShowReceiveModal(false)} 
-                />
-            )}
+                                {/* Add this at the bottom of your return */}
+                                {showReceiveModal && (
+                                    <ReceiveModal
+                                        principal={principal}
+                                        onClose={() => setShowReceiveModal(false)}
+                                    />
+                                )}
                             </div>
                         </div>
                     ))}
@@ -264,7 +268,7 @@ const Transfer = () => {
             </div>
 
 
-            <section ref={transferSectionRef}  className="p-4 m-4 rounded-lg shadow bg-slate-800 text-gray-900 border border-gray-700">
+            <section ref={transferSectionRef} className="p-4 m-4 rounded-lg shadow bg-slate-800 text-gray-900 border border-gray-700">
                 <h2 className="font-bold text-lg text-white">Transfer Token</h2>
                 <form className="flex flex-col gap-4" onSubmit={handleTransfer}>
                     <div className="flex items-center gap-2 mb-2">
@@ -319,6 +323,13 @@ const Transfer = () => {
                     <button type="submit" className="bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 hover:to-indigo-900 text-white py-2 px-4 font-bold rounded-lg text-sm flex items-center">
                         Send
                     </button>
+
+                    {showSuccessModal && (
+                        <SuccessModal
+                            isVisible={showSuccessModal}
+                            onClose={() => setShowSuccessModal(false)}
+                        />
+                    )}
 
                     {errorMessage && (
                         <div className="p-2 text-sm rounded-lg bg-gray-800 text-red-400 flex items-center text-center">
