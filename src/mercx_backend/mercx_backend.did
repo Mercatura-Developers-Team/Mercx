@@ -70,7 +70,7 @@ type Transaction = record {
   kind : text;
   mint : opt Mint;
   approve : opt Approve;
-  timestamp : nat64;''
+  timestamp : nat64;
   transfer : opt Transfer;
 };
 type TransactionResponse = record {

@@ -7,32 +7,32 @@ use crate::{get_decimals, get_fee, get_name, get_symbol};
 #[derive(CandidType, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct StableTokenId(pub u32);
 
-impl Storable for StableTokenId {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
-        serde_cbor::to_vec(self).unwrap().into()
-    }
-
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
-        serde_cbor::from_slice(&bytes).unwrap()
-    }
-
-    const BOUND: Bound = Bound::Unbounded;
-}
-
 // impl Storable for StableTokenId {
-//     fn to_bytes(&self) -> Cow<[u8]> {
-//         Cow::Owned(Encode!(&self.0).unwrap())
+//     fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+//         serde_cbor::to_vec(self).unwrap().into()
 //     }
 
-//     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-//         Self(Decode!(bytes.as_ref(), u32).unwrap()) // 👈 decode into u32 not Principal
+//     fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+//         serde_cbor::from_slice(&bytes).unwrap()
 //     }
 
-//     const BOUND: ic_stable_structures::storable::Bound = ic_stable_structures::storable::Bound::Bounded {
-//         max_size: 29,
-//         is_fixed_size: false,
-//     };
+//     const BOUND: Bound = Bound::Unbounded;
 // }
+
+impl Storable for StableTokenId {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(&self.0).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Decode!(bytes.as_ref(), u32).unwrap()) // 👈 decode into u32 not Principal
+    }
+
+    const BOUND: ic_stable_structures::storable::Bound = ic_stable_structures::storable::Bound::Bounded {
+        max_size: 4,
+        is_fixed_size: false,
+    };
+}
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct StableToken {
