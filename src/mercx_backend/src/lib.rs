@@ -13,6 +13,7 @@ use crate::token::stable_token::StableToken;
 
 pub mod swap;
 
+pub mod stable_mercx_settings;
 
 use candid::Principal;
 use icrc_ledger_types::icrc1::account::Account;
