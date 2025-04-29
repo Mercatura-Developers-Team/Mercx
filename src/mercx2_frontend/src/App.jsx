@@ -8,6 +8,8 @@ import Transcations from './Transcations';
 import Transfer from './Transfer';
 import SignupForm from './SignupForm';
 import InappBrowser from './InappBrowser';
+import CreatePool from './pool/addPool';
+
 function App() {
   return (
     <AuthProvider>
@@ -21,6 +23,7 @@ function App() {
           <Route path="/wallet" element={<Transfer />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/InappBrowser" element={<InappBrowser/>} />
+          <Route path="/addPool" element={<CreatePool/>} />
         </Routes>
       </div>
     </AuthProvider>

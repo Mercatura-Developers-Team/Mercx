@@ -21,7 +21,8 @@ fn add_pool(args: AddPoolArgs) -> AddPoolReply {
         let token_id_0: u32 = 1; // FXMX (example)
         let token_id_1: u32 = 2; // ckUSDT (example)
 
-        let lp_fee_bps = args.lp_fee_bps.unwrap_or(30); // Default to 0.3%
+       // let lp_fee_bps = args.lp_fee_bps.unwrap_or(30); // Default to 0.3%
+       let lp_fee_bps = 30;
         let kong_fee_bps = 5; // Fixed MercX fee in BPS (can be made dynamic later)
         let lp_token_id = 1000 + pool_id; // Example LP token id generation
 
@@ -65,14 +66,34 @@ fn add_pool(args: AddPoolArgs) -> AddPoolReply {
 }
 
 #[ic_cdk::query]
-fn get_all_pools() -> Vec<StablePool> {
+fn get_all_pools() -> Vec<AddPoolReply> {
     POOLS.with(|pools| {
         pools.borrow()
             .iter()
-            .map(|(_, pool)| pool.clone())
+            .map(|(_, pool)| {
+                AddPoolReply {
+                    pool_id: pool.pool_id,
+                    symbol: format!("{}_{}", pool.token_id_0, pool.token_id_1), // You might need mapping later
+                    name: format!("{}_{} Liquidity Pool", pool.token_id_0, pool.token_id_1),
+                    symbol_0: pool.token_id_0.to_string(), // temporary placeholder
+                    address_0: format!("canister://{}", pool.token_id_0),
+                    amount_0: pool.balance_0.clone(),
+                    symbol_1: pool.token_id_1.to_string(), // temporary placeholder
+                    address_1: format!("canister://{}", pool.token_id_1),
+                    amount_1: pool.balance_1.clone(),
+                    lp_fee_bps: pool.lp_fee_bps,
+                    lp_token_symbol: format!("{}_{}_LP", pool.token_id_0, pool.token_id_1),
+                    lp_token_amount: Nat::from(1_000_000_u64), // This should be real LP minted later
+                    tx_id: pool.pool_id as u64,
+                    status: "Success".to_string(),
+                    is_removed: pool.is_removed,
+                    ts: ic_cdk::api::time(), // Or if you save ts at creation inside StablePool later, use that
+                }
+            })
             .collect()
     })
 }
+
 
 #[ic_cdk::update]
 fn delete_pool(pool_id: u32) -> Result<String, String> {

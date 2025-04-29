@@ -360,19 +360,35 @@ async fn check_balance(account: Account, token_info: Principal) -> Result<NumTok
     }
 }
 
-#[ic_cdk::update]
-async fn get_token_name() -> String {
-    let (token_name,): (String,) = ic_cdk::call(
-        Principal::from_text(CANISTER_ID_ICRC1_LEDGER_CANISTER)
-            .expect("Could not decode the principal."),
-        "icrc1_name",
-        (),
-    )
-    .await
-    .expect("failed to retrieve token name");
 
-    token_name
+pub async fn get_name(ledger: Principal) -> Result<String, String> {
+    ic_cdk::call::<(), (String,)>(ledger, "icrc1_name", ())
+        .await
+        .map(|(name,)| name)
+        .map_err(|e| e.1)
 }
+
+pub async fn get_symbol(ledger: Principal) -> Result<String, String> {
+    ic_cdk::call::<(), (String,)>(ledger, "icrc1_symbol", ())
+        .await
+        .map(|(symbol,)| symbol)
+        .map_err(|e| e.1)
+}
+
+pub async fn get_decimals(ledger: Principal) -> Result<u8, String> {
+    ic_cdk::call::<(), (u8,)>(ledger, "icrc1_decimals", ())
+        .await
+        .map(|(decimals,)| decimals)
+        .map_err(|e| e.1)
+}
+
+pub async fn get_fee(ledger: Principal) -> Result<Nat, String> {
+    ic_cdk::call::<(), (Nat,)>(ledger, "icrc1_fee", ())
+        .await
+        .map(|(fee,)| fee)
+        .map_err(|e| e.1)
+}
+
 
 // #[ic_cdk::update]
 // async fn get_logo_url() -> Result<String, String> {

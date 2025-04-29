@@ -7,7 +7,8 @@ pub use xrc_mock::get_icp_rate;
 
 pub mod pool;
 use crate::pool::add_pool_arg::{AddPoolArgs, AddPoolReply};
-use crate::pool::stable_pool::StablePool;
+
+pub mod token;
 
 pub mod swap;
 

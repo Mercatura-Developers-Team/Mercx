@@ -4,7 +4,6 @@ type AddPoolArgs = record {
   token_1 : text;
   amount_0 : nat;
   amount_1 : nat;
-  lp_fee_bps : opt nat8;
 };
 type AddPoolReply = record {
   ts : nat64;
@@ -57,21 +56,6 @@ type Result_1 = variant { Ok : text; Err : text };
 type Result_2 = variant { Ok : GetTransactions; Err : text };
 type Result_3 = variant { Ok : float64; Err : text };
 type Result_4 = variant { Ok : TransactionResponse; Err : text };
-type StablePool = record {
-  mercx_fee_0 : nat;
-  mercx_fee_1 : nat;
-  lp_fee_0 : nat;
-  lp_fee_1 : nat;
-  balance_0 : nat;
-  balance_1 : nat;
-  kong_fee_bps : nat8;
-  pool_id : nat32;
-  is_removed : bool;
-  token_id_0 : nat32;
-  token_id_1 : nat32;
-  lp_token_id : nat32;
-  lp_fee_bps : nat8;
-};
 type Transaction = record {
   burn : opt Burn;
   kind : text;
@@ -107,10 +91,9 @@ service : {
   deposit_icp_in_canister : (nat64) -> (Result);
   deposit_token : (nat64, principal) -> (Result);
   get_account_transactions : (Account, opt nat, nat) -> (Result_2);
-  get_all_pools : () -> (vec StablePool) query;
+  get_all_pools : () -> (vec AddPoolReply) query;
   get_icp_rate : () -> (Result_3);
   get_logo_url : () -> (text);
-  get_token_name : () -> (text);
   get_transactions : (nat, nat) -> (Result_4);
   get_whitelisted_principals : () -> (vec text) query;
   is_whitelisted : (principal) -> (bool) query;
