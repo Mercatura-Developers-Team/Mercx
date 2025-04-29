@@ -7,11 +7,12 @@ pub fn get_by_token_id(token_id: u32) -> Option<StableToken> {
 
 
 // /// return all tokens
-// pub fn get() -> Vec<StableToken> {
-//     TOKENS.with(|m| {
-//         m.borrow()
-//             .iter()
-//             .filter_map(|(_, v)| if !v.is_removed() { Some(v) } else { None })
-//             .collect()
-//     })
-// }
+#[ic_cdk::query]
+pub fn get_all_tokens() -> Vec<StableToken> {
+    TOKENS.with(|m| {
+        m.borrow()
+            .iter()
+            .map(|(_, v)| v.clone()) 
+            .collect()
+    })
+}

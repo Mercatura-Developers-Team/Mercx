@@ -9,6 +9,7 @@ pub mod pool;
 use crate::pool::add_pool_arg::{AddPoolArgs, AddPoolReply};
 
 pub mod token;
+use crate::token::stable_token::StableToken;
 
 pub mod swap;
 
