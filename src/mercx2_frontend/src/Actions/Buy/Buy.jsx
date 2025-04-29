@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { Fragment, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import {  useState } from "react";
 import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal

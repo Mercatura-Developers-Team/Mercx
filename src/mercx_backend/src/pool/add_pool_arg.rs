@@ -8,7 +8,7 @@ pub struct AddPoolArgs {
     pub amount_0: Nat,               // amount to deposit of token 0
     pub token_1: String,             // e.g. ckUSDT
     pub amount_1: Nat,               // amount to deposit of token 1
-    pub lp_fee_bps: Option<u8>,      // optional fee in basis points, default = 30 //for each swap
+    // pub lp_fee_bps: Option<u8>,      // optional fee in basis points, default = 30 //for each swap
 }
 
 //for frontend API

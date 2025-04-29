@@ -1,7 +1,9 @@
 use candid::{CandidType, Nat};
 use ic_stable_structures::{storable::Bound, Storable};
-//use num::BigRational;
 use serde::{Deserialize, Serialize};
+use crate::token::stable_token::StableToken;
+use crate::token::handlers;
+
 
 #[derive(CandidType, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct StablePoolId(pub u32);
@@ -62,8 +64,27 @@ impl StablePool {
             is_removed: false,
         }
     }
+    //from stable token
+    pub fn token_0(&self) -> StableToken {
+       handlers::get_by_token_id(self.token_id_0).unwrap()
+    }
 
+    pub fn token_1(&self) -> StableToken {
+        handlers::get_by_token_id(self.token_id_1).unwrap()
+     }
 
+    pub fn symbol_0(&self) -> String {
+        self.token_0().symbol().to_string()
+    }
+
+    pub fn symbol_1(&self) -> String {
+        self.token_1().symbol().to_string()
+    }
+    pub fn name(&self) -> String {
+        format!("{}_{} Liquidity Pool", self.symbol_0(), self.symbol_1())
+    }
+
+    
 }
 
 impl Storable for StablePool {
