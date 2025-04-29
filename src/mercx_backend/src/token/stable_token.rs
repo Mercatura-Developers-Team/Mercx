@@ -52,10 +52,11 @@ fn false_bool() -> bool {
 
 impl StableToken {
     pub async fn new(canister_id: Principal) -> Result<Self, String> {
-        let name = get_name(canister_id).await?;
-        let symbol = get_symbol(canister_id).await?;
-        let decimals = get_decimals(canister_id).await?;
-        let fee = get_fee(canister_id).await?;
+        let name = get_name(canister_id).await.map_err(|e| format!("get_name failed: {}", e))?;
+        let symbol = get_symbol(canister_id).await.map_err(|e| format!("get_symbol failed: {}", e))?;
+        let decimals = get_decimals(canister_id).await.map_err(|e| format!("get_decimals failed: {}", e))?;
+        let fee = get_fee(canister_id).await.map_err(|e| format!("get_fee failed: {}", e))?;
+    
         Ok(Self {
             token_id: 0,
             name,
