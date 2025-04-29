@@ -1,4 +1,29 @@
 type Account = record { owner : principal; subaccount : opt blob };
+type AddPoolArgs = record {
+  token_0 : text;
+  token_1 : text;
+  amount_0 : nat;
+  amount_1 : nat;
+  lp_fee_bps : opt nat8;
+};
+type AddPoolReply = record {
+  ts : nat64;
+  lp_token_amount : nat;
+  status : text;
+  tx_id : nat64;
+  lp_token_symbol : text;
+  name : text;
+  amount_0 : nat;
+  amount_1 : nat;
+  address_0 : text;
+  address_1 : text;
+  symbol_0 : text;
+  symbol_1 : text;
+  pool_id : nat32;
+  is_removed : bool;
+  symbol : text;
+  lp_fee_bps : nat8;
+};
 type Approve = record {
   fee : opt nat;
   from : Account;
@@ -28,16 +53,31 @@ type Mint = record {
   amount : nat;
 };
 type Result = variant { Ok : nat; Err : text };
-type Result_1 = variant { Ok : GetTransactions; Err : text };
-type Result_2 = variant { Ok : float64; Err : text };
-type Result_3 = variant { Ok : TransactionResponse; Err : text };
-type Result_4 = variant { Ok : text; Err : text };
+type Result_1 = variant { Ok : text; Err : text };
+type Result_2 = variant { Ok : GetTransactions; Err : text };
+type Result_3 = variant { Ok : float64; Err : text };
+type Result_4 = variant { Ok : TransactionResponse; Err : text };
+type StablePool = record {
+  mercx_fee_0 : nat;
+  mercx_fee_1 : nat;
+  lp_fee_0 : nat;
+  lp_fee_1 : nat;
+  balance_0 : nat;
+  balance_1 : nat;
+  kong_fee_bps : nat8;
+  pool_id : nat32;
+  is_removed : bool;
+  token_id_0 : nat32;
+  token_id_1 : nat32;
+  lp_token_id : nat32;
+  lp_fee_bps : nat8;
+};
 type Transaction = record {
   burn : opt Burn;
   kind : text;
   mint : opt Mint;
   approve : opt Approve;
-  timestamp : nat64;
+  timestamp : nat64;''
   transfer : opt Transfer;
 };
 type TransactionResponse = record {
@@ -57,25 +97,31 @@ type Transfer = record {
 };
 type TransferArgs = record { to_account : Account; amount : nat };
 service : {
+  add_pool : (AddPoolArgs) -> (AddPoolReply);
   add_to_whitelist : (principal) -> ();
+  calculate_fees : (nat, nat8, nat8) -> (nat, nat, nat);
   check_balance : (Account, principal) -> (Result);
   check_balance_icp : (Account) -> (nat);
   check_balance_mercx : (Account) -> (nat);
+  delete_pool : (nat32) -> (Result_1);
   deposit_icp_in_canister : (nat64) -> (Result);
   deposit_token : (nat64, principal) -> (Result);
-  get_account_transactions : (Account, opt nat, nat) -> (Result_1);
-  get_icp_rate : () -> (Result_2);
+  get_account_transactions : (Account, opt nat, nat) -> (Result_2);
+  get_all_pools : () -> (vec StablePool) query;
+  get_icp_rate : () -> (Result_3);
   get_logo_url : () -> (text);
   get_token_name : () -> (text);
-  get_transactions : (nat, nat) -> (Result_3);
+  get_transactions : (nat, nat) -> (Result_4);
   get_whitelisted_principals : () -> (vec text) query;
   is_whitelisted : (principal) -> (bool) query;
   remove_from_whitelist : (principal) -> ();
-  sell : (nat64, principal, nat64, principal) -> (Result_4);
+  sell : (nat64, principal, nat64, principal) -> (Result_1);
   send_mercx : (nat64) -> (Result);
   send_token : (nat64, principal) -> (Result);
-  swap : (nat64, nat64) -> (Result_4);
+  swap : (nat64, nat64) -> (Result_1);
+  swap_example : (nat) -> (text);
   transfer : (TransferArgs) -> (Result);
   transfer_from : (TransferArgs) -> (Result);
+  transfer_from_general : (TransferArgs) -> (Result);
   whoami : () -> (principal) query;
 }
