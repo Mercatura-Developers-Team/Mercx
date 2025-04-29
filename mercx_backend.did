@@ -56,6 +56,15 @@ type Result_1 = variant { Ok : text; Err : text };
 type Result_2 = variant { Ok : GetTransactions; Err : text };
 type Result_3 = variant { Ok : float64; Err : text };
 type Result_4 = variant { Ok : TransactionResponse; Err : text };
+type StableToken = record {
+  fee : nat;
+  decimals : nat8;
+  token_id : nat32;
+  name : text;
+  canister_id : principal;
+  is_removed : bool;
+  symbol : text;
+};
 type Transaction = record {
   burn : opt Burn;
   kind : text;
@@ -92,6 +101,7 @@ service : {
   deposit_token : (nat64, principal) -> (Result);
   get_account_transactions : (Account, opt nat, nat) -> (Result_2);
   get_all_pools : () -> (vec AddPoolReply) query;
+  get_all_tokens : () -> (vec StableToken) query;
   get_icp_rate : () -> (Result_3);
   get_logo_url : () -> (text);
   get_transactions : (nat, nat) -> (Result_4);
