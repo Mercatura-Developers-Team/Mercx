@@ -1,13 +1,83 @@
 use candid::Nat;
-use crate::pool::stable_pool::StablePool;
+use crate::pool::stable_pool::{StablePool,StablePoolId};
 use crate::stable_memory::POOLS;
-use crate::pool::stable_pool::StablePoolId;
 use crate::AddPoolReply;
 use crate::AddPoolArgs;
+use crate::StableToken;
+use crate::token::handlers;
+use crate::stable_mercx_settings;
+
+
+pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
+    format!("{}_{}", token_0.symbol(), token_1.symbol())
+}
+
+pub fn get_by_pool_id(pool_id: u32) -> Option<StablePool> {
+    POOLS.with(|m| m.borrow().get(&StablePoolId(pool_id)))
+}
+
+pub fn get_by_symbol(symbol: &str) -> Result<StablePool, String> {
+    POOLS.with(|pools| {
+        pools
+            .borrow()
+            .iter()
+            .find_map(|(_, pool)| {
+                if pool.name() == symbol {
+                    Some(pool.clone())
+                } else {
+                    None
+                }
+            })
+    })
+    .ok_or_else(|| format!("Pool with symbol '{}' not found", symbol))
+}
+
+pub fn get_by_token_ids(token_id_0: u32, token_id_1: u32) -> Option<StablePool> {
+    POOLS.with(|m| {
+        m.borrow().iter().find_map(|(_, v)| {
+            if v.token_id_0 == token_id_0 && v.token_id_1 == token_id_1 {
+                return Some(v);
+            }
+            None
+        })
+    })
+}
+
+pub fn get_by_tokens(token_0: &str, token_1: &str) -> Result<StablePool, String> {
+    let token_0: StableToken = handlers::get_by_symbol(token_0)?;
+    let token_1 = handlers::get_by_symbol(token_1)?;
+    get_by_token_ids(token_0.token_id(), token_1.token_id()).ok_or_else(|| format!("Pool {} not found", symbol(&token_0, &token_1)))
+}
 
 pub fn nat_zero() -> Nat {
     Nat::from(0_u128)
 }
+
+pub fn exists(token_0: &StableToken, token_1: &StableToken) -> bool {
+    POOLS.with(|m| {
+        m.borrow().iter().any(|(_, v)| {
+            v.token_id_0 == token_0.token_id() && v.token_id_1 == token_1.token_id()
+                || v.token_id_0 == token_1.token_id() && v.token_id_1 == token_0.token_id()
+        })
+    })
+}
+
+pub fn insert(pool: &StablePool) -> Result<u32, String> {
+    if exists(&pool.token_0(), &pool.token_1()) {
+        Err(format!("Pool {} already exists", pool.name()))?
+    }
+
+    let insert_pool = POOLS.with(|m| {
+        let mut map = m.borrow_mut();
+        let pool_id = stable_mercx_settings::increment_ids::inc_pool_map_idx();
+        let insert_pool = StablePool { pool_id, ..pool.clone() };
+        map.insert(StablePoolId(pool_id), insert_pool.clone());
+        insert_pool
+    });
+
+    Ok(insert_pool.pool_id)
+}
+
 
 
 #[ic_cdk::update]

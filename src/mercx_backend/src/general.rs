@@ -20,14 +20,14 @@ use ic_stable_structures::{StableBTreeMap, DefaultMemoryImpl};
 // pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "j47wy-ciaaa-aaaan-qzqyq-cai";
 // pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "cngnf-vqaaa-aaaar-qag4q-cai";
 
-pub const CANISTER_ID_XRC: &str = "a4tbr-q4aaa-aaaaa-qaafq-cai";
-pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
-pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
-pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "b77ix-eeaaa-aaaaa-qaada-cai";
-pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
-pub const CANISTER_ID_MERCX_BACKEND: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
-pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
-pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "ahw5u-keaaa-aaaaa-qaaha-cai";
+pub const CANISTER_ID_XRC: &str = "ahw5u-keaaa-aaaaa-qaaha-cai";
+pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
+pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "bw4dl-smaaa-aaaaa-qaacq-cai";
+pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "asrmz-lmaaa-aaaaa-qaaeq-cai";
+//pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
+pub const CANISTER_ID_MERCX_BACKEND: &str = "aovwi-4maaa-aaaaa-qaagq-cai";
+pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "by6od-j4aaa-aaaaa-qaadq-cai";
+pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
 
 
 
@@ -360,7 +360,7 @@ async fn check_balance(account: Account, token_info: Principal) -> Result<NumTok
     }
 }
 
-
+#[ic_cdk::query]
 pub async fn get_name(ledger: Principal) -> Result<String, String> {
     ic_cdk::call::<(), (String,)>(ledger, "icrc1_name", ())
         .await
