@@ -1,7 +1,6 @@
-use candid::{CandidType, Nat, Principal,Decode,Encode};
+use candid::{CandidType, Nat, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
 
 use crate::{get_decimals, get_fee, get_name, get_symbol};
 #[derive(CandidType, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -18,21 +17,6 @@ impl Storable for StableTokenId {
 
     const BOUND: Bound = Bound::Unbounded;
 }
-
-// impl Storable for StableTokenId {
-//     fn to_bytes(&self) -> Cow<[u8]> {
-//         Cow::Owned(Encode!(&self.0).unwrap())
-//     }
-
-//     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-//         Self(Decode!(bytes.as_ref(), u32).unwrap()) 
-//     }
-
-//     const BOUND: ic_stable_structures::storable::Bound = ic_stable_structures::storable::Bound::Bounded {
-//         max_size: 4,
-//         is_fixed_size: false,
-//     };
-// }
 
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
@@ -69,7 +53,7 @@ impl StableToken {
         })
     }
 
-    fn token_id(&self) -> u32 {
+   pub fn token_id(&self) -> u32 {
         self.token_id
     }
 
@@ -79,6 +63,10 @@ impl StableToken {
 
     pub fn symbol(&self) -> String {
         self.symbol.to_string()
+    }
+
+    pub fn decimals(&self) -> u8 {
+        self.decimals
     }
 
     fn canister_id(&self) -> Option<&Principal> {

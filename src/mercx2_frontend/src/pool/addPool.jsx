@@ -39,7 +39,7 @@ export default function CreatePool() {
     console.log("Sending args:", args);
 
     // Call your backend here
-     await mercx_Actor.add_pool(args);
+     await mercx_Actor.add_new_pool(args);
 
   };
 

@@ -120,3 +120,7 @@ dfx deploy icp_ledger_canister --argument "
 
 
 echo "DONE"
+
+#for candid
+#cargo build --release --target wasm32-unknown-unknown --package mercx_backend
+#candid-extractor target/wasm32-unknown-unknown/release/mercx_backend.wasm > mercx_backend.did

@@ -3,7 +3,8 @@ use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 use crate::token::stable_token::StableToken;
 use crate::token::handlers;
-
+use crate::helpers::math_helpers::{price_rounded,nat_to_bigint,nat_to_decimal_precision,nat_is_zero,nat_add};
+use num::{BigRational,BigInt,Zero};
 
 #[derive(CandidType, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct StablePoolId(pub u32);
@@ -84,9 +85,28 @@ impl StablePool {
         format!("{}_{} Liquidity Pool", self.symbol_0(), self.symbol_1())
     }
 
+    pub fn get_price(&self) -> Option<BigRational> {
+        let reserve_0 = nat_add(&self.balance_0, &self.lp_fee_0);
+        let reserve_1 = nat_add(&self.balance_1, &self.lp_fee_1);
+        if nat_is_zero(&reserve_0) {
+            None?
+        }
+
+        let token_0 = self.token_0();
+        let token_1 = self.token_1();
+        let max_decimals = std::cmp::max(token_0.decimals(), token_1.decimals());
+        let reserve_0 = nat_to_bigint(&nat_to_decimal_precision(&reserve_0, token_0.decimals(), max_decimals));
+        let reserve_1 = nat_to_bigint(&nat_to_decimal_precision(&reserve_1, token_1.decimals(), max_decimals));
+
+        Some(BigRational::new(reserve_1, reserve_0))
+    }
+
+    pub fn get_price_as_f64(&self) -> Option<f64> {
+        price_rounded(&self.get_price()?)
+    }
+    
     
 }
-
 impl Storable for StablePool {
     fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
         serde_cbor::to_vec(self).unwrap().into()
