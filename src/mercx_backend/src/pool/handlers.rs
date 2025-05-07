@@ -73,7 +73,6 @@ pub fn insert(pool: &StablePool) -> Result<u32, String> {
         map.insert(StablePoolId(pool_id), insert_pool.clone());
         insert_pool
     });
-
     Ok(insert_pool.pool_id)
 }
 

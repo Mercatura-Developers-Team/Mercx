@@ -105,7 +105,7 @@ const Transfer = () => {
             fetchTokenBalances(principal);
             //fetchData(principal);
         }
-    }, [principal, tokens]);
+      }, [principal, tokens]);
 
 
     const handleTransfer = async (event) => {

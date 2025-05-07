@@ -49,7 +49,11 @@ type Mint = record {
   created_at_time : opt nat64;
   amount : nat;
 };
+<<<<<<< HEAD
 type Result = variant { Ok : AddPoolReply; Err : text };
+=======
+type Result = variant { Ok : StablePool; Err : text };
+>>>>>>> b42ca9d38210709b2b06eda26da9c10a4209617c
 type Result_1 = variant { Ok : StableToken; Err : text };
 type Result_2 = variant { Ok : nat; Err : text };
 type Result_3 = variant { Ok : text; Err : text };
@@ -89,7 +93,12 @@ type Transfer = record {
 };
 type TransferArgs = record { to_account : Account; amount : nat };
 service : {
+<<<<<<< HEAD
   add_pool : (AddPoolArgs) -> (Result);
+=======
+  add_new_pool : (nat32, nat32, nat8, nat8, nat32) -> (Result);
+  add_pool : (AddPoolArgs) -> (AddPoolReply);
+>>>>>>> b42ca9d38210709b2b06eda26da9c10a4209617c
   add_to_whitelist : (principal) -> ();
   add_token : (principal) -> (Result_1);
   calculate_fees : (nat, nat8, nat8) -> (nat, nat, nat);

@@ -4,10 +4,10 @@ use crate::StablePool;
 use crate::pool::handlers;
 use crate::StableToken;
 use ic_cdk::api;
-use crate::pool::stable_pool::{nat_add,nat_is_zero};
 use crate::stable_mercx_settings::mercx_settings_map;
 use crate::token::handlers::get_by_token;
 use crate::token::add_token::add_token;
+use crate::helpers::math_helpers::{nat_add,nat_is_zero};
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct AddPoolArgs {
@@ -35,12 +35,11 @@ pub struct AddPoolReply {
     pub lp_token_amount: Nat,        // amount of LP tokens minted
     pub ts: u64,                     // timestamp of creation
 }
-
+#[ic_cdk::update]
 // add_pool() taken
  fn add_new_pool(token_id_0: u32, token_id_1: u32, lp_fee_bps: u8, kong_fee_bps: u8, lp_token_id: u32) -> Result<StablePool, String> {
     let pool = StablePool::new(token_id_0, token_id_1, lp_fee_bps, kong_fee_bps, lp_token_id);
     let pool_id = handlers::insert(&pool)?;
-
     // Retrieves the inserted pool by its pool_id
     handlers::get_by_pool_id(pool_id).ok_or_else(|| "Failed to add pool".to_string())
 }
