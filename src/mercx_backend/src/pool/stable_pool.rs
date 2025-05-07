@@ -37,13 +37,8 @@ pub struct StablePool {
     pub lp_fee_bps: u8,   // LP's fee in basis points //distributed to the liquidity providers //Percentage (%)(felswap)
     pub kong_fee_bps: u8, // Kong's fee in basis points //Percentage (%) (fel swap)
     pub lp_token_id: u32, // token id of the LP token
-    #[serde(default = "false_bool")]
-    pub is_removed: bool,
 }
 
-fn false_bool() -> bool {
-    false
-}
 
 pub fn nat_zero() -> Nat {
     Nat::from(0_u128)
@@ -64,7 +59,6 @@ impl StablePool {
             lp_fee_bps,
             kong_fee_bps,
             lp_token_id,
-            is_removed: false,
         }
     }
     //from stable token
@@ -86,6 +80,11 @@ impl StablePool {
     pub fn name(&self) -> String {
         format!("{}_{} Liquidity Pool", self.symbol_0(), self.symbol_1())
     }
+    pub fn canister_id_0(&self) -> String {
+        self.token_0().canister_id().expect("Canister ID missing").to_string()    }
+
+   pub fn canister_id_1(&self) -> String {
+            self.token_1().canister_id().expect("Canister ID missing").to_string()    }
 
     pub fn get_price(&self) -> Option<BigRational> {
         let reserve_0 = nat_add(&self.balance_0, &self.lp_fee_0);

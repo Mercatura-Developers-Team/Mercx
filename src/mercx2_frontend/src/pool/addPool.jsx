@@ -35,11 +35,17 @@ export default function CreatePool() {
      // initial_price: Number(initialPrice),
      amount_0: Number(amountToken0),
       amount_1: Number(amountToken1),
+      lp_fee_bps: [], // ← This is how you pass `None` in Candid for Option<u8>
     };
     console.log("Sending args:", args);
 
-    // Call your backend here
-     await mercx_Actor.add_pool(args);
+    try {
+      const result = await mercx_Actor.add_pool(args);
+      console.log("Pool created successfully:", result);
+    } catch (err) {
+      console.error("Error adding pool:", err);
+      alert("❌ Failed to add pool: " + err);
+    }
 
   };
 

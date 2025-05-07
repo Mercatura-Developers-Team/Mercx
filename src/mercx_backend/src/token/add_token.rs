@@ -5,7 +5,7 @@ use crate::token::stable_token::StableTokenId;
 use crate::stable_memory::TOKENS;
 use crate::StableToken;
 
-use crate::stable_mercx_settings::increment_ids::inc_token_map_idx;
+use crate::stable_mercx_settings::mercx_settings_map::inc_token_map_idx;
 
 use crate::token::handlers::exists_by_canister_id;
 

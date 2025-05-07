@@ -40,7 +40,37 @@ pub fn get_by_symbol(symbol: &str) -> Result<StableToken, String> {
 }
 
 
+pub fn get_by_canister_id(canister_id: &Principal) -> Option<StableToken> {
+    TOKENS.with(|tokens| {
+        tokens
+            .borrow()
+            .iter()
+            .find_map(|(_, token)| {
+                if &token.canister_id == canister_id {
+                    Some(token.clone())
+                } else {
+                    None
+                }
+            })
+    })
+}
 
-// fn fetch_token_by_symbol(symbol: String) -> Result<StableToken, String> {
-//     get_by_symbol(&symbol).ok_or_else(|| format!("Token with symbol {} not found", symbol))
-// }
+
+pub fn get_by_token(token: &str) -> Result<StableToken, String> {
+    // Try by symbol
+    if let Ok(token) = get_by_symbol(token) {
+        return Ok(token);
+    }
+
+    // Try by canister ID string
+    if let Ok(principal) = Principal::from_text(token) {
+        if let Some(token) = get_by_canister_id(&principal) {
+            return Ok(token);
+        }
+    }
+
+    Err(format!(
+        "Token '{}' not found symbols/canisters exist",
+        token
+    ))
+}

@@ -27,13 +27,8 @@ pub struct StableToken {
     pub canister_id: Principal,
     pub decimals: u8,
     pub fee: Nat,
-    #[serde(default = "false_bool")]
-    pub is_removed: bool,
 }
 
-fn false_bool() -> bool {
-    false
-}
 
 impl StableToken {
     pub async fn new(canister_id: Principal) -> Result<Self, String> {
@@ -49,7 +44,6 @@ impl StableToken {
             canister_id,
             decimals,
             fee,
-            is_removed: false,
         })
     }
 
@@ -69,7 +63,7 @@ impl StableToken {
         self.decimals
     }
 
-    fn canister_id(&self) -> Option<&Principal> {
+   pub fn canister_id(&self) -> Option<&Principal> {
         Some(&self.canister_id)
     }
 }

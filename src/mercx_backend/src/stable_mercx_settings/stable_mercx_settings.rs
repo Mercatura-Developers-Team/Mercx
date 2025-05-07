@@ -7,6 +7,8 @@ use crate::stable_memory::{TOKENS,POOLS};
 pub struct StableMercxSettings {
     pub token_map_idx: u32,    // counter for TOKEN_MAP
     pub pool_map_idx: u32,     // counter for POOL_MAP
+    pub default_lp_fee_bps: u8,
+    pub default_mercx_fee_bps: u8,
 }
 
 impl Default for StableMercxSettings {
@@ -18,7 +20,8 @@ impl Default for StableMercxSettings {
            
             token_map_idx,
             pool_map_idx,
-            
+            default_lp_fee_bps: 30,
+            default_mercx_fee_bps: 0,
         }
     }
 }
