@@ -9,7 +9,7 @@ import Transfer from './Transfer';
 import SignupForm from './SignupForm';
 import InappBrowser from './InappBrowser';
 import CreatePool from './pool/addPool';
-
+import Pools from './pool/pools';
 function App() {
   return (
     <AuthProvider>
@@ -24,6 +24,7 @@ function App() {
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/InappBrowser" element={<InappBrowser/>} />
           <Route path="/addPool" element={<CreatePool/>} />
+          <Route path="/pools" element={<Pools/>} />
         </Routes>
       </div>
     </AuthProvider>

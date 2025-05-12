@@ -415,29 +415,62 @@ pub async fn get_fee(ledger: Principal) -> Result<Nat, String> {
 
 
 
+// #[ic_cdk::update]
+// async fn get_logo_url() -> String {
+//     let (metadata,): (Vec<(String, MetadataValue)>,) = ic_cdk::call(
+//         Principal::from_text(CANISTER_ID_CKUSDT_LEDGER_CANISTER)
+//             .expect("Could not decode the principal."),
+//         "icrc1_metadata",
+//         (),
+//     )
+//     .await
+//     .expect("failed to retrieve metadata");
+
+//     // Find the "logo_url" in the metadata
+//     for (key, value) in metadata {
+//         if key == "logo_url" {
+//             if let MetadataValue::Text(url) = value {
+//                 return url;
+//             }
+//         }
+//     }
+
+//     // Default return if the logo URL is not found
+//     "Logo URL not found".to_string()
+// }
+
+
+
+//use call result because You’re handling the success or failure of the inter-canister call explicitly.
 #[ic_cdk::update]
-async fn get_logo_url() -> String {
-    let (metadata,): (Vec<(String, MetadataValue)>,) = ic_cdk::call(
-        Principal::from_text(CANISTER_ID_CKUSDT_LEDGER_CANISTER)
-            .expect("Could not decode the principal."),
+async fn get_logo_url(ledger: Principal) -> String {
+    let result: ic_cdk::api::call::CallResult<(Vec<(String, MetadataValue)>,)> = ic_cdk::call(
+        ledger,
         "icrc1_metadata",
         (),
     )
-    .await
-    .expect("failed to retrieve metadata");
+    .await;
 
-    // Find the "logo_url" in the metadata
-    for (key, value) in metadata {
-        if key == "logo_url" {
-            if let MetadataValue::Text(url) = value {
-                return url;
+    match result {
+        Ok((metadata,)) => {
+            for (key, value) in metadata {
+                if key == "logo_url" {
+                    if let MetadataValue::Text(url) = value {
+                        return url;
+                    }
+                }
             }
+            "logo_url not found in metadata".to_string()
         }
+        Err((_, msg)) => format!("Error calling metadata: {}", msg),
     }
-
-    // Default return if the logo URL is not found
-    "Logo URL not found".to_string()
 }
+// pub async fn get_logo(ledger: Principal) -> Result<Nat, String> {
+//     ic_cdk::call::<(), (Nat,)>(ledger, "icrc1_metadata", ())
+//         .await
+//         .map(|(fee,)| fee)
+//         .map_err(|e| e.1)
+// }
 
 #[derive(CandidType, Deserialize, Serialize, Debug)]
 pub struct TransactionQueryArgs {
