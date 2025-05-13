@@ -75,8 +75,6 @@ pub fn get_by_token(token: &str) -> Result<StableToken, String> {
     ))
 }
 
-
-
 fn reset_tokens() -> Result<String, String> {
     TOKENS.with(|tokens| {
         tokens.borrow_mut().clear_new(); // `clear_new()` btmsh kolo remove law hanmsh haga specific
