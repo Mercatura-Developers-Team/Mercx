@@ -4,6 +4,8 @@ import ImportTokenModal from "./ImportTokenModal";
 import { Principal } from "@dfinity/principal";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import PoolInfo from "./PoolInfo";
+
 
 export default function CreatePool() {
   const { mercx_Actor } = useAuth();
@@ -48,6 +50,44 @@ export default function CreatePool() {
       }
     },
   });
+
+  const [poolStats, setPoolStats] = useState(null); //information 
+
+  useEffect(() => {
+    if (token0 && token1 && mercx_Actor) {
+      (async () => {
+        try {
+          const pool = await mercx_Actor.get_by_tokens(token0.symbol, token1.symbol);
+          if ("Ok" in pool) {
+            const data = pool.Ok;
+            setPoolStats({
+              poolId: data.pool_id,
+              token0Balance: data.amount_0,
+              token1Balance: data.amount_1,
+              tvl: Number(data.amount_0) + Number(data.amount_1),
+            });
+          } else if (pool.Err.includes("not found")) {
+            // Only show message if error explicitly says it doesn’t exist
+            setPoolStats({
+              message: `No pool exists for ${token0.symbol}/${token1.symbol}. Create the first liquidity position!`,
+            });
+          } else {
+            // In all other error cases (e.g. already exists), assume the pool exists
+            setPoolStats(null); // or you can choose to log/display the actual error
+          }
+        } catch (err) {
+          console.error("Failed to fetch pool stats:", err);
+          setPoolStats({
+            message: `Error fetching pool data for ${token0.symbol}/${token1.symbol}.`,
+          });
+        }
+      })();
+    } else {
+      setPoolStats(null);
+    }
+  }, [token0, token1]);
+  
+  
 
 
   useEffect(() => {
@@ -98,8 +138,6 @@ export default function CreatePool() {
   }, [token0, token1]);
 
 
-
-
   const handleTokenSelect = (token) => {
     if (
       (selectingFor === "token0" && token1 && token.canister_id.toText() === token1.canister_id.toText()) ||
@@ -123,9 +161,11 @@ export default function CreatePool() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0f0f23] px-4">
-      <div className="bg-[#1a1a2e] p-6 rounded-xl shadow-xl w-full max-w-2xl space-y-6">
-
+    <div className="min-h-screen flex items-center justify-center bg-[#0f0f23] px-4 py-8">
+    <div className="w-full max-w-6xl"> {/* Increased max width */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Column - Form */}
+        <div className="w-full lg:w-2/3 bg-[#1a1a2e] p-6 rounded-xl shadow-xl space-y-6">
         {/* Pool header */}
         <h2 className="text-white text-xl font-semibold">{poolHeader}</h2>
         {!poolExists && token0 && token1 && (
@@ -227,7 +267,16 @@ export default function CreatePool() {
           >
             {poolExists ? "Add Liquidity" : "Create Pool"}
           </button>
+    
         </form>
+        </div>
+       {/* Right Column - Pool Info */}
+       <div className="w-full lg:w-1/3">
+          <PoolInfo token0={token0} token1={token1} poolStats={poolStats} />
+        </div>
+      </div>
+
+
 
         {/* Token Selection Modal */}
         {openTokenSelect && (
@@ -305,6 +354,6 @@ export default function CreatePool() {
         />
 
       </div>
-    </div>
+      </div>
   );
 }

@@ -79,10 +79,10 @@ pub fn get_by_token(token: &str) -> Result<StableToken, String> {
 
 
 fn reset_tokens() -> Result<String, String> {
-   // only_controller()?; // validate first
+   
 
     TOKENS.with(|tokens| {
-        tokens.borrow_mut().clear_new(); // use `clear_new()` if using latest ic-stable-structures
+        tokens.borrow_mut().clear_new(); // u`clear_new()` btmsh kolo remove law hanmsh haga specific 
     });
 
     reset_token_map_idx();
@@ -90,7 +90,7 @@ fn reset_tokens() -> Result<String, String> {
     Ok("✅ Tokens memory cleared".to_string())
 }
 
-#[ic_cdk::update]
+// #[ic_cdk::update]
 // fn delete_token_by_id(canister_id: Principal) -> Result<String, String> {
 //     let token_id = StableTokenId(id);
 //     let removed = TOKENS.with(|tokens| {

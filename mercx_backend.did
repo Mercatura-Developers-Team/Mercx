@@ -113,12 +113,12 @@ service : {
   check_balance_icp : (Account) -> (nat);
   check_balance_mercx : (Account) -> (nat);
   delete_pool : (nat32) -> (Result_4);
-  delete_token_by_canister_id : (principal) -> (Result_4);
   deposit_icp_in_canister : (nat64) -> (Result_3);
   deposit_token : (nat64, principal) -> (Result_3);
   get_account_transactions : (Account, opt nat, nat) -> (Result_5);
   get_all_pools : () -> (vec AddPoolReply) query;
   get_all_tokens : () -> (vec StableToken) query;
+  get_by_tokens : (text, text) -> (Result);
   get_icp_rate : () -> (Result_6);
   get_logo_url : (principal) -> (text);
   get_name : (principal) -> (Result_4) query;
