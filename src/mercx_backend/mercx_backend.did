@@ -119,8 +119,8 @@ service : {
   get_all_tokens : () -> (vec StableToken) query;
   get_by_tokens : (text, text) -> (Result_5);
   get_icp_rate : () -> (Result_6);
-  get_logo_url : () -> (text);
-  get_name : (principal) -> (Result_3) query;
+  get_logo_url : (principal) -> (text);
+  get_name : (principal) -> (Result_4) query;
   get_transactions : (nat, nat) -> (Result_7);
   get_whitelisted_principals : () -> (vec text) query;
   is_whitelisted : (principal) -> (bool) query;

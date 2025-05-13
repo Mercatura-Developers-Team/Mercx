@@ -1,23 +1,29 @@
-use candid::{CandidType, Nat, Principal};
+use candid::{CandidType, Nat,Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 use crate::{get_decimals, get_fee, get_name, get_symbol};
 #[derive(CandidType, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct StableTokenId(pub u32);
 
 impl Storable for StableTokenId {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
-        serde_cbor::to_vec(self).unwrap().into()
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(&self.0).unwrap())
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
-        serde_cbor::from_slice(&bytes).unwrap()
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        let val = Decode!(bytes.as_ref(), u32).unwrap_or_else(|e| {
+            ic_cdk::trap(&format!("❌ Failed to decode StableTokenId: {}", e))
+        });
+        StableTokenId(val)
     }
 
-    const BOUND: Bound = Bound::Unbounded;
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 20,
+        is_fixed_size: false,
+    };
 }
-
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct StableToken {
@@ -73,13 +79,18 @@ pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
 }
 
 impl Storable for StableToken {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
-        serde_cbor::to_vec(self).unwrap().into()
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
-        serde_cbor::from_slice(&bytes).unwrap()
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), StableToken).unwrap_or_else(|e| {
+            ic_cdk::trap(&format!("❌ Failed to decode StableToken: {}", e))
+        })
     }
 
-    const BOUND: Bound = Bound::Unbounded;
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 2048, // adjust depending on your expected size
+        is_fixed_size: false,
+    };
 }

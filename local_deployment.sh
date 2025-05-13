@@ -17,7 +17,7 @@ record {
      transfer_fee = 10000;
       fee_collector_account = opt record { owner = principal \"a3shf-5eaaa-aaaaa-qaafa-cai\" };
      metadata = vec {
-         record { \"logo_url\"; variant { Text = \"/j.png\" } };  
+         record { \"logo_url\"; variant { Text = \"/Bella.jpeg\" } };  
      };
      feature_flags = opt record{icrc2 = ${FEATURE_FLAGS}};
      initial_balances = vec { record { record { owner = principal \"${DEFAULT}\"; }; 100_000_000_000_000; }; };
