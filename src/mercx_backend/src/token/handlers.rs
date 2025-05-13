@@ -1,6 +1,7 @@
 use crate::token::stable_token::{StableToken, StableTokenId};
 use crate::stable_memory::TOKENS;
 use candid::Principal;
+use crate::stable_mercx_settings::mercx_settings_map::reset_token_map_idx;
 
 pub fn get_by_token_id(token_id: u32) -> Option<StableToken> {
     TOKENS.with(|m| m.borrow().get(&StableTokenId(token_id)))
@@ -73,4 +74,54 @@ pub fn get_by_token(token: &str) -> Result<StableToken, String> {
         "Token '{}' not found symbols/canisters exist",
         token
     ))
+}
+
+
+
+fn reset_tokens() -> Result<String, String> {
+   // only_controller()?; // validate first
+
+    TOKENS.with(|tokens| {
+        tokens.borrow_mut().clear_new(); // use `clear_new()` if using latest ic-stable-structures
+    });
+
+    reset_token_map_idx();
+
+    Ok("✅ Tokens memory cleared".to_string())
+}
+
+#[ic_cdk::update]
+// fn delete_token_by_id(canister_id: Principal) -> Result<String, String> {
+//     let token_id = StableTokenId(id);
+//     let removed = TOKENS.with(|tokens| {
+//         tokens.borrow_mut().remove(&token_id)
+//     });
+
+//     match removed {
+//         Some(_) => Ok(format!("✅ Token with ID {} deleted.", id)),
+//         None => Err(format!("❌ Token with ID {} not found.", id)),
+//     }
+// }
+
+fn delete_token_by_canister_id(canister_id: Principal) -> Result<String, String> {
+    let maybe_token_id = TOKENS.with(|tokens| {
+        let tokens = tokens.borrow();
+        tokens.iter().find_map(|(id, token)| {
+            if token.canister_id == canister_id {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+    });
+
+    match maybe_token_id {
+        Some(token_id) => {
+            TOKENS.with(|tokens| {
+                tokens.borrow_mut().remove(&token_id);
+            });
+            Ok(format!("✅ Token with canister ID {} deleted.", canister_id))
+        }
+        None => Err(format!("❌ No token found with canister ID {}", canister_id)),
+    }
 }

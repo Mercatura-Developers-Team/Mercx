@@ -113,6 +113,7 @@ service : {
   check_balance_icp : (Account) -> (nat);
   check_balance_mercx : (Account) -> (nat);
   delete_pool : (nat32) -> (Result_4);
+  delete_token_by_canister_id : (principal) -> (Result_4);
   deposit_icp_in_canister : (nat64) -> (Result_3);
   deposit_token : (nat64, principal) -> (Result_3);
   get_account_transactions : (Account, opt nat, nat) -> (Result_5);
@@ -124,6 +125,7 @@ service : {
   get_transactions : (nat, nat) -> (Result_7);
   get_whitelisted_principals : () -> (vec text) query;
   is_whitelisted : (principal) -> (bool) query;
+  pool_exists : (text, text) -> (bool) query;
   remove_from_whitelist : (principal) -> ();
   sell : (nat64, principal, nat64, principal) -> (Result_4);
   send_mercx : (nat64) -> (Result_3);

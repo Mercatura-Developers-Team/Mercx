@@ -66,8 +66,9 @@ export default function Pools() {
         }
       }
     }
-  
+    console.log(logoMap);
     return logoMap;
+    
   };
   
   const renderTokenLogos = (symbol_0, symbol_1) => (

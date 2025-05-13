@@ -17,10 +17,10 @@ const Transfer = () => {
 
     const tokens = useMemo(() => [
         { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"] },
-        { name: "ICP", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/favicon.ico", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], },
+        { name: "EX30", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/EX30.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: [ "Receive"], },
         { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], },
-        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/j.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Send", "Receive", "Transactions"], },
-        { name: "ckUSDT", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo: "/ckUSDT.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Send", "Receive"], }
+        { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/FXMX logo.svg", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Send", "Receive", "Transactions"], },
+        { name: "GBX", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo: "/GBX LOGO.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: [ "Receive"], }
 
     ], [whoamiActor, icpActor, tommy_Actor, fxmxActor, ckUSDTActor]);
 

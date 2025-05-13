@@ -11,23 +11,25 @@ use std::cell::RefCell;
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::{StableBTreeMap, DefaultMemoryImpl};
 
-// pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
-// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="7p6gu-biaaa-aaaap-aknta-cai";
-// pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="7i7aa-mqaaa-aaaap-akntq-cai";
-// pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="ryjl3-tyaaa-aaaaa-aaaba-cai";
-// pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
-// pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
-// pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "j47wy-ciaaa-aaaan-qzqyq-cai";
-// pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "cngnf-vqaaa-aaaar-qag4q-cai";
+use crate::pool::handlers;
+use crate::token::handlers::get_by_token;
+pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
+pub const CANISTER_ID_ICRC1_LEDGER_CANISTER :&str="7p6gu-biaaa-aaaap-aknta-cai";
+pub const CANISTER_ID_ICRC1_INDEX_CANISTER :&str="7i7aa-mqaaa-aaaap-akntq-cai";
+pub const CANISTER_ID_ICP_LEDGER_CANISTER:&str ="ryjl3-tyaaa-aaaaa-aaaba-cai";
+pub const CANISTER_ID_ICP_INDEX_CANISTER :&str="qhbym-qaaaa-aaaaa-aaafq-cai";
+pub const CANISTER_ID_MERCX_BACKEND :&str="zoa6c-riaaa-aaaan-qzmta-cai";
+pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "j47wy-ciaaa-aaaan-qzqyq-cai";
+pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "cngnf-vqaaa-aaaar-qag4q-cai";
 
-pub const CANISTER_ID_XRC: &str = "ahw5u-keaaa-aaaaa-qaaha-cai";
-pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
-pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "bw4dl-smaaa-aaaaa-qaacq-cai";
-pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "asrmz-lmaaa-aaaaa-qaaeq-cai";
-//pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
-pub const CANISTER_ID_MERCX_BACKEND: &str = "aovwi-4maaa-aaaaa-qaagq-cai";
-pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "by6od-j4aaa-aaaaa-qaadq-cai";
-pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
+// pub const CANISTER_ID_XRC: &str = "ahw5u-keaaa-aaaaa-qaaha-cai";
+// pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "be2us-64aaa-aaaaa-qaabq-cai";
+// pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "bw4dl-smaaa-aaaaa-qaacq-cai";
+// pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "asrmz-lmaaa-aaaaa-qaaeq-cai";
+// pub const CANISTER_ID_ICP_INDEX_CANISTER: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
+// pub const CANISTER_ID_MERCX_BACKEND: &str = "ajuq4-ruaaa-aaaaa-qaaga-cai";
+// pub const CANISTER_ID_TOMMY_LEDGER_CANISTER: &str = "by6od-j4aaa-aaaaa-qaadq-cai";
+// pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
 
 
 
@@ -454,7 +456,7 @@ async fn get_logo_url(ledger: Principal) -> String {
     match result {
         Ok((metadata,)) => {
             for (key, value) in metadata {
-                if key == "logo_url" {
+                if key == "logo_url" || key == "icrc1:logo" {
                     if let MetadataValue::Text(url) = value {
                         return url;
                     }
@@ -699,6 +701,22 @@ async fn send_token(amount: u64, token_info: Principal) -> Result<BlockIndex, St
     // 8. Use map_err again to transform any specific ledger transfer errors into a readable string format, facilitating error handling and debugging.
     .map_err(|e| format!("ledger transfer tommy error {:?}", e))
 }
+
+#[ic_cdk::query]
+pub fn pool_exists(token_0: String, token_1: String) -> bool {
+    let token_0 = match get_by_token(&token_0) {
+        Ok(token) => token,
+        Err(_) => return false,
+    };
+
+    let token_1 = match get_by_token(&token_1) {
+        Ok(token) => token,
+        Err(_) => return false,
+    };
+
+    handlers::exists(&token_0, &token_1)
+}
+
 
 // #[ic_cdk::update]
 // async fn send_tommy(amount: u64) -> Result<BlockIndex, String> {
