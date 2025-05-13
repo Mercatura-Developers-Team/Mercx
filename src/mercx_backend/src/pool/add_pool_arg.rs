@@ -35,8 +35,8 @@ pub struct AddPoolReply {
     pub lp_token_amount: Nat,        // amount of LP tokens minted
     pub ts: u64,                     // timestamp of creation
 }
-#[ic_cdk::update]
-// add_pool() taken
+
+
  fn add_new_pool(token_id_0: u32, token_id_1: u32, lp_fee_bps: u8, kong_fee_bps: u8, lp_token_id: u32) -> Result<StablePool, String> {
     let pool = StablePool::new(token_id_0, token_id_1, lp_fee_bps, kong_fee_bps, lp_token_id);
     let pool_id = handlers::insert(&pool)?;

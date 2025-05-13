@@ -51,9 +51,9 @@ impl StableToken {
         self.token_id
     }
 
-    fn name(&self) -> String {
-        self.name.to_string()
-    }
+    // fn name(&self) -> String {
+    //     self.name.to_string()
+    // }
 
     pub fn symbol(&self) -> String {
         self.symbol.to_string()
