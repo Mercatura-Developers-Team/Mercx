@@ -77,12 +77,12 @@ pub fn get_by_token(token: &str) -> Result<StableToken, String> {
 }
 
 
-
+#[ic_cdk::update]
 fn reset_tokens() -> Result<String, String> {
    
 
     TOKENS.with(|tokens| {
-        tokens.borrow_mut().clear_new(); // u`clear_new()` btmsh kolo remove law hanmsh haga specific 
+        tokens.borrow_mut().clear_new(); // `clear_new()` btmsh kolo remove law hanmsh haga specific
     });
 
     reset_token_map_idx();
@@ -90,7 +90,7 @@ fn reset_tokens() -> Result<String, String> {
     Ok("✅ Tokens memory cleared".to_string())
 }
 
-// #[ic_cdk::update]
+//#[ic_cdk::update]
 // fn delete_token_by_id(canister_id: Principal) -> Result<String, String> {
 //     let token_id = StableTokenId(id);
 //     let removed = TOKENS.with(|tokens| {
@@ -103,25 +103,25 @@ fn reset_tokens() -> Result<String, String> {
 //     }
 // }
 
-fn delete_token_by_canister_id(canister_id: Principal) -> Result<String, String> {
-    let maybe_token_id = TOKENS.with(|tokens| {
-        let tokens = tokens.borrow();
-        tokens.iter().find_map(|(id, token)| {
-            if token.canister_id == canister_id {
-                Some(id.clone())
-            } else {
-                None
-            }
-        })
-    });
+// fn delete_token_by_canister_id(canister_id: Principal) -> Result<String, String> {
+//     let maybe_token_id = TOKENS.with(|tokens| {
+//         let tokens = tokens.borrow();
+//         tokens.iter().find_map(|(id, token)| {
+//             if token.canister_id == canister_id {
+//                 Some(id.clone())
+//             } else {
+//                 None
+//             }
+//         })
+//     });
 
-    match maybe_token_id {
-        Some(token_id) => {
-            TOKENS.with(|tokens| {
-                tokens.borrow_mut().remove(&token_id);
-            });
-            Ok(format!("✅ Token with canister ID {} deleted.", canister_id))
-        }
-        None => Err(format!("❌ No token found with canister ID {}", canister_id)),
-    }
-}
+//     match maybe_token_id {
+//         Some(token_id) => {
+//             TOKENS.with(|tokens| {
+//                 tokens.borrow_mut().remove(&token_id);
+//             });
+//             Ok(format!("✅ Token with canister ID {} deleted.", canister_id))
+//         }
+//         None => Err(format!("❌ No token found with canister ID {}", canister_id)),
+//     }
+// }

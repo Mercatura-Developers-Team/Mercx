@@ -126,6 +126,7 @@ service : {
   is_whitelisted : (principal) -> (bool) query;
   pool_exists : (text, text) -> (bool) query;
   remove_from_whitelist : (principal) -> ();
+  reset_tokens : () -> (Result_3);
   sell : (nat64, principal, nat64, principal) -> (Result_3);
   send_mercx : (nat64) -> (Result_2);
   send_token : (nat64, principal) -> (Result_2);

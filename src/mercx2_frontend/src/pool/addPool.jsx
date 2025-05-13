@@ -5,6 +5,7 @@ import { Principal } from "@dfinity/principal";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PoolInfo from "./PoolInfo";
+import { useSearchParams } from "react-router-dom";
 
 
 export default function CreatePool() {
@@ -13,16 +14,18 @@ export default function CreatePool() {
   const [token1, setToken1] = useState(null);
   const [tokens, setTokens] = useState([]);
   const [poolExists, setPoolExists] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const [openTokenSelect, setOpenTokenSelect] = useState(false);
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const formik = useFormik({
     initialValues: {
       initialPrice: "",
-      amountToken0: "0",
-      amountToken1: "0",
+      amountToken0: "",
+      amountToken1: "",
     },
     validationSchema: Yup.object({
       initialPrice: Yup.number().when([], {
@@ -35,6 +38,7 @@ export default function CreatePool() {
       amountToken1: Yup.number().typeError("Must be a number").positive("> 0").required("Required"),
     }),
     onSubmit: async (values) => {
+      setIsCreating(true);
       const args = {
         token_0: token0.canister_id.toText(),
         token_1: token1.canister_id.toText(),
@@ -47,6 +51,8 @@ export default function CreatePool() {
         console.log("Result:", result);
       } catch (err) {
         alert("❌ Failed to add pool: " + err);
+      } finally {
+        setIsCreating(false);
       }
     },
   });
@@ -57,23 +63,42 @@ export default function CreatePool() {
     if (token0 && token1 && mercx_Actor) {
       (async () => {
         try {
-          const pool = await mercx_Actor.get_by_tokens(token0.symbol, token1.symbol);
-          if ("Ok" in pool) {
-            const data = pool.Ok;
-            setPoolStats({
-              poolId: data.pool_id,
-              token0Balance: data.amount_0,
-              token1Balance: data.amount_1,
-              tvl: Number(data.amount_0) + Number(data.amount_1),
-            });
-          } else if (pool.Err.includes("not found")) {
-            // Only show message if error explicitly says it doesn’t exist
+          const exists = await mercx_Actor.pool_exists(
+            token0.canister_id.toText(),
+            token1.canister_id.toText()
+          );
+  
+          if (exists) {
+            // Try both symbol combinations since order matters
+            let pool;
+            try {
+              pool = await mercx_Actor.get_by_tokens(token0.symbol, token1.symbol);
+              if ("Err" in pool) {
+                // Try reverse order if first attempt fails
+                pool = await mercx_Actor.get_by_tokens(token1.symbol, token0.symbol);
+              }
+            } catch (err) {
+              console.warn("Pool lookup failed:", err);
+            }
+  
+            if (pool && "Ok" in pool) {
+              const data = pool.Ok;
+              setPoolStats({
+                poolId: data.pool_id,
+                token0Balance: data.amount_0,
+                token1Balance: data.amount_1,
+                tvl: Number(data.amount_0) + Number(data.amount_1),
+              });
+            } else {
+              console.warn("Pool exists but get_by_tokens returned error:", pool?.Err);
+              setPoolStats({
+                message: `Pool found but data could not be loaded`,
+              });
+            }
+          } else {
             setPoolStats({
               message: `No pool exists for ${token0.symbol}/${token1.symbol}. Create the first liquidity position!`,
             });
-          } else {
-            // In all other error cases (e.g. already exists), assume the pool exists
-            setPoolStats(null); // or you can choose to log/display the actual error
           }
         } catch (err) {
           console.error("Failed to fetch pool stats:", err);
@@ -85,10 +110,22 @@ export default function CreatePool() {
     } else {
       setPoolStats(null);
     }
-  }, [token0, token1]);
+  }, [token0, token1,isCreating]);
   
   
-
+  useEffect(() => {
+    if (tokens.length > 0) {
+      const t0 = searchParams.get("token0");
+      const t1 = searchParams.get("token1");
+  
+      const foundToken0 = tokens.find((t) => t.symbol === t0);
+      const foundToken1 = tokens.find((t) => t.symbol === t1);
+  
+      if (foundToken0) setToken0(foundToken0);
+      if (foundToken1) setToken1(foundToken1);
+    }
+  }, [tokens]);
+  
 
   useEffect(() => {
     const price = parseFloat(formik.values.initialPrice);
@@ -180,19 +217,19 @@ export default function CreatePool() {
             onClick={() => { setOpenTokenSelect(true); setSelectingFor("token0"); }}
             className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
           >
-            {token0 ? `Token 0: ${token0.name}` : "Select Token 0"}
+            {token0 ? `${token0.name}` : "Select Token 0"}
           </button>
           <button
             onClick={() => { setOpenTokenSelect(true); setSelectingFor("token1"); }}
             className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
           >
-            {token1 ? `Token 1: ${token1.name}` : "Select Token 1"}
+            {token1 ? `${token1.name}` : "Select Token 1"}
           </button>
         </div>
 
         <form onSubmit={formik.handleSubmit} className="space-y-4">
           {/* Set Initial Price */}
-          {!poolExists && (
+          {!poolExists &&  (
             <div>
               <label className="text-sm text-gray-300">Initial Price</label>
               <input
@@ -211,22 +248,21 @@ export default function CreatePool() {
           )}
 
           {/* Amounts */}
+          
+        <div className="w-full border border-gray-700 bg-[#1a1a2e] rounded-xl p-6 space-y-6">
+        <h4 className="text-white text-base font-semibold mb-2">Token Amounts</h4>
+
           <div>
             <label className="text-sm text-gray-300 ">Amount of {token0?.name || "Token 0"}</label>
             <input
               type="text"
-              // value={amountToken0}
-              // onChange={(e) => {
-              //   setAmountToken0(e.target.value);
-              //   setLastChangedField("token0");
-              // }}
               name="amountToken0"
               value={formik.values.amountToken0}
               onChange={(e) => {
                 formik.handleChange(e);
                 formik.setTouched({ amountToken0: true });
               }}
-              placeholder="Enter amount of token 0"
+              placeholder="0"
               className="w-full p-3 bg-gray-800 text-white rounded-lg"
             />
             <p className="text-red-400 text-xs">{formik.errors.amountToken0}</p>
@@ -237,36 +273,36 @@ export default function CreatePool() {
             <label className="text-sm text-gray-300 ">Amount of {token1?.name || "Token 1"}</label>
             <input
               type="text"
-              // value={amountToken1}
-              // onChange={(e) => {
-              //   setAmountToken1(e.target.value);
-              //   setLastChangedField("token1");
-              // }}
               name="amountToken1"
               value={formik.values.amountToken1}
               onChange={(e) => {
                 formik.handleChange(e);
                 formik.setTouched({ amountToken1: true });
               }}
-              placeholder="Auto-calculated"
+              placeholder="0"
               className="w-full p-3 bg-gray-700 text-white rounded-lg"
             />
             <p className="text-red-400 text-xs">{formik.errors.amountToken1}</p>
 
+          </div>
           </div>
 
 
           {/* Create Pool */}
           <button
             type="submit"
-            disabled={!token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
+            disabled={isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
               !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
               !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
               (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
-            className="w-full bg-green-500 text-black font-bold py-3 rounded-lg hover:bg-green-600 disabled:bg-gray-500"
+              className={`w-full font-bold py-3 rounded-lg ${
+                isCreating
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600 text-black"
+              }`}
           >
-            {poolExists ? "Add Liquidity" : "Create Pool"}
-          </button>
+  {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
+  </button>
     
         </form>
         </div>
