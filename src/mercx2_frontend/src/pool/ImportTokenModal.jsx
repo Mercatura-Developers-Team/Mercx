@@ -3,6 +3,8 @@ import React, { useState } from "react";
 export default function ImportTokenModal({ onClose, onImport, isOpen }) {
   const [canisterId, setCanisterId] = useState("");
   const [error, setError] = useState(""); //validation message
+  const [isSubmitting, setIsSubmitting] = useState(false); // New loading state
+
 
   const handleSubmit = async () => {
     if (!canisterId.trim()) {
@@ -11,9 +13,18 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
       }
 
     setError(""); // clear any old errors
-    await onImport(canisterId); // You handle backend call outside
-    setCanisterId("");
-    onClose();
+    setIsSubmitting(true); // Start loading
+
+    try {
+      await onImport(canisterId); // You handle backend call outside
+      setCanisterId("");
+      onClose();
+    } catch (err) {
+      console.error("Token import failed:", err);
+      setError("Failed to import token.");
+    } finally {
+      setIsSubmitting(false); // Reset loading state
+    }
   };
 
   if (!isOpen) return null;
@@ -39,12 +50,14 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
           <button
             onClick={handleSubmit}
             className="flex-1 p-3 bg-blue-600 text-white rounded-lg"
+            disabled={isSubmitting}
           >
-            Add Token
+                       {isSubmitting ? "Adding..." : "Add Token"}
           </button>
           <button
             onClick={onClose}
             className="flex-1 p-3 bg-gray-600 text-white rounded-lg"
+            disabled={isSubmitting}
           >
             Cancel
           </button>

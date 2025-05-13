@@ -669,20 +669,7 @@ async fn send_token(amount: u64, token_info: Principal) -> Result<BlockIndex, St
     .map_err(|e| format!("ledger transfer tommy error {:?}", e))
 }
 
-#[ic_cdk::query]
-pub fn pool_exists(token_0: String, token_1: String) -> bool {
-    let token_0 = match get_by_token(&token_0) {
-        Ok(token) => token,
-        Err(_) => return false,
-    };
 
-    let token_1 = match get_by_token(&token_1) {
-        Ok(token) => token,
-        Err(_) => return false,
-    };
-
-    handlers::exists(&token_0, &token_1)
-}
 
 
 // #[ic_cdk::update]

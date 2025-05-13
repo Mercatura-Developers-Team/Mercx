@@ -118,6 +118,7 @@ service : {
   get_account_transactions : (Account, opt nat, nat) -> (Result_5);
   get_all_pools : () -> (vec AddPoolReply) query;
   get_all_tokens : () -> (vec StableToken) query;
+  get_by_tokens : (text, text) -> (Result);
   get_icp_rate : () -> (Result_6);
   get_logo_url : () -> (text);
   get_name : (principal) -> (Result_4) query;

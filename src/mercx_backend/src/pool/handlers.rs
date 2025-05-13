@@ -5,7 +5,7 @@ use crate::AddPoolReply;
 use crate::StableToken;
 use crate::token::handlers;
 use crate::stable_mercx_settings;
-
+use crate::token::handlers::get_by_token;
 
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
@@ -42,9 +42,10 @@ pub fn get_by_token_ids(token_id_0: u32, token_id_1: u32) -> Option<StablePool> 
     })
 }
 
-pub fn get_by_tokens(token_0: &str, token_1: &str) -> Result<StablePool, String> {
-    let token_0: StableToken = handlers::get_by_symbol(token_0)?;
-    let token_1 = handlers::get_by_symbol(token_1)?;
+#[ic_cdk::update]
+pub fn get_by_tokens(token_0: String, token_1: String) -> Result<StablePool, String> {
+    let token_0: StableToken = handlers::get_by_symbol(&token_0)?;
+    let token_1 = handlers::get_by_symbol(&token_1)?;
     get_by_token_ids(token_0.token_id(), token_1.token_id()).ok_or_else(|| format!("Pool {} not found", symbol(&token_0, &token_1)))
 }
 
@@ -119,4 +120,19 @@ fn delete_pool(pool_id: u32) -> Result<String, String> {
 //It stores the updated version of a liquidity pool into the global state
 pub fn update(pool: &StablePool) {
     POOLS.with(|m| m.borrow_mut().insert(StablePoolId(pool.pool_id), pool.clone()));
+}
+
+#[ic_cdk::query]
+pub fn pool_exists(token_0: String, token_1: String) -> bool {
+    let token_0 = match get_by_token(&token_0) {
+        Ok(token) => token,
+        Err(_) => return false,
+    };
+
+    let token_1 = match get_by_token(&token_1) {
+        Ok(token) => token,
+        Err(_) => return false,
+    };
+
+    exists(&token_0, &token_1)
 }
