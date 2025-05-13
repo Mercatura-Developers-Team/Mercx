@@ -2,13 +2,12 @@ use crate::token::stable_token::{StableToken, StableTokenId};
 use crate::stable_memory::TOKENS;
 use candid::Principal;
 use crate::stable_mercx_settings::mercx_settings_map::reset_token_map_idx;
-
+use crate::stable_memory::POOLS;
 pub fn get_by_token_id(token_id: u32) -> Option<StableToken> {
     TOKENS.with(|m| m.borrow().get(&StableTokenId(token_id)))
 }
 
-
-// /// return all tokens
+//return all tokens
 #[ic_cdk::query]
 pub fn get_all_tokens() -> Vec<StableToken> {
     TOKENS.with(|m| {
@@ -77,10 +76,8 @@ pub fn get_by_token(token: &str) -> Result<StableToken, String> {
 }
 
 
-#[ic_cdk::update]
-fn reset_tokens() -> Result<String, String> {
-   
 
+fn reset_tokens() -> Result<String, String> {
     TOKENS.with(|tokens| {
         tokens.borrow_mut().clear_new(); // `clear_new()` btmsh kolo remove law hanmsh haga specific
     });
@@ -103,25 +100,41 @@ fn reset_tokens() -> Result<String, String> {
 //     }
 // }
 
-// fn delete_token_by_canister_id(canister_id: Principal) -> Result<String, String> {
-//     let maybe_token_id = TOKENS.with(|tokens| {
-//         let tokens = tokens.borrow();
-//         tokens.iter().find_map(|(id, token)| {
-//             if token.canister_id == canister_id {
-//                 Some(id.clone())
-//             } else {
-//                 None
-//             }
-//         })
-//     });
 
-//     match maybe_token_id {
-//         Some(token_id) => {
-//             TOKENS.with(|tokens| {
-//                 tokens.borrow_mut().remove(&token_id);
-//             });
-//             Ok(format!("✅ Token with canister ID {} deleted.", canister_id))
-//         }
-//         None => Err(format!("❌ No token found with canister ID {}", canister_id)),
-//     }
-// }
+#[ic_cdk::update]
+fn delete_token_by_canister_id(canister_id: Principal) -> Result<String, String> {
+    // Step 1: Find token ID from TOKENS map
+    let maybe_token_id = TOKENS.with(|tokens| {
+        let tokens = tokens.borrow();
+        tokens.iter().find_map(|(id, token)| {
+            if token.canister_id == canister_id {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+    });
+
+    let token_id = match maybe_token_id {
+        Some(id) => id,
+        None => return Err("❌ Token not found.".to_string()),
+    };
+
+    // Step 2: Check if token is used in any pool
+    let is_used_in_pool = POOLS.with(|pools| {
+        pools.borrow().iter().any(|(_, pool)| {
+            pool.token_id_0 == token_id.0 || pool.token_id_1 == token_id.0
+        })
+    });
+
+    if is_used_in_pool {
+        return Err("Cannot delete token it is currently used in a pool.".to_string());
+    }
+
+    // Step 3: Delete token if not in use
+    TOKENS.with(|tokens| {
+        tokens.borrow_mut().remove(&token_id);
+    });
+
+    Ok(format!("✅ Token with canister ID {} deleted.", canister_id))
+}
