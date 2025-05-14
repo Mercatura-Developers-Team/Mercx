@@ -1,7 +1,7 @@
 use candid::CandidType;
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
-use crate::stable_memory::{TOKENS,POOLS};
+use crate::stable_memory::{TOKENS,POOLS,TRANSFERS};
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct StableMercxSettings {
@@ -9,19 +9,23 @@ pub struct StableMercxSettings {
     pub pool_map_idx: u32,     // counter for POOL_MAP
     pub default_lp_fee_bps: u8,
     pub default_mercx_fee_bps: u8,
+    pub transfer_map_idx: u64, // counter for TRANSFER_MAP
 }
 
 impl Default for StableMercxSettings {
     fn default() -> Self {
         let token_map_idx = TOKENS.with(|m| m.borrow().iter().map(|(k, _)| k.0).max().unwrap_or(0));
         let pool_map_idx = POOLS.with(|m| m.borrow().iter().map(|(k, _)| k.0).max().unwrap_or(0));
-       
+        let transfer_map_idx = TRANSFERS.with(|m| m.borrow().iter().map(|(k, _)| k.0).max().unwrap_or(0));
+    
+
         Self {
            
             token_map_idx,
             pool_map_idx,
             default_lp_fee_bps: 30,
             default_mercx_fee_bps: 0,
+            transfer_map_idx,
         }
     }
 }

@@ -19,7 +19,7 @@ export default function CreatePool() {
   const [openTokenSelect, setOpenTokenSelect] = useState(false);
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
-  const [searchParams] = useSearchParams();
+  const [searchParams,setSearchParams] = useSearchParams();
 
   const formik = useFormik({
     initialValues: {
@@ -112,7 +112,7 @@ export default function CreatePool() {
     }
   }, [token0, token1,isCreating]);
   
-  
+  //URL
   useEffect(() => {
     if (tokens.length > 0) {
       const t0 = searchParams.get("token0");
@@ -125,8 +125,17 @@ export default function CreatePool() {
       if (foundToken1) setToken1(foundToken1);
     }
   }, [tokens]);
-  
 
+  // 👉 NEW useEffect to keep URL updated when token0/token1 change
+useEffect(() => {
+  if (token0 && token1) {
+    setSearchParams({
+      token0: token0.symbol,
+      token1: token1.symbol,
+    });
+  }
+}, [token0, token1, setSearchParams]);
+  
   useEffect(() => {
     const price = parseFloat(formik.values.initialPrice);
     const val0 = parseFloat(formik.values.amountToken0);
