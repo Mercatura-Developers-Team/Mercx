@@ -2,6 +2,7 @@ use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemor
 use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, StableCell};
 use std::cell::RefCell;
 
+use crate::transfers::stable_transfer::{StableTransferId,StableTransfer};
 
 use crate::pool::stable_pool::{StablePool, StablePoolId};
 use crate::token::stable_token::{StableTokenId, StableToken};
@@ -13,6 +14,8 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 pub const POOL_MEMORY_ID: MemoryId = MemoryId::new(0);
 pub const TOKEN_MEMORY_ID: MemoryId = MemoryId::new(1);
 pub const MERCX_SETTINGS_MEMORY_ID: MemoryId = MemoryId::new(3);
+pub const TRANSFER_MEMORY_ID: MemoryId = MemoryId::new(4);
+
 
 
 thread_local! {
@@ -36,6 +39,10 @@ thread_local! {
         ).expect("Failed to initialize mercx settings")
     );
 
-  
+
+    pub static TRANSFERS: RefCell<StableBTreeMap<StableTransferId, StableTransfer, Memory>> = RefCell::new(
+        StableBTreeMap::init(MEMORY_MANAGER.with(|m| m.borrow().get(TRANSFER_MEMORY_ID)))
+    );
+    
   
 }

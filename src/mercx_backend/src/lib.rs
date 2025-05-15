@@ -12,6 +12,8 @@ use crate::token::stable_token::StableToken;
 
 pub mod swap;
 
+pub mod transfers;
+
 pub mod stable_mercx_settings;
 pub mod helpers;
 use candid::Principal;

@@ -89,6 +89,7 @@
       },
       "frontend": {}
     },
+   
     "mercx2_frontend": {
       "dependencies": [
         "mercx_backend",
