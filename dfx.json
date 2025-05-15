@@ -8,6 +8,7 @@
         "icrc1_ledger_canister"
       ]
     },
+    
     "kyc": {
       "candid": "src/kyc/kyc.did",
       "package": "kyc",
