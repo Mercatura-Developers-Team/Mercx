@@ -34,7 +34,7 @@ pub struct StableTransfer {
     pub is_send: bool, // from user's perspective. so if is_send is true, it means the user is sending the token
     pub amount: Nat,
     pub token_id: u32, //The ID of the token being transferred.
-    pub tx_id: TxId, //The ID of the actual blockchain-level transaction.
+    pub tx_id: TxId,   //The ID of the actual blockchain-level transaction.
     pub ts: u64,
 }
 

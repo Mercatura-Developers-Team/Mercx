@@ -30,13 +30,13 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-[#1a1a2e] p-6 rounded-lg space-y-4 w-96">
-        <h2 className="text-white text-lg mb-4">Add New Token</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50 ">
+      <div className="bg-[#1a1a2e] text-white p-6 rounded-xl shadow-2xl w-full max-w-md ">
+        <h2 className="text-xl font-semibold mb-4">Add New Token</h2>
         <input
           type="text"
           placeholder="e.g. ryjl3-tyaaa-aaaaa-aaaba-cai"
-          className="w-full p-3 bg-gray-800 text-white rounded-lg"
+          className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={canisterId}
           onChange={(e) => {
             setCanisterId(e.target.value);
@@ -46,10 +46,10 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
           {/* Show error message if input is invalid */}
           {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
           
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-4 mt-6">
           <button
             onClick={handleSubmit}
-            className="flex-1 p-3 bg-blue-600 text-white rounded-lg"
+            className="flex-1 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50  "
             disabled={isSubmitting}
           >
                        {isSubmitting ? "Adding..." : "Add Token"}
