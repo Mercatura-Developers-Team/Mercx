@@ -14,6 +14,7 @@ use icrc_ledger_types::icrc1::account::Account;
 use crate::ic::transfer::icrc2_transfer_from;
 use crate::transfers::stable_transfer::StableTransfer;
 use crate::transfers::handlers as transfer_handlers;
+use crate::ic::verify_transfer::verify_transfer;
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct AddPoolArgs {
@@ -65,9 +66,67 @@ async fn process_add_pool(
 ) -> Result<AddPoolReply, String> {
      let caller_id = caller_id();  // Uncomment if you need caller_id later
     let mercx_backed = mercx_settings_map::get().mercx_backend;
-   //  let mut transfer_ids = Vec::new();
+     let mut transfer_ids = Vec::new();
 
+     let transfer_0 = match tx_id_0 {
+        Some(block_id) => verify_transfer_token( token_0, block_id, amount_0, &mut transfer_ids, ts).await,
+        None => {
+            transfer_from_token(
+                &caller_id,
+                token_0,
+                amount_0,
+                &mercx_backed,
+                &mut transfer_ids,
+                ts,
+            )
+            .await
+        }
+    };
 
+    let transfer_1 = match tx_id_1 {
+        Some(block_id) => verify_transfer_token( token_1, block_id, amount_1, &mut transfer_ids, ts).await,
+        None => {
+            //  if transfer_token_0 failed, no need to icrc2_transfer_from token_1
+            if transfer_0.is_err() {
+                Err("Token_0 transfer failed".to_string())
+            } else {
+                transfer_from_token(
+                    &caller_id,
+                    token_1,
+                    amount_1,
+                    &mercx_backed,
+                    &mut transfer_ids,
+                    ts,
+                )
+                .await
+            }
+        }
+    };
+
+    //   // both transfers must be successful
+    //   if transfer_0.is_err() || transfer_1.is_err() {
+    //     return_tokens(
+    //         request_id,
+    //         user_id,
+    //         &caller_id,
+    //         &transfer_0,
+    //         token_0,
+    //         amount_0,
+    //         &transfer_1,
+    //         token_1,
+    //         amount_1,
+    //         &mut transfer_ids,
+    //         ts,
+    //     )
+    //     .await;
+    //     if transfer_0.is_err() {
+    //         return Err(format!("Req #{} failed. {}", request_id, transfer_0.unwrap_err()));
+    //     } else {
+    //         return Err(format!("Req #{} failed. {}", request_id, transfer_1.unwrap_err()));
+    //     };
+    // }
+
+//add pool
     let pool = match add_new_pool(
         token_0.token_id(),
         token_1.token_id(),
@@ -284,3 +343,39 @@ async fn transfer_from_token(
         }
     }
 } 
+
+//This function is used after a user has manually sent tokens, and you're verifying their claim.
+async fn verify_transfer_token(
+    token: &StableToken,
+    tx_id: &Nat,
+    amount: &Nat,
+    transfer_ids: &mut Vec<u64>,
+    ts: u64,
+) -> Result<(), String> {
+    let token_id = token.token_id();
+
+    match verify_transfer(token, tx_id, amount).await {
+        Ok(_) => {
+            // insert_transfer() will use the latest state of TRANSFER_MAP so no reentrancy issues after verify_transfer()
+            if transfer_handlers::exist(token_id, tx_id) {
+                let e = format!("Duplicate block id: #{}", tx_id);           
+                return Err(e);
+            }
+            let transfer_id = transfer_handlers::insert(&StableTransfer {
+                transfer_id: 0,
+                is_send: true,
+                amount: amount.clone(),
+                token_id,
+                tx_id: TxId::BlockIndex(tx_id.clone()),
+                ts,
+            });
+            transfer_ids.push(transfer_id);
+         
+            Ok(())
+        }
+        Err(e) => {
+           
+            Err(e)
+        }
+    }
+}

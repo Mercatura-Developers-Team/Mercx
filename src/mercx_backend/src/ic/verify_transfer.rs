@@ -8,7 +8,7 @@ use crate::stable_mercx_settings::mercx_settings_map;
 use crate::ic::general::get_time;
 
 #[cfg(not(feature = "prod"))]
-const ICP_CANISTER_ID: &str = "nppha-riaaa-aaaal-ajf2q-cai";  // Testnet ICP Ledger
+const ICP_CANISTER_ID: &str = "asrmz-lmaaa-aaaaa-qaaeq-cai";  // Testnet ICP Ledger
 #[cfg(feature = "prod")]
 const ICP_CANISTER_ID: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai"; // Mainnet ICP Ledger
 
@@ -73,7 +73,7 @@ async fn verify_transfer_with_get_transactions(
                         }
                         let to = transfer.to;
                         if to != *mercx_backend_account {
-                            Err("Transfer to does not match Kong backend")?
+                            Err("Transfer to does not match Mercx backend")?
                         }
                         // make sure spender is None, so not an icrc2_transfer_from transaction
                         let spender = transfer.spender;
@@ -108,7 +108,7 @@ async fn verify_trnasfer_with_query_blocks(
     amount: &Nat,
     canister_id: candid::Principal,
     min_valid_timestamp: u64,
-    kong_backend_account: &icrc_ledger_types::icrc1::account::Account,
+    mercx_backend_account: &icrc_ledger_types::icrc1::account::Account,
 ) -> Result<(), String> {
     // if ICP ledger, use query_blocks
     let block_args = GetBlocksArgs {
@@ -119,8 +119,8 @@ async fn verify_trnasfer_with_query_blocks(
         Ok(query_response) => {
             let blocks: Vec<Block> = query_response.blocks;
             let backend_account_id = AccountIdentifier::new(
-                &kong_backend_account.owner,
-                &Subaccount(kong_backend_account.subaccount.unwrap_or([0; 32])),
+                &mercx_backend_account.owner,
+                &Subaccount(mercx_backend_account.subaccount.unwrap_or([0; 32])),
             );
             let amount = Tokens::from_e8s(nat_to_u64(amount).ok_or("Invalid ICP amount")?);
             for block in blocks.into_iter() {
@@ -138,7 +138,7 @@ async fn verify_trnasfer_with_query_blocks(
                                 Err("Transfer from does not match caller")?
                             }
                             if to != backend_account_id {
-                                Err("Transfer to does not match Kong backend")?
+                                Err("Transfer to does not match Mercx backend")?
                             }
                             if transfer_amount != amount {
                                 Err(format!("Invalid transfer amount: rec {:?} exp {:?}", transfer_amount, amount))?
