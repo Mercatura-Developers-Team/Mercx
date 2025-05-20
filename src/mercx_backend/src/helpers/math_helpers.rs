@@ -38,6 +38,12 @@ pub fn nat_add(n1: &Nat, n2: &Nat) -> Nat {
     n1.clone() + n2.clone()
 }
 
+pub fn nat_subtract(n1: &Nat, n2: &Nat) -> Option<Nat> {
+    if n1 < n2 {
+        None?
+    }
+    Some(n1.clone() - n2.clone())
+}
 pub fn nat_is_zero(n: &Nat) -> bool {
     n.0.is_zero()
 }
@@ -49,6 +55,10 @@ pub fn nat_to_bigint(n: &Nat) -> BigInt {
 
 pub fn nat_to_u64(n: &Nat) -> Option<u64> {
     n.0.to_u64()
+}
+
+pub fn nat_zero() -> Nat {
+    Nat::from(0_u128)
 }
 
 // convert Nat from one decimal precision to another

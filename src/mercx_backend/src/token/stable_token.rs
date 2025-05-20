@@ -106,11 +106,18 @@ impl StableToken {
     pub fn is_icrc2(&self) -> bool {
         self.icrc2
     }
+
+    pub fn fee(&self) -> Nat {
+    
+        self.fee.clone()
+ }
+
 }
 
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
 }
+
 
 impl Storable for StableToken {
     fn to_bytes(&self) -> Cow<[u8]> {

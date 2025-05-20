@@ -1,11 +1,13 @@
 use candid::Nat;
 use crate::pool::stable_pool::{StablePool,StablePoolId};
 use crate::stable_memory::POOLS;
-use crate::AddPoolReply;
+use crate::pool::add_pool_reply::AddPoolReply;
 use crate::StableToken;
 use crate::token::handlers;
 use crate::stable_mercx_settings;
 use crate::token::handlers::get_by_token;
+use crate::helpers::math_helpers::nat_zero;
+
 
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
@@ -49,9 +51,7 @@ pub fn get_by_tokens(token_0: String, token_1: String) -> Result<StablePool, Str
     get_by_token_ids(token_0.token_id(), token_1.token_id()).ok_or_else(|| format!("Pool {} not found", symbol(&token_0, &token_1)))
 }
 
-pub fn nat_zero() -> Nat {
-    Nat::from(0_u128)
-}
+
 
 pub fn exists(token_0: &StableToken, token_1: &StableToken) -> bool {
     POOLS.with(|m| {

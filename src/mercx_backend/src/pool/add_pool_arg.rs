@@ -7,7 +7,7 @@ use ic_cdk::api;
 use crate::stable_mercx_settings::mercx_settings_map;
 use crate::token::handlers::get_by_token;
 use crate::token::add_token::add_token;
-use crate::helpers::math_helpers::{nat_add,nat_is_zero};
+use crate::helpers::math_helpers::{nat_add,nat_is_zero,nat_subtract,nat_zero};
 use crate::ic::id::caller_id;
 use crate::transfers::tx_id::TxId;
 use icrc_ledger_types::icrc1::account::Account;
@@ -15,7 +15,8 @@ use crate::ic::transfer::icrc2_transfer_from;
 use crate::transfers::stable_transfer::StableTransfer;
 use crate::transfers::handlers as transfer_handlers;
 use crate::ic::verify_transfer::verify_transfer;
-
+use crate::ic::transfer::icrc1_transfer;
+ use crate::pool::add_pool_reply::AddPoolReply;
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct AddPoolArgs {
     pub token_0: String,             // e.g. FXMX
@@ -27,23 +28,8 @@ pub struct AddPoolArgs {
   pub lp_fee_bps: Option<u8>,      // optional fee in basis points, default = 30 //for each swap
 }
 
-//for frontend API
-#[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
-pub struct AddPoolReply {
-    pub pool_id: u32,                // unique pool identifier
-    pub symbol: String,              // FXMX_ckUSDT
-    pub name: String,                // FXMX_ckUSDT Liquidity Pool
-    pub symbol_0: String,            // FXMX
-    pub address_0: String,           // token 0 address
-    pub amount_0: Nat,               // deposited
-    pub symbol_1: String,            // ckUSDT
-    pub address_1: String,           // token 1 address
-    pub amount_1: Nat,               // deposited
-    pub lp_fee_bps: u8,              // confirmed LP fee
-    pub lp_token_symbol: String,     // FXMX_ckUSDT_LP
-    pub lp_token_amount: Nat,        // amount of LP tokens minted
-    pub ts: u64,                     // timestamp of creation
-}
+
+
 
 
  fn add_new_pool(token_id_0: u32, token_id_1: u32, lp_fee_bps: u8, kong_fee_bps: u8, lp_token_id: u32) -> Result<StablePool, String> {
@@ -377,5 +363,97 @@ async fn verify_transfer_token(
            
             Err(e)
         }
+    }
+}
+
+   
+   async fn return_tokens(
+    to_principal_id: &Account,
+    transfer_from_token_0: &Result<(), String>,
+    token_0: &StableToken,
+    amount_0: &Nat,
+    transfer_from_token_1: &Result<(), String>,
+    token_1: &StableToken,
+    amount_1: &Nat,
+    transfer_ids: &mut Vec<u64>,
+    ts: u64,
+) {
+  
+
+    if transfer_from_token_0.is_ok() {
+        return_token(
+            
+            
+            to_principal_id,
+            
+            token_0,
+            amount_0,
+            transfer_ids,
+          ts,
+        )
+        .await;
+    }
+
+    if transfer_from_token_1.is_ok() {
+        return_token(
+      
+            to_principal_id,
+         
+            token_1,
+            amount_1,
+            transfer_ids,
+            
+            ts,
+        )
+        .await;
+    }
+
+    // let reply = to_add_pool_reply_failed(
+    //     request_id,
+    //     &token_0.chain(),
+    //     &token_0.address(),
+    //     &token_0.symbol(),
+    //     &token_1.chain(),
+    //     &token_1.address(),
+    //     &token_1.symbol(),
+    //     transfer_ids,
+    //     &claim_ids,
+    //     ts,
+    // );
+  
+}
+
+
+async fn return_token(
+   
+    to_principal_id: &Account,
+    
+    token: &StableToken,
+    amount: &Nat,
+    transfer_ids: &mut Vec<u64>,
+    //claim
+    ts: u64,
+) {
+   let amount_0_with_gas = nat_subtract(amount, &token.fee()).unwrap_or(nat_zero());
+    match icrc1_transfer(&amount_0_with_gas, to_principal_id, token, None).await {
+        Ok(block_id) => {
+            let transfer_id = transfer_handlers::insert(&StableTransfer {
+                transfer_id: 0,
+                is_send: false,
+                amount: amount_0_with_gas,
+                token_id: token.token_id(),
+                tx_id: TxId::BlockIndex(block_id),
+                ts,
+            });
+            transfer_ids.push(transfer_id);
+         
+        }
+       Err(e) => {
+     // claim 
+
+    //  let err_msg = format!(" Failed to return tokens back to user: {}", e);
+    //  Err(err_msg)
+         
+     }
     }
 }

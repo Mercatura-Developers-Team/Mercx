@@ -2,3 +2,4 @@
 pub mod stable_pool;
 pub mod add_pool_arg;
 pub mod handlers;
+pub mod add_pool_reply;

@@ -3,7 +3,7 @@ use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 use crate::token::stable_token::StableToken;
 use crate::token::handlers;
-use crate::helpers::math_helpers::{price_rounded,nat_to_bigint,nat_to_decimal_precision,nat_is_zero,nat_add};
+use crate::helpers::math_helpers::{price_rounded,nat_to_bigint,nat_to_decimal_precision,nat_is_zero,nat_add,nat_zero};
 use num::BigRational;
 
 #[derive(CandidType, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -38,9 +38,7 @@ pub struct StablePool {
 }
 
 
-pub fn nat_zero() -> Nat {
-    Nat::from(0_u128)
-}
+
 
 impl StablePool {
     pub fn new(token_id_0: u32, token_id_1: u32, lp_fee_bps: u8, kong_fee_bps: u8, lp_token_id: u32) -> Self {

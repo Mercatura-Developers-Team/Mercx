@@ -1,11 +1,44 @@
 use candid::Nat;
-//use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, TransferError};
+use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, TransferError};
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 use icrc_ledger_types::icrc1::account::Account;
 
 
-use crate::helpers::math_helpers::nat_is_zero;
+use crate::helpers::math_helpers::{nat_is_zero,nat_zero};
 use crate::StableToken;
+
+//Transfer from backend canister to users 
+pub async fn icrc1_transfer(
+    amount: &Nat,
+    to_principal_id: &Account,
+    token: &StableToken,
+    created_at_time: Option<u64>,
+) -> Result<Nat, String> {
+    if nat_is_zero(amount) {
+        // if amount = 0, return Ok(block_id = 0) to return success. Don't error Err as it could be put into claims
+        return Ok(nat_zero());
+    }
+    let id = *token.canister_id().ok_or("Invalid principal id")?;
+
+    let transfer_args: TransferArg = TransferArg {
+        memo: None,
+        amount: amount.clone(),
+        from_subaccount: None,
+        fee: None,
+        to: *to_principal_id,
+        created_at_time,
+    };
+
+    match ic_cdk::call::<(TransferArg,), (Result<Nat, TransferError>,)>(id, "icrc1_transfer", (transfer_args,))
+        .await
+        .map_err(|e| e.1)?
+        // Access the first element of the tuple, which is the `Result<BlockIndex, TransferError>`, for further processing.
+        .0
+    {
+        Ok(block_id) => Ok(block_id),
+        Err(e) => Err(e.to_string())?,
+    }
+}
 
 
 // icrc2_transfer_from using principal id's where from_principal_id has issued an icrc2_approve
