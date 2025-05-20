@@ -46,6 +46,11 @@ pub fn nat_to_bigint(n: &Nat) -> BigInt {
     BigInt::from_bytes_be(Sign::Plus, &n.0.to_bytes_be())
 }
 
+
+pub fn nat_to_u64(n: &Nat) -> Option<u64> {
+    n.0.to_u64()
+}
+
 // convert Nat from one decimal precision to another
 // to convert from BTC (8 digit precision) to ETH (18 digit precision), call nat_to_decimals(n, 8, 18)
 pub fn nat_to_decimal_precision(n: &Nat, from_decimal_precision: u8, to_decimal_precision: u8) -> Nat {

@@ -54,6 +54,10 @@ fn whoami() -> Principal {
     ic_cdk::caller()
 }
 
+pub fn get_time() -> u64 {
+    ic_cdk::api::time()
+}
+
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct TransferArgs {
     amount: NumTokens,
@@ -464,6 +468,27 @@ async fn get_logo_url(ledger: Principal) -> String {
             "logo_url not found in metadata".to_string()
         }
         Err((_, msg)) => format!("Error calling metadata: {}", msg),
+    }
+}
+
+
+#[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
+pub struct StandardRecord {
+    pub url: String,
+    pub name: String,
+}
+
+/// try icrc10_supported_standards first, if it fails, try icrc1_supported_standards
+pub async fn get_supported_standards(ledger: Principal) -> Result<Vec<StandardRecord>, String> {
+    match ic_cdk::call::<(), (Vec<StandardRecord>,)>(ledger, "icrc10_supported_standards", ())
+        .await
+        .map(|(standards,)| standards)
+    {
+        Ok(standards) => Ok(standards),
+        Err(_) => ic_cdk::call::<(), (Vec<StandardRecord>,)>(ledger, "icrc1_supported_standards", ())
+            .await
+            .map(|(standards,)| standards)
+            .map_err(|e| e.1),
     }
 }
 // pub async fn get_logo(ledger: Principal) -> Result<Nat, String> {

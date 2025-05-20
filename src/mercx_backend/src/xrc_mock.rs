@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Principal};
 //use crate::get_icp_rate_in_cents;
 use ic_cdk::update;
-use crate::general::CANISTER_ID_XRC;
+use crate::ic::general::CANISTER_ID_XRC;
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Metadata {

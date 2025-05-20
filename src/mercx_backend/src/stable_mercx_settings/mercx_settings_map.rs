@@ -47,3 +47,17 @@ pub fn reset_token_map_idx() {
         _ = map.set(new_settings);
     });
 } 
+
+pub fn inc_transfer_map_idx() -> u64 {
+    MERCX_SETTINGS.with(|s| {
+        let mut map = s.borrow_mut();
+        let mercx_settings = map.get();
+        let transfer_map_idx = mercx_settings.transfer_map_idx + 1;
+        let new_mercx_settings = StableMercxSettings {
+            transfer_map_idx,
+            ..mercx_settings.clone()
+        };
+        _ = map.set(new_mercx_settings);
+        transfer_map_idx
+    })
+}

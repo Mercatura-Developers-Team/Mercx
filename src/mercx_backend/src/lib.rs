@@ -1,6 +1,6 @@
 mod stable_memory;
-pub mod general;
-pub use general::*;
+pub mod ic;
+use crate::ic::general::{GetTransactions,TransactionResponse,TransferArgs};
 pub mod xrc_mock;
 pub use xrc_mock::get_icp_rate;
 pub mod pool;

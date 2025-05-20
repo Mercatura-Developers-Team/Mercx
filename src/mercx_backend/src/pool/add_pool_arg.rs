@@ -8,13 +8,21 @@ use crate::stable_mercx_settings::mercx_settings_map;
 use crate::token::handlers::get_by_token;
 use crate::token::add_token::add_token;
 use crate::helpers::math_helpers::{nat_add,nat_is_zero};
+use crate::ic::id::caller_id;
+use crate::transfers::tx_id::TxId;
+use icrc_ledger_types::icrc1::account::Account;
+use crate::ic::transfer::icrc2_transfer_from;
+use crate::transfers::stable_transfer::StableTransfer;
+use crate::transfers::handlers as transfer_handlers;
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct AddPoolArgs {
     pub token_0: String,             // e.g. FXMX
     pub amount_0: Nat,               // amount to deposit of token 0
+    pub tx_id_0: Option<TxId>,
     pub token_1: String,             // e.g. ckUSDT
     pub amount_1: Nat,               // amount to deposit of token 1
+    pub tx_id_1: Option<TxId>,
   pub lp_fee_bps: Option<u8>,      // optional fee in basis points, default = 30 //for each swap
 }
 
@@ -47,12 +55,18 @@ pub struct AddPoolReply {
 async fn process_add_pool(
     token_0: &StableToken,
     amount_0: &Nat,
+    tx_id_0: Option<&Nat>,
     token_1: &StableToken,
     amount_1: &Nat,
+    tx_id_1: Option<&Nat>,
     lp_fee_bps: u8,
     kong_fee_bps: u8,
+    ts: u64,
 ) -> Result<AddPoolReply, String> {
-    // let caller_id = caller_id();  // Uncomment if you need caller_id later
+     let caller_id = caller_id();  // Uncomment if you need caller_id later
+    let mercx_backed = mercx_settings_map::get().mercx_backend;
+   //  let mut transfer_ids = Vec::new();
+
 
     let pool = match add_new_pool(
         token_0.token_id(),
@@ -112,7 +126,7 @@ fn update_liquidity_pool(
 
 async fn check_arguments(
     args: &AddPoolArgs,
-) -> Result<( StableToken, Nat, StableToken, Nat, u8, u8), String> {
+) -> Result<( StableToken, Nat,Option<Nat>, StableToken, Nat, Option<Nat>, u8, u8), String> {
     if nat_is_zero(&args.amount_0) || nat_is_zero(&args.amount_1) {
         Err("Invalid zero amounts".to_string())?
     }
@@ -128,21 +142,21 @@ async fn check_arguments(
         Err(format!("LP fee cannot be less than Mercx fee of {}", mercx_fee_bps))?
     }
 
-    // // check tx_id_0 and tx_id_1 are valid block index Nat
-    // let tx_id_0 = match &args.tx_id_0 {
-    //     Some(tx_id_0) => match tx_id_0 {
-    //         TxId::BlockIndex(block_id) => Some(block_id).cloned(),
-    //         _ => Err("Unsupported tx_id_0".to_string())?,
-    //     },
-    //     None => None,
-    // };
-    // let tx_id_1 = match &args.tx_id_1 {
-    //     Some(tx_id_1) => match tx_id_1 {
-    //         TxId::BlockIndex(block_id) => Some(block_id).cloned(),
-    //         _ => Err("Unsupported tx_id_1".to_string())?,
-    //     },
-    //     None => None,
-    // };
+    // check tx_id_0 and tx_id_1 are valid block index Nat
+    let tx_id_0 = match &args.tx_id_0 {
+        Some(tx_id_0) => match tx_id_0 {
+            TxId::BlockIndex(block_id) => Some(block_id).cloned(),
+            _ => Err("Unsupported tx_id_0".to_string())?,
+        },
+        None => None,
+    };
+    let tx_id_1 = match &args.tx_id_1 {
+        Some(tx_id_1) => match tx_id_1 {
+            TxId::BlockIndex(block_id) => Some(block_id).cloned(),
+            _ => Err("Unsupported tx_id_1".to_string())?,
+        },
+        None => None,
+    };
 
     // // make sure token_1 is ckUSDT or ICP
     // let token_1 = match args.token_1.as_str() {
@@ -194,13 +208,13 @@ async fn check_arguments(
     //let user_id = user_map::insert(None)?;
 
     Ok((
-        // user_id,
+        //  user_id,
         token_0,
         args.amount_0.clone(),
-        // tx_id_0,
+        tx_id_0,
         token_1,
         args.amount_1.clone(),
-        // tx_id_1,
+         tx_id_1,
         lp_fee_bps,
         mercx_fee_bps,
         // add_lp_token_amount,
@@ -209,18 +223,21 @@ async fn check_arguments(
 
 #[ic_cdk::update]
 pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
-    let ( token_0, add_amount_0, token_1, add_amount_1, lp_fee_bps, kong_fee_bps) =
+    let ( token_0, add_amount_0, tx_id_0, token_1, add_amount_1,tx_id_1, lp_fee_bps, kong_fee_bps) =
         check_arguments(&args).await?;
-   // let ts = get_time();
+    let ts =  ic_cdk::api::time();
   //  let request_id = request_map::insert(&StableRequest::new(user_id, &Request::AddPool(args), ts));
 
     let result = match process_add_pool(
         &token_0,
         &add_amount_0,
+        tx_id_0.as_ref(),
         &token_1,
         &add_amount_1,
+        tx_id_1.as_ref(),
         lp_fee_bps,
         kong_fee_bps,
+        ts,
     )
     .await
     {
@@ -234,3 +251,36 @@ pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
 
     result
 }
+
+
+async fn transfer_from_token(
+    from_principal_id: &Account,
+    token: &StableToken,
+    amount: &Nat,
+    to_principal_id: &Account,
+    transfer_ids: &mut Vec<u64>,
+    ts: u64,
+) -> Result<(), String> {
+    let token_id = token.token_id();
+    match icrc2_transfer_from(token, amount, from_principal_id, to_principal_id).await {
+        Ok(block_id) => {
+            // insert_transfer() will use the latest state of TRANSFER_MAP so no reentrancy issues after icrc2_transfer_from()
+            // as icrc2_transfer_from() does a new transfer so block_id should be new
+            let transfer_id = transfer_handlers::insert(&StableTransfer {
+                transfer_id: 0,
+                is_send: true,
+                amount: amount.clone(),
+                token_id,
+                tx_id: TxId::BlockIndex(block_id),
+                ts,
+            });
+            transfer_ids.push(transfer_id);
+
+    Ok(())
+        }
+        Err(e) => {
+         
+            Err(e)
+        }
+    }
+} 

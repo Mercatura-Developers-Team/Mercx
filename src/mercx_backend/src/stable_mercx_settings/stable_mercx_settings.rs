@@ -1,15 +1,20 @@
-use candid::CandidType;
+use candid::{CandidType,Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 use crate::stable_memory::{TOKENS,POOLS,TRANSFERS};
+use icrc_ledger_types::icrc1::account::Account;
+use crate::ic::canister_address::MERCX_BACKEND;
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct StableMercxSettings {
+    pub mercx_backend: Account,
     pub token_map_idx: u32,    // counter for TOKEN_MAP
     pub pool_map_idx: u32,     // counter for POOL_MAP
     pub default_lp_fee_bps: u8,
     pub default_mercx_fee_bps: u8,
     pub transfer_map_idx: u64, // counter for TRANSFER_MAP
+    pub transfer_expiry_nanosecs: u64,
+   
 }
 
 impl Default for StableMercxSettings {
@@ -20,12 +25,13 @@ impl Default for StableMercxSettings {
     
 
         Self {
-           
+            mercx_backend: Account::from(Principal::from_text(MERCX_BACKEND).unwrap()),
             token_map_idx,
             pool_map_idx,
             default_lp_fee_bps: 30,
             default_mercx_fee_bps: 0,
             transfer_map_idx,
+            transfer_expiry_nanosecs: 3_600_000_000_000, // 1 hour (nano seconds)
         }
     }
 }
