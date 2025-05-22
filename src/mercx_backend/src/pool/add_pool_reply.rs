@@ -1,7 +1,12 @@
-use candid::{CandidType, Nat,Principal};
+use candid::{CandidType, Nat};
 use serde::{Deserialize, Serialize};
-
+use crate::transfers::transfer_reply::TransferIdReply;
+use crate::transfers::transfer_reply_helpers::to_transfer_ids;
  use crate::helpers::math_helpers::nat_zero;
+ use crate::pool::handlers::symbol;
+ use crate::StablePool;
+ use crate::StableToken;
+
 //for frontend API
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct AddPoolReply {
@@ -17,7 +22,7 @@ pub struct AddPoolReply {
     pub lp_fee_bps: u8,              // confirmed LP fee
     pub lp_token_symbol: String,     // FXMX_ckUSDT_LP
     pub lp_token_amount: Nat,        // amount of LP tokens minted
-    pub ts: u64,                     // timestamp of creation
+    pub transfer_ids: Option<Vec<TransferIdReply>>,
 }
 
 pub fn to_add_pool_reply_failed(
@@ -26,7 +31,7 @@ pub fn to_add_pool_reply_failed(
     address_1: &str,
     symbol_1: &str,
     transfer_ids: &[u64],
-    ts: u64,
+ 
 ) -> AddPoolReply {
     AddPoolReply {
         pool_id: 0,
@@ -41,6 +46,26 @@ pub fn to_add_pool_reply_failed(
         lp_fee_bps: 0,
         lp_token_symbol: "LP token not added".to_string(),
         lp_token_amount: nat_zero(),
-        ts,
+        transfer_ids: to_transfer_ids(transfer_ids),
     }
+}
+
+pub fn to_add_pool_reply(pool: &StablePool,token0:&StableToken,token1:&StableToken) -> AddPoolReply {
+
+  AddPoolReply {
+      pool_id: pool.pool_id,
+      name:pool.name(),
+      symbol:symbol(token0,token1),
+      address_0:pool.canister_id_0(),
+      symbol_0:pool.symbol_0(),
+      amount_0: pool.balance_0.clone(),
+      address_1:pool.canister_id_1(),
+      symbol_1:pool.symbol_1(),
+      amount_1: pool.balance_1.clone(),
+      //lazem neghayrha
+      lp_fee_bps:0, 
+      lp_token_symbol: "LP token not added".to_string(),
+      lp_token_amount: nat_zero(),
+      transfer_ids:  Some(vec![]),  // Provide empty/default value
+  }
 }

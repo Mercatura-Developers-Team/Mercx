@@ -43,7 +43,9 @@ export default function CreatePool() {
         token_0: token0.canister_id.toText(),
         token_1: token1.canister_id.toText(),
         amount_0: Number(values.amountToken0),
+        tx_id_0: [],
         amount_1: Number(values.amountToken1),
+        tx_id_1: [],
         lp_fee_bps: [],
       };
       try {
@@ -51,6 +53,8 @@ export default function CreatePool() {
         console.log("Result:", result);
       } catch (err) {
         alert("❌ Failed to add pool: " + err);
+        console.log("Result:", err);
+
       } finally {
         setIsCreating(false);
       }
