@@ -17,6 +17,7 @@ pub struct AddPoolReply {
     pub lp_fee_bps: u8,              // confirmed LP fee
     pub lp_token_symbol: String,     // FXMX_ckUSDT_LP
     pub lp_token_amount: Nat,        // amount of LP tokens minted
+    pub transfer_ids: Vec<u64>,
     pub ts: u64,                     // timestamp of creation
 }
 
@@ -41,6 +42,7 @@ pub fn to_add_pool_reply_failed(
         lp_fee_bps: 0,
         lp_token_symbol: "LP token not added".to_string(),
         lp_token_amount: nat_zero(),
+        transfer_ids: transfer_ids.clone(),
         ts,
     }
 }
