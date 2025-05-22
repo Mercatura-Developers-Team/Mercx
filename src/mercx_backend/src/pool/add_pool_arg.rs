@@ -156,7 +156,7 @@ async fn process_add_pool(
         lp_token_symbol: format!("{}_{}_LP", token_0.symbol(), token_1.symbol()),
         lp_token_amount: Nat::from(0_u32), // Replace with actual LP token mint amount later
         ts: api::time() / 1_000_000_000,   // Use your imported `get_time()` helper
-        transfer_ids: transfer_ids.clone(),
+   
     })
 }
 

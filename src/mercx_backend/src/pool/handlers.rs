@@ -97,8 +97,7 @@ fn get_all_pools() -> Vec<AddPoolReply> {
                     lp_token_symbol: format!("{}_{}_LP", pool.token_id_0, pool.token_id_1),
                     lp_token_amount: Nat::from(1_000_000_u64), // This should be real LP minted later
                     ts: ic_cdk::api::time(), // Or if you save ts at creation inside StablePool later, use that
-                    transfer_ids: transfer_ids.clone(),
-                }
+                        }
             })
             .collect()
     })

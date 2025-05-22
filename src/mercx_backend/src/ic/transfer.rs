@@ -15,7 +15,7 @@ pub async fn icrc1_transfer(
     created_at_time: Option<u64>,
 ) -> Result<Nat, String> {
     if nat_is_zero(amount) {
-        // if amount = 0, return Ok(block_id = 0) to return success. Don't error Err as it could be put into claims
+        //if amount = 0, return Ok(block_id = 0) to return success. Don't error Err as it could be put into claims
         return Ok(nat_zero());
     }
     let id = *token.canister_id().ok_or("Invalid principal id")?;
