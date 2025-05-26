@@ -30,3 +30,18 @@ pub fn insert(transfer: &StableTransfer) -> u64 {
         transfer_id
     })
 }
+
+pub fn get_by_token_ids(token_id_0: u32, token_id_1: u32) -> Vec<u64> {
+    TRANSFERS.with(|m| {
+        m.borrow()
+            .iter()
+            .filter_map(|(id, tx)| {
+                if tx.token_id == token_id_0 || tx.token_id == token_id_1 {
+                    Some(id.0)
+                } else {
+                    None
+                }
+            })
+            .collect()
+    })
+}

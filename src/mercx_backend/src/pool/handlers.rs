@@ -6,7 +6,9 @@ use crate::StableToken;
 use crate::token::handlers;
 use crate::stable_mercx_settings;
 use crate::token::handlers::get_by_token;
-
+use crate::transfers::handlers as transfer_handlers;
+use crate::pool::add_pool_reply::to_add_pool_reply;
+use crate::token::handlers::get_by_token_id;
 
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
@@ -79,28 +81,21 @@ pub fn insert(pool: &StablePool) -> Result<u32, String> {
 #[ic_cdk::query]
 fn get_all_pools() -> Vec<AddPoolReply> {
     POOLS.with(|pools| {
-        pools.borrow()
+        pools
+            .borrow()
             .iter()
             .map(|(_, pool)| {
-                AddPoolReply {
-                    pool_id: pool.pool_id,
-                    symbol: format!("{}_{}", pool.symbol_0(), pool.symbol_1()),
-                    name: format!("{} Liquidity Pool", pool.name()),
-                    symbol_0: pool.symbol_0(), // temporary placeholder
-                    address_0: format!("canister://{}", pool.canister_id_0()),
-                    amount_0: pool.balance_0.clone(),
-                    symbol_1: pool.symbol_1(), // temporary placeholder
-                    address_1: format!("canister://{}", pool.canister_id_1()),
-                    amount_1: pool.balance_1.clone(),
-                    lp_fee_bps: pool.lp_fee_bps,
-                    lp_token_symbol: format!("{}_{}_LP", pool.token_id_0, pool.token_id_1),
-                    lp_token_amount: Nat::from(1_000_000_u64), // This should be real LP minted later
-                    transfer_ids:  Some(vec![]),  // Provide empty/default value
-                }
+                let transfer_ids = transfer_handlers::get_by_token_ids(pool.token_id_0, pool.token_id_1);
+
+                let token0 = get_by_token_id(pool.token_id_0).unwrap(); // You must implement or import this
+                let token1 = get_by_token_id(pool.token_id_1).unwrap(); // You must implement or import this
+
+                to_add_pool_reply(&pool, &token0, &token1, &transfer_ids)
             })
             .collect()
     })
 }
+
 
 
 #[ic_cdk::update]

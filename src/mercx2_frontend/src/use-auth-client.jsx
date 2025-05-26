@@ -9,7 +9,9 @@ import { canisterId as kycCanisterId, createActor as createKycActor } from "../.
 import { canisterId as fxmxCanisterId, createActor as createFXMXActor } from "../../declarations/fxmx_icrc1_ledger";
 import { canisterId as fxmxIndexId, createActor as createFXMXindexActor } from "../../declarations/fxmx_icrc1_index";
 import { canisterId as ckUSDTCanisterId, createActor as createckUSDTActor } from "../../declarations/ckUSDT_ledger_canister";
-
+import { HttpAgent, Actor } from "@dfinity/agent";
+import { idlFactory as icrc2_idl } from "../../declarations/icrc1_ledger_canister"; // ✅ Use the correct path
+import { Principal } from "@dfinity/principal";
 
 // Create a React Context for sharing authentication status across the component tree
 const AuthContext = createContext();
@@ -138,7 +140,8 @@ export const useAuthClient = (options = defaultOptions) => {
     setPrincipal(principal);
 
     setAuthClient(client);
-
+    
+    
     // Create an actor with the authenticated identity
     const actor = createActor(canisterId, {
       agentOptions: {
@@ -211,6 +214,46 @@ export const useAuthClient = (options = defaultOptions) => {
     await updateClient(authClient);
   }
 
+  async function approveTokenWithAgent(tokenCanisterId, spenderCanisterId, amount) {
+    try {
+      const agent = new HttpAgent({ identity });
+  
+      if (process.env.DFX_NETWORK !== "ic") {
+        await agent.fetchRootKey();
+      }
+  
+      const tokenActor = Actor.createActor(icrc2_idl, {
+        agent,
+        canisterId: tokenCanisterId,
+      });
+  
+      const result = await tokenActor.icrc2_approve({
+        spender: {
+          owner: Principal.fromText(spenderCanisterId),
+          subaccount: [],
+        },
+        amount,
+        fee: [],
+        memo: [],
+        from_subaccount: [],
+        created_at_time: [],
+        expires_at: [],
+        expected_allowance: [],
+      });
+  
+      if ("Ok" in result) {
+        console.log(`✅ Approved ${amount.toString()} tokens`);
+      } else {
+        const err = typeof result.Err === "string" ? result.Err : JSON.stringify(result.Err, (_k, v) =>
+          typeof v === "bigint" ? v.toString() : v
+        );
+        throw new Error(err);
+      }
+    } catch (e) {
+      throw new Error(`❌ Approve failed: ${e.message || e}`);
+    }
+  }
+
   return {
     isAuthenticated,
     login,
@@ -226,7 +269,8 @@ export const useAuthClient = (options = defaultOptions) => {
     kycActor,     
     fxmxActor,
     fxmxIndexActor,
-    ckUSDTActor
+    ckUSDTActor,
+    approveTokenWithAgent, // ✅ now available anywhere
   };
 };
 

@@ -50,7 +50,7 @@ pub fn to_add_pool_reply_failed(
     }
 }
 
-pub fn to_add_pool_reply(pool: &StablePool,token0:&StableToken,token1:&StableToken) -> AddPoolReply {
+pub fn to_add_pool_reply(pool: &StablePool,token0:&StableToken,token1:&StableToken, transfer_ids: &[u64],) -> AddPoolReply {
 
   AddPoolReply {
       pool_id: pool.pool_id,
@@ -66,6 +66,6 @@ pub fn to_add_pool_reply(pool: &StablePool,token0:&StableToken,token1:&StableTok
       lp_fee_bps:0, 
       lp_token_symbol: "LP token not added".to_string(),
       lp_token_amount: nat_zero(),
-      transfer_ids:  Some(vec![]),  // Provide empty/default value
-  }
+      transfer_ids: to_transfer_ids(transfer_ids),
+    }
 }
