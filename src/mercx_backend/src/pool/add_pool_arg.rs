@@ -159,7 +159,7 @@ async fn process_add_pool(
     update_liquidity_pool(&pool, amount_0, amount_1);
 
     // TODO: Return actual AddPoolReply here, depending on your logic
-    Ok(to_add_pool_reply(   &pool, token_0, token_1))
+    Ok(to_add_pool_reply(   &pool, token_0, token_1,&transfer_ids))
 }
 
 //update balance

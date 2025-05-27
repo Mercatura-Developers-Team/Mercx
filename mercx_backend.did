@@ -141,6 +141,7 @@ service : {
   get_name : (principal) -> (Result_3) query;
   get_transactions : (nat, nat) -> (Result_7);
   get_whitelisted_principals : () -> (vec text) query;
+  icrc2_transfer_from : (StableToken, nat, Account, Account) -> (Result_2);
   is_whitelisted : (principal) -> (bool) query;
   pool_exists : (text, text) -> (bool) query;
   remove_from_whitelist : (principal) -> ();

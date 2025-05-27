@@ -6,8 +6,11 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import PoolInfo from "./PoolInfo";
 import { useSearchParams } from "react-router-dom";
-import { idlFactory as icrc2IDL }  from "../../../declarations/fxmx_icrc1_ledger/fxmx_icrc1_ledger.did.js";
-import { Actor, HttpAgent } from "@dfinity/agent";
+import { AuthClient } from "@dfinity/auth-client";
+import { HttpAgent, Actor } from "@dfinity/agent";
+import { idlFactory as icrc2_idl } from "../../../declarations/icrc1_ledger_canister"; // ✅ Use the correct path
+
+
 
 export default function CreatePool() {
   const { mercx_Actor , identity } = useAuth();
@@ -21,7 +24,16 @@ export default function CreatePool() {
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchParams,setSearchParams] = useSearchParams();
+  const { approveTokenWithAgent } = useAuth();
 
+  
+  function parseAmount(amountStr, decimals) {
+    if (typeof amountStr !== "string") amountStr = String(amountStr);
+    const [whole, fraction = ""] = amountStr.split(".");
+    const full = whole + fraction.padEnd(decimals, "0");
+    return BigInt(full);
+  }
+  
   const formik = useFormik({
     initialValues: {
       initialPrice: "",
@@ -39,46 +51,28 @@ export default function CreatePool() {
       amountToken1: Yup.number().typeError("Must be a number").positive("> 0").required("Required"),
     }),
     onSubmit: async (values) => {
+       setIsCreating(true);
+    const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai";
 
-      setIsCreating(true);
+    await approveTokenWithAgent(
+      token0.canister_id.toText(),
+      spenderId,
+      parseAmount(values.amountToken0, token0.decimals)+BigInt(20000)
+    );
 
-       try {
-      
-       console.log(identity);
-    const amount0 = BigInt(Math.floor(Number(values.amountToken0) * 10 ** token0.decimals));
-    const amount1 = BigInt(Math.floor(Number(values.amountToken1) * 10 ** token1.decimals));
-    const spenderPrincipal = "ajuq4-ruaaa-aaaaa-qaaga-cai"; // Replace with actual value
-
-if (!identity) {
-  alert("❌ Wallet not connected");
-
-}
-const principal = identity.getPrincipal();
-   console.log("👤 Approving from principal:", principal);
-
-    // ✅ Approve token0
-    await approveToken({
-      tokenCanisterId: token0.canister_id.toText(),
-      spenderPrincipal,
-      amount: amount0,
-      identity,
-    });
-
-    // ✅ Approve token1
-    await approveToken({
-      tokenCanisterId: token1.canister_id.toText(),
-      spenderPrincipal,
-      amount: amount1,
-      identity,
-    });
-
-
-      const args = {
+    await approveTokenWithAgent(
+      token1.canister_id.toText(),
+      spenderId,
+      parseAmount(values.amountToken1, token1.decimals)+BigInt(20000)
+    );
+    
+    
+    const args = {
         token_0: token0.canister_id.toText(),
         token_1: token1.canister_id.toText(),
-        amount_0: Number(values.amountToken0),
+        amount_0: parseAmount(values.amountToken0, token0.decimals),
         tx_id_0: [],
-        amount_1: Number(values.amountToken1),
+        amount_1: parseAmount(values.amountToken1, token1.decimals),
         tx_id_1: [],
         lp_fee_bps: [],
       };
@@ -94,6 +88,7 @@ const principal = identity.getPrincipal();
       }
        } ,
   });
+
 
   const [poolStats, setPoolStats] = useState(null); //information 
 
@@ -191,7 +186,7 @@ useEffect(() => {
 
   useEffect(() => {
     const fetchTokens = async () => {
-      if (!mercx_Actor) return; // 🛑 Exit early if actor not ready
+      if (!mercx_Actor) return;  // Exit early if actor not ready
       try {
         const tokenList = await mercx_Actor.get_all_tokens();
         setTokens(tokenList);
@@ -221,60 +216,8 @@ useEffect(() => {
     checkPool();
   }, [token0, token1]);
 
-
   
-async function approveToken({
-  tokenCanisterId,
-  spenderPrincipal,
-  amount,
-  identity,
-}) {
-  const agent = new HttpAgent({ identity });
-  if (process.env.DFX_NETWORK === "local") {
-    await agent.fetchRootKey();
-  }
-
-  const tokenActor = Actor.createActor(icrc2IDL, {
-    agent,
-    canisterId: tokenCanisterId,
-  });
-
-// const callerPrincipal = identity.getPrincipal().toText();
-// console.log("👤 Caller principal:", callerPrincipal);
-
-// const balance = await tokenActor.icrc1_balance_of({
-//   owner: identity.getPrincipal(),
-//   subaccount: [], // default
-// });
-// console.log("💰 Default account balance:", balance.toString());
-
-  try {
-  const result = await tokenActor.icrc2_approve({
-  spender: {
-    owner: Principal.fromText(spenderPrincipal),
-    subaccount: [], // ✅ optional subaccount: nothing
-  },
-  amount,
-  fee: [BigInt(10000)],
-  memo: [], // ✅ optional memo: nothing
-  from_subaccount: [], // ✅ optional: nothing
-  created_at_time: [], // ✅ optional: nothing
-  expected_allowance: [], // ✅ optional: nothing
-  expires_at: [], // ✅ optional: nothing
-});
-    if ("Ok" in result) {
-      console.log("✅ Approval successful", result.Ok);
-      return result.Ok;
-    } else {
-      console.error("❌ Approval failed", result.Err);
- 
-    }
-  } catch (e) {
-    console.error("❌ Approval failed", e);
-    throw e;
-  }
-}
-
+  
   const handleTokenSelect = (token) => {
     if (
       (selectingFor === "token0" && token1 && token.canister_id.toText() === token1.canister_id.toText()) ||
