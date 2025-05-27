@@ -6,7 +6,6 @@ use crate::StableToken;
 use crate::token::handlers;
 use crate::stable_mercx_settings;
 use crate::token::handlers::get_by_token;
-use crate::helpers::math_helpers::nat_zero;
 
 
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
@@ -39,6 +38,7 @@ pub fn get_by_token_ids(token_id_0: u32, token_id_1: u32) -> Option<StablePool> 
             if v.token_id_0 == token_id_0 && v.token_id_1 == token_id_1 {
                 return Some(v);
             }
+            
             None
         })
     })
@@ -96,8 +96,8 @@ fn get_all_pools() -> Vec<AddPoolReply> {
                     lp_fee_bps: pool.lp_fee_bps,
                     lp_token_symbol: format!("{}_{}_LP", pool.token_id_0, pool.token_id_1),
                     lp_token_amount: Nat::from(1_000_000_u64), // This should be real LP minted later
-                    ts: ic_cdk::api::time(), // Or if you save ts at creation inside StablePool later, use that
-                        }
+                    transfer_ids:  Some(vec![]),  // Provide empty/default value
+                }
             })
             .collect()
     })

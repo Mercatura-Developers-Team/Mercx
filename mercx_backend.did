@@ -9,9 +9,9 @@ type AddPoolArgs = record {
   lp_fee_bps : opt nat8;
 };
 type AddPoolReply = record {
-  ts : nat64;
   lp_token_amount : nat;
   lp_token_symbol : text;
+  transfer_ids : opt vec TransferIdReply;
   name : text;
   amount_0 : nat;
   amount_1 : nat;
@@ -45,6 +45,13 @@ type GetTransactions = record {
   transactions : vec TransactionWithId;
   oldest_tx_id : opt nat;
 };
+type ICTransferReply = record {
+  is_send : bool;
+  block_index : nat;
+  canister_id : text;
+  amount : nat;
+  symbol : text;
+};
 type Mint = record {
   to : Account;
   memo : opt blob;
@@ -59,7 +66,6 @@ type Result_4 = variant { Ok : GetTransactions; Err : text };
 type Result_5 = variant { Ok : StablePool; Err : text };
 type Result_6 = variant { Ok : float64; Err : text };
 type Result_7 = variant { Ok : TransactionResponse; Err : text };
-type Result_8 = variant { Ok; Err : text };
 type StablePool = record {
   mercx_fee_0 : nat;
   mercx_fee_1 : nat;
@@ -109,6 +115,10 @@ type Transfer = record {
   spender : opt Account;
 };
 type TransferArgs = record { to_account : Account; amount : nat };
+type TransferIdReply = record {
+  transfer_id : nat64;
+  transfer : ICTransferReply;
+};
 type TxId = variant { TransactionHash : text; BlockIndex : nat };
 service : {
   add_pool : (AddPoolArgs) -> (Result);
@@ -143,6 +153,5 @@ service : {
   transfer : (TransferArgs) -> (Result_2);
   transfer_from : (TransferArgs) -> (Result_2);
   transfer_from_general : (TransferArgs) -> (Result_2);
-  verify_transfer : (StableToken, nat, nat) -> (Result_8);
   whoami : () -> (principal) query;
 }

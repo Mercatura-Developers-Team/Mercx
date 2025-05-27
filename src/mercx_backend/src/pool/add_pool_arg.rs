@@ -3,7 +3,8 @@ use crate::ic::id::caller_id;
 use crate::ic::transfer::icrc1_transfer;
 use crate::ic::transfer::icrc2_transfer_from;
 use crate::ic::verify_transfer::verify_transfer;
-use crate::pool::add_pool_reply::{to_add_pool_reply_failed, AddPoolReply};
+use crate::pool::add_pool_reply::{to_add_pool_reply_failed, AddPoolReply,to_add_pool_reply};
+//use crate::transfers::transfer_reply_helpers::to_transfer_ids;
 use crate::pool::handlers;
 use crate::stable_mercx_settings::mercx_settings_map;
 use crate::token::add_token::add_token;
@@ -14,7 +15,6 @@ use crate::transfers::tx_id::TxId;
 use crate::StablePool;
 use crate::StableToken;
 use candid::{CandidType, Nat, Principal};
-use ic_cdk::api;
 use icrc_ledger_types::icrc1::account::Account;
 use serde::{Deserialize, Serialize};
 
@@ -33,14 +33,14 @@ fn add_new_pool(
     token_id_0: u32,
     token_id_1: u32,
     lp_fee_bps: u8,
-    kong_fee_bps: u8,
+    mercx_fee_bps: u8,
     lp_token_id: u32,
 ) -> Result<StablePool, String> {
     let pool = StablePool::new(
         token_id_0,
         token_id_1,
         lp_fee_bps,
-        kong_fee_bps,
+        mercx_fee_bps,
         lp_token_id,
     );
     let pool_id = handlers::insert(&pool)?;
@@ -56,13 +56,12 @@ async fn process_add_pool(
     amount_1: &Nat,
     tx_id_1: Option<&Nat>,
     lp_fee_bps: u8,
-    kong_fee_bps: u8,
+    mercx_fee_bps: u8,
     ts: u64,
 ) -> Result<AddPoolReply, String> {
     let caller_id = caller_id(); // Uncomment if you need caller_id later
     let mercx_backed = mercx_settings_map::get().mercx_backend;
     let mut transfer_ids = Vec::new();
-
     let transfer_0 = match tx_id_0 {
         Some(block_id) => {
             verify_transfer_token(token_0, block_id, amount_0, &mut transfer_ids, ts).await
@@ -77,7 +76,9 @@ async fn process_add_pool(
                 ts,
             )
             .await
+           
         }
+         
     };
 
     let transfer_1 = match tx_id_1 {
@@ -102,62 +103,63 @@ async fn process_add_pool(
         }
     };
 
-    //   // both transfers must be successful
-    //   if transfer_0.is_err() || transfer_1.is_err() {
-    //     return_tokens(
-    //         request_id,
-    //         user_id,
-    //         &caller_id,
-    //         &transfer_0,
-    //         token_0,
-    //         amount_0,
-    //         &transfer_1,
-    //         token_1,
-    //         amount_1,
-    //         &mut transfer_ids,
-    //         ts,
-    //     )
-    //     .await;
-    //     if transfer_0.is_err() {
-    //         return Err(format!("Req #{} failed. {}", request_id, transfer_0.unwrap_err()));
-    //     } else {
-    //         return Err(format!("Req #{} failed. {}", request_id, transfer_1.unwrap_err()));
-    //     };
-    // }
+      // both transfers must be successful
+      if transfer_0.is_err() || transfer_1.is_err() {
+        return_tokens(
+            &caller_id,
+            &transfer_0,
+            token_0,
+            amount_0,
+            &transfer_1,
+            token_1,
+            amount_1,
+            &mut transfer_ids,
+            ts,
+        )
+        .await;
+        if transfer_0.is_err() {
+            return Err(format!("failed. {}", transfer_0.unwrap_err()));
+        } else {
+            return Err(format!("failed. {}", transfer_1.unwrap_err()));
+        };
+    }
 
     //add pool
     let pool = match add_new_pool(
         token_0.token_id(),
         token_1.token_id(),
         lp_fee_bps,
-        kong_fee_bps,
+        mercx_fee_bps,
         0, // ← TEMP: You must pass a valid `lp_token_id` here!
     ) {
         Ok(pool) => pool,
-        Err(e) => return Err(format!("Pool creation failed: {}", e)),
+        Err(e) => {
+            return_tokens(
+                &caller_id,
+                &transfer_0,
+                token_0,
+                amount_0,
+                &transfer_1,
+                token_1,
+                amount_1,
+                &mut transfer_ids,
+                ts,
+            )
+            .await;
+        return Ok(to_add_pool_reply_failed(       
+             &token_0.canister_id().expect("Missing canister_id").to_string(),
+        &token_0.symbol(),
+        &token_1.canister_id().expect("Missing canister_id").to_string(),
+        &token_1.symbol(),
+        &transfer_ids));
+            },
     };
 
     // update pool with new balances
     update_liquidity_pool(&pool, amount_0, amount_1);
 
     // TODO: Return actual AddPoolReply here, depending on your logic
-    Ok(AddPoolReply {
-        // Fill this based on your actual struct
-        pool_id: pool.pool_id,
-        symbol: format!("{}_{}", token_0.symbol(), token_1.symbol()),
-        name: format!("{}_{} Liquidity Pool", token_0.symbol(), token_1.symbol()),
-        symbol_0: token_0.symbol(),
-        address_0: pool.canister_id_0(),
-        amount_0: amount_0.clone(),
-        symbol_1: token_1.symbol(),
-        address_1: pool.canister_id_1(),
-        amount_1: amount_1.clone(),
-        lp_fee_bps,
-        lp_token_symbol: format!("{}_{}_LP", token_0.symbol(), token_1.symbol()),
-        lp_token_amount: Nat::from(0_u32), // Replace with actual LP token mint amount later
-        ts: api::time() / 1_000_000_000,   // Use your imported `get_time()` helper
-   
-    })
+    Ok(to_add_pool_reply(   &pool, token_0, token_1))
 }
 
 //update balance
@@ -320,6 +322,7 @@ pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
     result
 }
 
+
 async fn transfer_from_token(
     from_principal_id: &Account,
     token: &StableToken,
@@ -342,6 +345,7 @@ async fn transfer_from_token(
                 ts,
             });
             transfer_ids.push(transfer_id);
+ic_cdk::println!("💬 Transfer_0 result: {:?}", transfer_ids);
 
             Ok(())
         }
@@ -402,21 +406,17 @@ async fn return_tokens(
     }
 
     // let reply = to_add_pool_reply_failed(
-
-    //     &token_0.address(),
+    //     &token_0.canister_id().expect("Missing canister_id").to_string(),
     //     &token_0.symbol(),
-
-    //     &token_1.address(),
+    //     &token_1.canister_id().expect("Missing canister_id").to_string(),
     //     &token_1.symbol(),
     //     transfer_ids,
-
     //     ts,
     // );
 }
 
 async fn return_token(
     to_principal_id: &Account,
-
     token: &StableToken,
     amount: &Nat,
     transfer_ids: &mut Vec<u64>,
@@ -436,11 +436,11 @@ async fn return_token(
             });
             transfer_ids.push(transfer_id);
         }
-        Err(e) => {
+        Err(_) => {
             // claim
 
             //  let err_msg = format!(" Failed to return tokens back to user: {}", e);
-            //  Err(err_msg)
+           //   Err("");
         }
     }
 }

@@ -1,5 +1,5 @@
 use candid::Nat;
-use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, TransferError};
+use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 use icrc_ledger_types::icrc1::account::Account;
 
@@ -42,6 +42,7 @@ pub async fn icrc1_transfer(
 
 
 // icrc2_transfer_from using principal id's where from_principal_id has issued an icrc2_approve
+
 pub async fn icrc2_transfer_from(
     token: &StableToken,
     amount: &Nat,
@@ -75,5 +76,7 @@ pub async fn icrc2_transfer_from(
             Ok(block_id) => block_id,
             Err(e) => Err(e.to_string())?,
         };
+    ic_cdk::println!("💬 Transfer_0 result: {:?}", block_id);
     Ok(block_id)
+   
 }

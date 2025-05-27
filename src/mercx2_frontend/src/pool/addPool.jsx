@@ -6,10 +6,11 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import PoolInfo from "./PoolInfo";
 import { useSearchParams } from "react-router-dom";
-
+import { idlFactory as icrc2IDL }  from "../../../declarations/fxmx_icrc1_ledger/fxmx_icrc1_ledger.did.js";
+import { Actor, HttpAgent } from "@dfinity/agent";
 
 export default function CreatePool() {
-  const { mercx_Actor } = useAuth();
+  const { mercx_Actor , identity } = useAuth();
   const [token0, setToken0] = useState(null);
   const [token1, setToken1] = useState(null);
   const [tokens, setTokens] = useState([]);
@@ -38,12 +39,47 @@ export default function CreatePool() {
       amountToken1: Yup.number().typeError("Must be a number").positive("> 0").required("Required"),
     }),
     onSubmit: async (values) => {
+
       setIsCreating(true);
+
+       try {
+      
+       console.log(identity);
+    const amount0 = BigInt(Math.floor(Number(values.amountToken0) * 10 ** token0.decimals));
+    const amount1 = BigInt(Math.floor(Number(values.amountToken1) * 10 ** token1.decimals));
+    const spenderPrincipal = "ajuq4-ruaaa-aaaaa-qaaga-cai"; // Replace with actual value
+
+if (!identity) {
+  alert("❌ Wallet not connected");
+
+}
+const principal = identity.getPrincipal();
+   console.log("👤 Approving from principal:", principal);
+
+    // ✅ Approve token0
+    await approveToken({
+      tokenCanisterId: token0.canister_id.toText(),
+      spenderPrincipal,
+      amount: amount0,
+      identity,
+    });
+
+    // ✅ Approve token1
+    await approveToken({
+      tokenCanisterId: token1.canister_id.toText(),
+      spenderPrincipal,
+      amount: amount1,
+      identity,
+    });
+
+
       const args = {
         token_0: token0.canister_id.toText(),
         token_1: token1.canister_id.toText(),
         amount_0: Number(values.amountToken0),
+        tx_id_0: [],
         amount_1: Number(values.amountToken1),
+        tx_id_1: [],
         lp_fee_bps: [],
       };
       try {
@@ -51,10 +87,12 @@ export default function CreatePool() {
         console.log("Result:", result);
       } catch (err) {
         alert("❌ Failed to add pool: " + err);
-      } finally {
+        console.log("Result:", err);
+
+      }} finally {
         setIsCreating(false);
       }
-    },
+       } ,
   });
 
   const [poolStats, setPoolStats] = useState(null); //information 
@@ -183,6 +221,59 @@ useEffect(() => {
     checkPool();
   }, [token0, token1]);
 
+
+  
+async function approveToken({
+  tokenCanisterId,
+  spenderPrincipal,
+  amount,
+  identity,
+}) {
+  const agent = new HttpAgent({ identity });
+  if (process.env.DFX_NETWORK === "local") {
+    await agent.fetchRootKey();
+  }
+
+  const tokenActor = Actor.createActor(icrc2IDL, {
+    agent,
+    canisterId: tokenCanisterId,
+  });
+
+// const callerPrincipal = identity.getPrincipal().toText();
+// console.log("👤 Caller principal:", callerPrincipal);
+
+// const balance = await tokenActor.icrc1_balance_of({
+//   owner: identity.getPrincipal(),
+//   subaccount: [], // default
+// });
+// console.log("💰 Default account balance:", balance.toString());
+
+  try {
+  const result = await tokenActor.icrc2_approve({
+  spender: {
+    owner: Principal.fromText(spenderPrincipal),
+    subaccount: [], // ✅ optional subaccount: nothing
+  },
+  amount,
+  fee: [BigInt(10000)],
+  memo: [], // ✅ optional memo: nothing
+  from_subaccount: [], // ✅ optional: nothing
+  created_at_time: [], // ✅ optional: nothing
+  expected_allowance: [], // ✅ optional: nothing
+  expires_at: [], // ✅ optional: nothing
+});
+    if ("Ok" in result) {
+      console.log("✅ Approval successful", result.Ok);
+      return result.Ok;
+    } else {
+      console.error("❌ Approval failed", result.Err);
+ 
+    }
+  } catch (e) {
+    console.error("❌ Approval failed", e);
+    throw e;
+  }
+}
 
   const handleTokenSelect = (token) => {
     if (
