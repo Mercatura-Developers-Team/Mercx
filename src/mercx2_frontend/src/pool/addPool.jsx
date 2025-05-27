@@ -6,21 +6,17 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import PoolInfo from "./PoolInfo";
 import { useSearchParams } from "react-router-dom";
-import { AuthClient } from "@dfinity/auth-client";
-import { HttpAgent, Actor } from "@dfinity/agent";
-import { idlFactory as icrc2_idl } from "../../../declarations/icrc1_ledger_canister"; // ✅ Use the correct path
 
 
 
 export default function CreatePool() {
-  const { mercx_Actor , identity } = useAuth();
+  const { mercx_Actor } = useAuth();
   const [token0, setToken0] = useState(null);
   const [token1, setToken1] = useState(null);
   const [tokens, setTokens] = useState([]);
   const [poolExists, setPoolExists] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-
-  const [openTokenSelect, setOpenTokenSelect] = useState(false);
+const [openTokenSelect, setOpenTokenSelect] = useState(false);
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchParams,setSearchParams] = useSearchParams();
@@ -83,10 +79,10 @@ export default function CreatePool() {
         alert("❌ Failed to add pool: " + err);
         console.log("Result:", err);
 
-      }} finally {
+      } finally {
         setIsCreating(false);
       }
-       } ,
+    },
   });
 
 
