@@ -1,4 +1,3 @@
-use candid::Nat;
 use crate::pool::stable_pool::{StablePool,StablePoolId};
 use crate::stable_memory::POOLS;
 use crate::pool::add_pool_reply::AddPoolReply;

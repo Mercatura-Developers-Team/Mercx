@@ -20,7 +20,7 @@ const [openTokenSelect, setOpenTokenSelect] = useState(false);
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchParams,setSearchParams] = useSearchParams();
-  const { approveTokenWithAgent } = useAuth();
+  const { createTokenActor,principal} = useAuth();
 
   
   function parseAmount(amountStr, decimals) {
@@ -49,19 +49,70 @@ const [openTokenSelect, setOpenTokenSelect] = useState(false);
     onSubmit: async (values) => {
        setIsCreating(true);
     const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai";
+    try {
+      const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
+      const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);
 
-    await approveTokenWithAgent(
-      token0.canister_id.toText(),
-      spenderId,
-      parseAmount(values.amountToken0, token0.decimals)+BigInt(20000)
-    );
+      const token0Actor = await createTokenActor(token0.canister_id.toText());
+    const token1Actor = await createTokenActor(token1.canister_id.toText());
 
-    await approveTokenWithAgent(
-      token1.canister_id.toText(),
-      spenderId,
-      parseAmount(values.amountToken1, token1.decimals)+BigInt(20000)
-    );
-    
+     // Get balances first
+     const balance0Res = await token0Actor.icrc1_balance_of({
+      owner: principal,
+      subaccount: [],
+    });
+
+    const balance1Res = await token1Actor.icrc1_balance_of({
+      owner: principal,
+      subaccount: [],
+    });
+
+    if (balance0Res < amount0) throw new Error(`❌ Insufficient ${token0.symbol} balance`);
+    if (balance1Res < amount1) throw new Error(`❌ Insufficient ${token1.symbol} balance`);
+
+    //check allowance
+    const allowanceCheck0 = {
+      account: { owner: principal, subaccount: [] },
+      spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+    };
+
+    const allowanceCheck1 = {
+      account: { owner: principal, subaccount: [] },
+      spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+    };
+
+    const currentAllowance0 = (await token0Actor.icrc2_allowance(allowanceCheck0)).allowance;
+    const currentAllowance1 = (await token1Actor.icrc2_allowance(allowanceCheck1)).allowance;
+  
+    if (currentAllowance0 < amount0) {
+      const approve0 = await token0Actor.icrc2_approve({
+        spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+        amount: amount0,
+        fee: [],
+        memo: [],
+        from_subaccount: [],
+        created_at_time: [],
+        expires_at: [],
+        expected_allowance: [],
+      });
+  
+      if ("Err" in approve0) throw new Error("Token0 approval failed: " + JSON.stringify(approve0.Err));
+    }
+
+    if (currentAllowance1 < amount1) {
+      const approve1 = await token1Actor.icrc2_approve({
+        spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+        amount: amount1,
+        fee: [],
+        memo: [],
+        from_subaccount: [],
+        created_at_time: [],
+        expires_at: [],
+        expected_allowance: [],
+      });
+  
+      if ("Err" in approve1) throw new Error("Token1 approval failed: " + JSON.stringify(approve1.Err));
+    }
     
     const args = {
         token_0: token0.canister_id.toText(),
@@ -72,7 +123,7 @@ const [openTokenSelect, setOpenTokenSelect] = useState(false);
         tx_id_1: [],
         lp_fee_bps: [],
       };
-      try {
+    
         const result = await mercx_Actor.add_pool(args);
         console.log("Result:", result);
       } catch (err) {
@@ -98,6 +149,7 @@ const [openTokenSelect, setOpenTokenSelect] = useState(false);
           );
   
           if (exists) {
+            setPoolExists(exists);
             // Try both symbol combinations since order matters
             let pool;
             try {
@@ -114,8 +166,8 @@ const [openTokenSelect, setOpenTokenSelect] = useState(false);
               const data = pool.Ok;
               setPoolStats({
                 poolId: data.pool_id,
-                token0Balance: data.amount_0,
-                token1Balance: data.amount_1,
+                token0Balance: data.balance_0,
+                token1Balance: data.balance_1,
                 tvl: Number(data.amount_0) + Number(data.amount_1),
               });
             } else {
@@ -125,6 +177,7 @@ const [openTokenSelect, setOpenTokenSelect] = useState(false);
               });
             }
           } else {
+            setPoolExists(false);
             setPoolStats({
               message: `No pool exists for ${token0.symbol}/${token1.symbol}. Create the first liquidity position!`,
             });
@@ -194,25 +247,7 @@ useEffect(() => {
     fetchTokens();
   }, [mercx_Actor]);
 
-  useEffect(() => {
-    const checkPool = async () => {
-      if (token0 && token1 && mercx_Actor) {
-        try {
-          const exists = await mercx_Actor.pool_exists(
-            token0.canister_id.toText(),
-            token1.canister_id.toText()
-          );
-          setPoolExists(exists);
-        } catch (e) {
-          console.warn("Pool existence check failed:", e);
-          setPoolExists(false);
-        }
-      }
-    };
-    checkPool();
-  }, [token0, token1]);
 
-  
   
   const handleTokenSelect = (token) => {
     if (

@@ -8,6 +8,13 @@
         "icrc1_ledger_canister"
       ]
     },
+
+    "orderbook": {
+      "type": "motoko",
+      "main": "src/orderbook/Test.mo",
+      "dependencies": [],
+      "package": "base"  
+    },
     
     "kyc": {
       "candid": "src/kyc/kyc.did",
