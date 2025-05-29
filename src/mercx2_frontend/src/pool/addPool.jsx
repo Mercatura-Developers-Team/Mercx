@@ -6,8 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import PoolInfo from "./PoolInfo";
 import { useSearchParams } from "react-router-dom";
-
-
+import SuccessModal from "./SuccessModel"; // update path if needed
 
 export default function CreatePool() {
   const { mercx_Actor } = useAuth();
@@ -16,12 +15,15 @@ export default function CreatePool() {
   const [tokens, setTokens] = useState([]);
   const [poolExists, setPoolExists] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+
   const [openTokenSelect, setOpenTokenSelect] = useState(false);
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { createTokenActor, principal } = useAuth();
+  const { createTokenActor, principal, isAuthenticated } = useAuth();
   const [formError, setFormError] = useState("");
+
 
   function parseAmount(amountStr, decimals) {
     if (typeof amountStr !== "string") amountStr = String(amountStr);
@@ -29,6 +31,11 @@ export default function CreatePool() {
     const full = whole + fraction.padEnd(decimals, "0");
     return BigInt(full);
   }
+
+  function normalizeAmount(amount, decimals) {
+    return Number(amount) / 10 ** decimals;
+  }
+
 
   const formik = useFormik({
     initialValues: {
@@ -49,8 +56,7 @@ export default function CreatePool() {
     onSubmit: async (values) => {
       setIsCreating(true);
       setFormError("");
-      //const spenderId = "zoa6c-riaaa-aaaan-qzmta-cai"; //mainnet
-      const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai"; //locally 
+      const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai";
       try {
         const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
         const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);
@@ -58,8 +64,8 @@ export default function CreatePool() {
         const token0Actor = await createTokenActor(token0.canister_id.toText());
         const token1Actor = await createTokenActor(token1.canister_id.toText());
 
-        //Get balances first
-          const balance0Res = await token0Actor.icrc1_balance_of({
+        // Get balances first
+        const balance0Res = await token0Actor.icrc1_balance_of({
           owner: principal,
           subaccount: [],
         });
@@ -128,9 +134,8 @@ export default function CreatePool() {
 
         const result = await mercx_Actor.add_pool(args);
         console.log("Result:", result);
+        setShowSuccessModal(true);
       } catch (err) {
-        // alert("❌ Failed to add pool: " + err);
-        // console.log("Result:", err);
         console.error(" Pool creation failed:", err);
         setFormError(err.message || "Something went wrong. Please try again.");
       } finally {
@@ -169,8 +174,8 @@ export default function CreatePool() {
               const data = pool.Ok;
               setPoolStats({
                 poolId: data.pool_id,
-                token0Balance: data.balance_0,
-                token1Balance: data.balance_1,
+                token0Balance: normalizeAmount(data.balance_0, token0.decimals),
+                token1Balance: normalizeAmount(data.balance_1, token1.decimals),
                 tvl: Number(data.amount_0) + Number(data.amount_1),
               });
             } else {
@@ -257,7 +262,6 @@ export default function CreatePool() {
       (selectingFor === "token0" && token1 && token.canister_id.toText() === token1.canister_id.toText()) ||
       (selectingFor === "token1" && token0 && token.canister_id.toText() === token0.canister_id.toText())
     ) {
-
       setFormError(err.message || "Something went wrong. Please try again.");
       return;
     }
@@ -373,13 +377,13 @@ export default function CreatePool() {
               {/* Create Pool */}
               <button
                 type="submit"
-                disabled={isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
+                disabled={!isAuthenticated || isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
                   !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
                   !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
                   (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
                 className={`w-full font-bold py-3 rounded-lg ${isCreating
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-green-500 hover:bg-green-600 text-black"
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600 text-black"
                   }`}
               >
                 {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
@@ -449,8 +453,7 @@ export default function CreatePool() {
               try {
                 validatedPrincipal = Principal.fromText(canisterIdString);
               } catch (err) {
-
-                setError("Invalid Canister ID format. Please use a valid Principal");
+                alert("❌ Invalid Canister ID format. Please use a valid Principal.");
                 return;
               }
               // Now call with a valid Principal string
@@ -461,17 +464,16 @@ export default function CreatePool() {
                 const updatedTokens = await mercx_Actor.get_all_tokens();
                 setTokens(updatedTokens);
               } else {
-
-                setError(result.Err || "Something went wrong. Please try again.");
+                alert("❌ " + result.Err);
               }
             } catch (err) {
               console.error("Import token error:", err);
-
-              setError(err.message || "Something went wrong. Please try again.");
+              alert("❌ Failed to import token.");
             }
           }}
 
         />
+        <SuccessModal isVisible={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
 
       </div>
     </div>
