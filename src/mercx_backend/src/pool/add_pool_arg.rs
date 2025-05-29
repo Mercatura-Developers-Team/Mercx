@@ -62,7 +62,6 @@ async fn process_add_pool(
     let caller_id = caller_id(); // Uncomment if you need caller_id later
     let mercx_backed = mercx_settings_map::get().mercx_backend;
     let mut transfer_ids = Vec::new();
-
     let transfer_0 = match tx_id_0 {
         Some(block_id) => {
             verify_transfer_token(token_0, block_id, amount_0, &mut transfer_ids, ts).await
@@ -77,7 +76,9 @@ async fn process_add_pool(
                 ts,
             )
             .await
+           
         }
+         
     };
 
     let transfer_1 = match tx_id_1 {
@@ -321,6 +322,7 @@ pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
     result
 }
 
+
 async fn transfer_from_token(
     from_principal_id: &Account,
     token: &StableToken,
@@ -343,6 +345,7 @@ async fn transfer_from_token(
                 ts,
             });
             transfer_ids.push(transfer_id);
+ic_cdk::println!("💬 Transfer_0 result: {:?}", transfer_ids);
 
             Ok(())
         }

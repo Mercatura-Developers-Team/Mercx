@@ -8,9 +8,9 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
 
   const handleSubmit = async () => {
     if (!canisterId.trim()) {
-        setError("Please enter a valid canister ID.");
-        return;
-      }
+      setError("Please enter a valid canister ID.");
+      return;
+    }
 
     setError(""); // clear any old errors
     setIsSubmitting(true); // Start loading
@@ -43,16 +43,16 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
             setError(""); // clear error as user types
           }}
         />
-          {/* Show error message if input is invalid */}
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-          
+        {/* Show error message if input is invalid */}
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+
         <div className="flex gap-4 mt-6">
           <button
             onClick={handleSubmit}
             className="flex-1 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50  "
             disabled={isSubmitting}
           >
-                       {isSubmitting ? "Adding..." : "Add Token"}
+            {isSubmitting ? "Adding..." : "Add Token"}
           </button>
           <button
             onClick={onClose}

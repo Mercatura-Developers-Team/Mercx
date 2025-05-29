@@ -39,6 +39,7 @@ pub fn get_by_token_ids(token_id_0: u32, token_id_1: u32) -> Option<StablePool> 
             if v.token_id_0 == token_id_0 && v.token_id_1 == token_id_1 {
                 return Some(v);
             }
+            
             None
         })
     })

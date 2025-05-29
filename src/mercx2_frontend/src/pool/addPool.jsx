@@ -24,6 +24,7 @@ export default function CreatePool() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [searchParams,setSearchParams] = useSearchParams();
   const { createTokenActor,principal,isAuthenticated} = useAuth();
+  const [formError, setFormError] = useState("");
 
   
   function parseAmount(amountStr, decimals) {
@@ -56,6 +57,7 @@ export default function CreatePool() {
     }),
     onSubmit: async (values) => {
        setIsCreating(true);
+       setFormError("");
     const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai";
     try {
       const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
@@ -136,9 +138,8 @@ export default function CreatePool() {
         console.log("Result:", result);
         setShowSuccessModal(true);
       } catch (err) {
-        alert("❌ Failed to add pool: " + err);
-        console.log("Result:", err);
-
+        console.error(" Pool creation failed:", err);
+        setFormError(err.message || "Something went wrong. Please try again.");
       } finally {
         setIsCreating(false);
       }
@@ -263,7 +264,7 @@ useEffect(() => {
       (selectingFor === "token0" && token1 && token.canister_id.toText() === token1.canister_id.toText()) ||
       (selectingFor === "token1" && token0 && token.canister_id.toText() === token0.canister_id.toText())
     ) {
-      alert("❌ You cannot select the same token for both Token 0 and Token 1.");
+      setFormError(err.message || "Something went wrong. Please try again.");
       return;
     }
 
@@ -293,7 +294,11 @@ useEffect(() => {
             🚀 New Pool — You are the first to create this pair. Set its initial ratio.
           </div>
         )}
-
+  {formError && (
+              <div className="mt-3 bg-red-800/20 border border-red-600 text-red-400 text-sm rounded-lg p-3">
+                {formError}
+              </div>
+            )}
         {/* Token Select */}
         <div className="flex gap-4">
           <button

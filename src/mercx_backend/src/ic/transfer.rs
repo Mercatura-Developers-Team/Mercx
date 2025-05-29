@@ -15,7 +15,7 @@ pub async fn icrc1_transfer(
     created_at_time: Option<u64>,
 ) -> Result<Nat, String> {
     if nat_is_zero(amount) {
-        // if amount = 0, return Ok(block_id = 0) to return success. Don't error Err as it could be put into claims
+        //if amount = 0, return Ok(block_id = 0) to return success. Don't error Err as it could be put into claims
         return Ok(nat_zero());
     }
     let id = *token.canister_id().ok_or("Invalid principal id")?;
@@ -42,6 +42,7 @@ pub async fn icrc1_transfer(
 
 
 // icrc2_transfer_from using principal id's where from_principal_id has issued an icrc2_approve
+
 pub async fn icrc2_transfer_from(
     token: &StableToken,
     amount: &Nat,
@@ -75,5 +76,7 @@ pub async fn icrc2_transfer_from(
             Ok(block_id) => block_id,
             Err(e) => Err(e.to_string())?,
         };
+    ic_cdk::println!("💬 Transfer_0 result: {:?}", block_id);
     Ok(block_id)
+   
 }
