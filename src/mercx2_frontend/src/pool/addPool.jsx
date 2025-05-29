@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import PoolInfo from "./PoolInfo";
 import { useSearchParams } from "react-router-dom";
+import SuccessModal from "./SuccessModel"; // update path if needed
 
 
 
@@ -20,8 +21,9 @@ export default function CreatePool() {
   const [openTokenSelect, setOpenTokenSelect] = useState(false);
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [searchParams,setSearchParams] = useSearchParams();
-  const { createTokenActor,principal} = useAuth();
+  const { createTokenActor,principal,isAuthenticated} = useAuth();
 
   
   function parseAmount(amountStr, decimals) {
@@ -30,6 +32,11 @@ export default function CreatePool() {
     const full = whole + fraction.padEnd(decimals, "0");
     return BigInt(full);
   }
+
+  function normalizeAmount(amount, decimals) {
+    return Number(amount) / 10 ** decimals;
+  }
+  
   
   const formik = useFormik({
     initialValues: {
@@ -127,6 +134,7 @@ export default function CreatePool() {
     
         const result = await mercx_Actor.add_pool(args);
         console.log("Result:", result);
+        setShowSuccessModal(true);
       } catch (err) {
         alert("❌ Failed to add pool: " + err);
         console.log("Result:", err);
@@ -167,8 +175,8 @@ export default function CreatePool() {
               const data = pool.Ok;
               setPoolStats({
                 poolId: data.pool_id,
-                token0Balance: data.balance_0,
-                token1Balance: data.balance_1,
+                token0Balance: normalizeAmount(data.balance_0, token0.decimals),
+                token1Balance: normalizeAmount(data.balance_1, token1.decimals),
                 tvl: Number(data.amount_0) + Number(data.amount_1),
               });
             } else {
@@ -366,7 +374,7 @@ useEffect(() => {
           {/* Create Pool */}
           <button
             type="submit"
-            disabled={isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
+            disabled={!isAuthenticated || isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
               !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
               !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
               (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
@@ -463,6 +471,7 @@ useEffect(() => {
           }}
 
         />
+<SuccessModal isVisible={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
 
       </div>
       </div>
