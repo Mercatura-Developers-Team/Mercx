@@ -10,6 +10,7 @@ import SignupForm from './SignupForm';
 import InappBrowser from './InappBrowser';
 import CreatePool from './pool/addPool';
 import Pools from './pool/pools';
+import Orderbook from './Orderbook';
 function App() {
   return (
     <AuthProvider>
@@ -25,6 +26,7 @@ function App() {
           <Route path="/InappBrowser" element={<InappBrowser/>} />
           <Route path="/addPool" element={<CreatePool/>} />
           <Route path="/pools" element={<Pools/>} />
+          <Route path="/orderbook" element={<Orderbook />} />
         </Routes>
       </div>
     </AuthProvider>

@@ -10,8 +10,6 @@ import SuccessModal from "./SuccessModel"; // update path if needed
 import { parseAmount, normalizeAmount } from "./tokenUtils";
 import TokenSelector from "./TokenSelector";
 
-
-
 export default function CreatePool() {
   const { mercx_Actor } = useAuth();
   const [token0, setToken0] = useState(null);
@@ -24,8 +22,8 @@ export default function CreatePool() {
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [searchParams,setSearchParams] = useSearchParams();
-  const { createTokenActor,principal,isAuthenticated} = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { createTokenActor, principal, isAuthenticated } = useAuth();
   const [formError, setFormError] = useState("");
 
   
@@ -49,84 +47,84 @@ export default function CreatePool() {
       amountToken1: Yup.number().typeError("Must be a number").positive("> 0").required("Required"),
     }),
     onSubmit: async (values) => {
-       setIsCreating(true);
-       setFormError("");
-    const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai";
-    try {
-      const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
-      const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);
+      setIsCreating(true);
+      setFormError("");
+      const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai";
+      try {
+        const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
+        const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);
 
-      const token0Actor = await createTokenActor(token0.canister_id.toText());
-    const token1Actor = await createTokenActor(token1.canister_id.toText());
+        const token0Actor = await createTokenActor(token0.canister_id.toText());
+        const token1Actor = await createTokenActor(token1.canister_id.toText());
 
-     // Get balances first
-     const balance0Res = await token0Actor.icrc1_balance_of({
-      owner: principal,
-      subaccount: [],
-    });
+        // Get balances first
+        const balance0Res = await token0Actor.icrc1_balance_of({
+          owner: principal,
+          subaccount: [],
+        });
 
-    const balance1Res = await token1Actor.icrc1_balance_of({
-      owner: principal,
-      subaccount: [],
-    });
+        const balance1Res = await token1Actor.icrc1_balance_of({
+          owner: principal,
+          subaccount: [],
+        });
 
-    if (balance0Res < amount0) throw new Error(`❌ Insufficient ${token0.symbol} balance`);
-    if (balance1Res < amount1) throw new Error(`❌ Insufficient ${token1.symbol} balance`);
+        if (balance0Res < amount0) throw new Error(`❌ Insufficient ${token0.symbol} balance`);
+        if (balance1Res < amount1) throw new Error(`❌ Insufficient ${token1.symbol} balance`);
 
-    //check allowance
-    const allowanceCheck0 = {
-      account: { owner: principal, subaccount: [] },
-      spender: { owner: Principal.fromText(spenderId), subaccount: [] },
-    };
+        //check allowance
+        const allowanceCheck0 = {
+          account: { owner: principal, subaccount: [] },
+          spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+        };
 
-    const allowanceCheck1 = {
-      account: { owner: principal, subaccount: [] },
-      spender: { owner: Principal.fromText(spenderId), subaccount: [] },
-    };
+        const allowanceCheck1 = {
+          account: { owner: principal, subaccount: [] },
+          spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+        };
 
-    const currentAllowance0 = (await token0Actor.icrc2_allowance(allowanceCheck0)).allowance;
-    const currentAllowance1 = (await token1Actor.icrc2_allowance(allowanceCheck1)).allowance;
-  
-    if (currentAllowance0 < amount0) {
-      const approve0 = await token0Actor.icrc2_approve({
-        spender: { owner: Principal.fromText(spenderId), subaccount: [] },
-        amount: amount0,
-        fee: [],
-        memo: [],
-        from_subaccount: [],
-        created_at_time: [],
-        expires_at: [],
-        expected_allowance: [],
-      });
-  
-      if ("Err" in approve0) throw new Error("Token0 approval failed: " + JSON.stringify(approve0.Err));
-    }
+        const currentAllowance0 = (await token0Actor.icrc2_allowance(allowanceCheck0)).allowance;
+        const currentAllowance1 = (await token1Actor.icrc2_allowance(allowanceCheck1)).allowance;
 
-    if (currentAllowance1 < amount1) {
-      const approve1 = await token1Actor.icrc2_approve({
-        spender: { owner: Principal.fromText(spenderId), subaccount: [] },
-        amount: amount1,
-        fee: [],
-        memo: [],
-        from_subaccount: [],
-        created_at_time: [],
-        expires_at: [],
-        expected_allowance: [],
-      });
-  
-      if ("Err" in approve1) throw new Error("Token1 approval failed: " + JSON.stringify(approve1.Err));
-    }
-    
-    const args = {
-        token_0: token0.canister_id.toText(),
-        token_1: token1.canister_id.toText(),
-        amount_0: parseAmount(values.amountToken0, token0.decimals),
-        tx_id_0: [],
-        amount_1: parseAmount(values.amountToken1, token1.decimals),
-        tx_id_1: [],
-        lp_fee_bps: [],
-      };
-    
+        if (currentAllowance0 < amount0) {
+          const approve0 = await token0Actor.icrc2_approve({
+            spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+            amount: amount0,
+            fee: [],
+            memo: [],
+            from_subaccount: [],
+            created_at_time: [],
+            expires_at: [],
+            expected_allowance: [],
+          });
+
+          if ("Err" in approve0) throw new Error("Token0 approval failed: " + JSON.stringify(approve0.Err));
+        }
+
+        if (currentAllowance1 < amount1) {
+          const approve1 = await token1Actor.icrc2_approve({
+            spender: { owner: Principal.fromText(spenderId), subaccount: [] },
+            amount: amount1,
+            fee: [],
+            memo: [],
+            from_subaccount: [],
+            created_at_time: [],
+            expires_at: [],
+            expected_allowance: [],
+          });
+
+          if ("Err" in approve1) throw new Error("Token1 approval failed: " + JSON.stringify(approve1.Err));
+        }
+
+        const args = {
+          token_0: token0.canister_id.toText(),
+          token_1: token1.canister_id.toText(),
+          amount_0: parseAmount(values.amountToken0, token0.decimals),
+          tx_id_0: [],
+          amount_1: parseAmount(values.amountToken1, token1.decimals),
+          tx_id_1: [],
+          lp_fee_bps: [],
+        };
+
         const result = await mercx_Actor.add_pool(args);
         console.log("Result:", result);
         setShowSuccessModal(true);
@@ -150,7 +148,7 @@ export default function CreatePool() {
             token0.canister_id.toText(),
             token1.canister_id.toText()
           );
-  
+
           if (exists) {
             setPoolExists(exists);
             // Try both symbol combinations since order matters
@@ -164,7 +162,7 @@ export default function CreatePool() {
             } catch (err) {
               console.warn("Pool lookup failed:", err);
             }
-  
+
             if (pool && "Ok" in pool) {
               const data = pool.Ok;
               setPoolStats({
@@ -195,32 +193,32 @@ export default function CreatePool() {
     } else {
       setPoolStats(null);
     }
-  }, [token0, token1,isCreating]);
-  
+  }, [token0, token1, isCreating]);
+
   //URL
   useEffect(() => {
     if (tokens.length > 0) {
       const t0 = searchParams.get("token0");
       const t1 = searchParams.get("token1");
-  
+
       const foundToken0 = tokens.find((t) => t.symbol === t0);
       const foundToken1 = tokens.find((t) => t.symbol === t1);
-  
+
       if (foundToken0) setToken0(foundToken0);
       if (foundToken1) setToken1(foundToken1);
     }
   }, [tokens]);
 
   // 👉 NEW useEffect to keep URL updated when token0/token1 change
-useEffect(() => {
-  if (token0 && token1) {
-    setSearchParams({
-      token0: token0.symbol,
-      token1: token1.symbol,
-    });
-  }
-}, [token0, token1, setSearchParams]);
-  
+  useEffect(() => {
+    if (token0 && token1) {
+      setSearchParams({
+        token0: token0.symbol,
+        token1: token1.symbol,
+      });
+    }
+  }, [token0, token1, setSearchParams]);
+
   useEffect(() => {
     const price = parseFloat(formik.values.initialPrice);
     const val0 = parseFloat(formik.values.amountToken0);
@@ -251,7 +249,7 @@ useEffect(() => {
   }, [mercx_Actor]);
 
 
-  
+
   const handleTokenSelect = (token) => {
     if (
       (selectingFor === "token0" && token1 && token.canister_id.toText() === token1.canister_id.toText()) ||
@@ -276,122 +274,121 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f0f23] px-4 py-8">
-    <div className="w-full max-w-6xl"> {/* Increased max width */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left Column - Form */}
-        <div className="w-full lg:w-2/3 bg-[#1a1a2e] p-6 rounded-xl shadow-xl space-y-6">
-        {/* Pool header */}
-        <h2 className="text-white text-xl font-semibold">{poolHeader}</h2>
-        {!poolExists && token0 && token1 && (
-          <div className="text-yellow-400 bg-yellow-900/20 p-3 rounded-md text-sm">
-            🚀 New Pool — You are the first to create this pair. Set its initial ratio.
-          </div>
-        )}
-  {formError && (
+      <div className="w-full max-w-6xl"> {/* Increased max width */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Column - Form */}
+          <div className="w-full lg:w-2/3 bg-[#1a1a2e] p-6 rounded-xl shadow-xl space-y-6">
+            {/* Pool header */}
+            <h2 className="text-white text-xl font-semibold">{poolHeader}</h2>
+            {!poolExists && token0 && token1 && (
+              <div className="text-yellow-400 bg-yellow-900/20 p-3 rounded-md text-sm">
+                🚀 New Pool — You are the first to create this pair. Set its initial ratio.
+              </div>
+            )}
+            {formError && (
               <div className="mt-3 bg-red-800/20 border border-red-600 text-red-400 text-sm rounded-lg p-3">
                 {formError}
               </div>
             )}
-        {/* Token Select */}
-        <div className="flex gap-4">
-          <button
-            onClick={() => { setOpenTokenSelect(true); setSelectingFor("token0"); }}
-            className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
-          >
-            {token0 ? `${token0.name}` : "Select Token 0"}
-          </button>
-          <button
-            onClick={() => { setOpenTokenSelect(true); setSelectingFor("token1"); }}
-            className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
-          >
-            {token1 ? `${token1.name}` : "Select Token 1"}
-          </button>
-        </div>
-
-        <form onSubmit={formik.handleSubmit} className="space-y-4">
-          {/* Set Initial Price */}
-          {!poolExists &&  (
-            <div>
-              <label className="text-sm text-gray-300">Initial Price</label>
-              <input
-                type="number"
-                // value={initialPrice}
-                // onChange={(e) => setInitialPrice(e.target.value)}
-                name="initialPrice"
-                value={formik.values.initialPrice}
-                onChange={formik.handleChange}
-                placeholder="Enter initial price"
-                className="w-full p-3 bg-gray-800 text-white rounded-lg"
-              />
-              <p className="text-red-400 text-xs">{formik.errors.initialPrice}</p>
-
+            {/* Token Select */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => { setOpenTokenSelect(true); setSelectingFor("token0"); }}
+                className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
+              >
+                {token0 ? `${token0.name}` : "Select Token 0"}
+              </button>
+              <button
+                onClick={() => { setOpenTokenSelect(true); setSelectingFor("token1"); }}
+                className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
+              >
+                {token1 ? `${token1.name}` : "Select Token 1"}
+              </button>
             </div>
-          )}
 
-          {/* Amounts */}
-          
-        <div className="w-full border border-gray-700 bg-[#1a1a2e] rounded-xl p-6 space-y-6">
-        <h4 className="text-white text-base font-semibold mb-2">Token Amounts</h4>
+            <form onSubmit={formik.handleSubmit} className="space-y-4">
+              {/* Set Initial Price */}
+              {!poolExists && (
+                <div>
+                  <label className="text-sm text-gray-300">Initial Price</label>
+                  <input
+                    type="number"
+                    // value={initialPrice}
+                    // onChange={(e) => setInitialPrice(e.target.value)}
+                    name="initialPrice"
+                    value={formik.values.initialPrice}
+                    onChange={formik.handleChange}
+                    placeholder="Enter initial price"
+                    className="w-full p-3 bg-gray-800 text-white rounded-lg"
+                  />
+                  <p className="text-red-400 text-xs">{formik.errors.initialPrice}</p>
 
-          <div>
-            <label className="text-sm text-gray-300 ">Amount of {token0?.name || "Token 0"}</label>
-            <input
-              type="text"
-              name="amountToken0"
-              value={formik.values.amountToken0}
-              onChange={(e) => {
-                formik.handleChange(e);
-                formik.setTouched({ amountToken0: true });
-              }}
-              placeholder="0"
-              className="w-full p-3 bg-gray-800 text-white rounded-lg"
-            />
-            <p className="text-red-400 text-xs">{formik.errors.amountToken0}</p>
+                </div>
+              )}
 
+              {/* Amounts */}
+
+              <div className="w-full border border-gray-700 bg-[#1a1a2e] rounded-xl p-6 space-y-6">
+                <h4 className="text-white text-base font-semibold mb-2">Token Amounts</h4>
+
+                <div>
+                  <label className="text-sm text-gray-300 ">Amount of {token0?.name || "Token 0"}</label>
+                  <input
+                    type="text"
+                    name="amountToken0"
+                    value={formik.values.amountToken0}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      formik.setTouched({ amountToken0: true });
+                    }}
+                    placeholder="0"
+                    className="w-full p-3 bg-gray-800 text-white rounded-lg"
+                  />
+                  <p className="text-red-400 text-xs">{formik.errors.amountToken0}</p>
+
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-300 ">Amount of {token1?.name || "Token 1"}</label>
+                  <input
+                    type="text"
+                    name="amountToken1"
+                    value={formik.values.amountToken1}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      formik.setTouched({ amountToken1: true });
+                    }}
+                    placeholder="0"
+                    className="w-full p-3 bg-gray-700 text-white rounded-lg"
+                  />
+                  <p className="text-red-400 text-xs">{formik.errors.amountToken1}</p>
+
+                </div>
+              </div>
+
+
+              {/* Create Pool */}
+              <button
+                type="submit"
+                disabled={!isAuthenticated || isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
+                  !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
+                  !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
+                  (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
+                className={`w-full font-bold py-3 rounded-lg ${isCreating
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600 text-black"
+                  }`}
+              >
+                {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
+              </button>
+
+            </form>
           </div>
-
-          <div>
-            <label className="text-sm text-gray-300 ">Amount of {token1?.name || "Token 1"}</label>
-            <input
-              type="text"
-              name="amountToken1"
-              value={formik.values.amountToken1}
-              onChange={(e) => {
-                formik.handleChange(e);
-                formik.setTouched({ amountToken1: true });
-              }}
-              placeholder="0"
-              className="w-full p-3 bg-gray-700 text-white rounded-lg"
-            />
-            <p className="text-red-400 text-xs">{formik.errors.amountToken1}</p>
-
+          {/* Right Column - Pool Info */}
+          <div className="w-full lg:w-1/3">
+            <PoolInfo token0={token0} token1={token1} poolStats={poolStats} />
           </div>
-          </div>
-
-
-          {/* Create Pool */}
-          <button
-            type="submit"
-            disabled={!isAuthenticated || isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
-              !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
-              !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
-              (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
-              className={`w-full font-bold py-3 rounded-lg ${
-                isCreating
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-green-500 hover:bg-green-600 text-black"
-              }`}
-          >
-  {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
-  </button>
-    
-        </form>
         </div>
-       {/* Right Column - Pool Info */}
-       <div className="w-full lg:w-1/3">
-          <PoolInfo token0={token0} token1={token1} poolStats={poolStats} />
-        </div>
-      </div>
 
 
         {/* Token Selection Modal */}
@@ -439,9 +436,9 @@ useEffect(() => {
           }}
 
         />
-<SuccessModal isVisible={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
+        <SuccessModal isVisible={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
 
       </div>
-      </div>
+    </div>
   );
 }
