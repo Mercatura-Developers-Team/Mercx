@@ -352,9 +352,7 @@ export default function CreatePool() {
                     className="w-full p-3 bg-gray-800 text-white rounded-lg"
                   />
                   <p className="text-red-400 text-xs">{formik.errors.amountToken0}</p>
-
                 </div>
-
                 <div>
                   <label className="text-sm text-gray-300 ">Amount of {token1?.name || "Token 1"}</label>
                   <input
@@ -369,7 +367,6 @@ export default function CreatePool() {
                     className="w-full p-3 bg-gray-700 text-white rounded-lg"
                   />
                   <p className="text-red-400 text-xs">{formik.errors.amountToken1}</p>
-
                 </div>
               </div>
 
@@ -382,8 +379,8 @@ export default function CreatePool() {
                   !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
                   (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
                 className={`w-full font-bold py-3 rounded-lg ${isCreating
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-green-500 hover:bg-green-600 text-black"
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600 text-black"
                   }`}
               >
                 {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}

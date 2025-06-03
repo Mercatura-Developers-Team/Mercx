@@ -3,7 +3,7 @@ use crate::ic::id::caller_id;
 use crate::ic::transfer::icrc1_transfer;
 use crate::ic::transfer::icrc2_transfer_from;
 use crate::ic::verify_transfer::verify_transfer;
-use crate::pool::add_pool_reply::{to_add_pool_reply_failed, AddPoolReply,to_add_pool_reply};
+use crate::pool::add_pool_reply::{to_add_pool_reply, to_add_pool_reply_failed, AddPoolReply};
 //use crate::transfers::transfer_reply_helpers::to_transfer_ids;
 use crate::pool::handlers;
 use crate::stable_mercx_settings::mercx_settings_map;
@@ -76,9 +76,7 @@ async fn process_add_pool(
                 ts,
             )
             .await
-           
         }
-         
     };
 
     let transfer_1 = match tx_id_1 {
@@ -103,8 +101,8 @@ async fn process_add_pool(
         }
     };
 
-      // both transfers must be successful
-      if transfer_0.is_err() || transfer_1.is_err() {
+    // both transfers must be successful
+    if transfer_0.is_err() || transfer_1.is_err() {
         return_tokens(
             &caller_id,
             &transfer_0,
@@ -146,20 +144,27 @@ async fn process_add_pool(
                 ts,
             )
             .await;
-        return Ok(to_add_pool_reply_failed(       
-             &token_0.canister_id().expect("Missing canister_id").to_string(),
-        &token_0.symbol(),
-        &token_1.canister_id().expect("Missing canister_id").to_string(),
-        &token_1.symbol(),
-        &transfer_ids));
-            },
+            return Ok(to_add_pool_reply_failed(
+                &token_0
+                    .canister_id()
+                    .expect("Missing canister_id")
+                    .to_string(),
+                &token_0.symbol(),
+                &token_1
+                    .canister_id()
+                    .expect("Missing canister_id")
+                    .to_string(),
+                &token_1.symbol(),
+                &transfer_ids,
+            ));
+        }
     };
 
     // update pool with new balances
     update_liquidity_pool(&pool, amount_0, amount_1);
 
     // TODO: Return actual AddPoolReply here, depending on your logic
-    Ok(to_add_pool_reply(   &pool, token_0, token_1,&transfer_ids))
+    Ok(to_add_pool_reply(&pool, token_0, token_1, &transfer_ids))
 }
 
 //update balance
@@ -214,7 +219,6 @@ async fn check_arguments(
             mercx_fee_bps
         ))?
     }
-
     // check tx_id_0 and tx_id_1 are valid block index Nat
     let tx_id_0 = match &args.tx_id_0 {
         Some(tx_id_0) => match tx_id_0 {
@@ -230,8 +234,7 @@ async fn check_arguments(
         },
         None => None,
     };
-
-    // // make sure token_1 is ckUSDT or ICP
+     // // make sure token_1 is ckUSDT or ICP
     // let token_1 = match args.token_1.as_str() {
     //     token if is_ckusdt(token) => token_map::get_ckusdt()?,
     //     token if is_icp(token) => token_map::get_icp()?,
@@ -241,7 +244,6 @@ async fn check_arguments(
     //         kong_settings_map::get().icp_symbol
     //     ))?,
     // };
-
     // token_0, check if it exists already or needs to be added
     // leave token_0 check latest as possible as token will be added to the system
     let token_0 = match get_by_token(&args.token_0) {
@@ -322,7 +324,6 @@ pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
     result
 }
 
-
 async fn transfer_from_token(
     from_principal_id: &Account,
     token: &StableToken,
@@ -345,7 +346,7 @@ async fn transfer_from_token(
                 ts,
             });
             transfer_ids.push(transfer_id);
-ic_cdk::println!("💬 Transfer_0 result: {:?}", transfer_ids);
+            ic_cdk::println!("💬 Transfer_0 result: {:?}", transfer_ids);
 
             Ok(())
         }
@@ -440,7 +441,7 @@ async fn return_token(
             // claim
 
             //  let err_msg = format!(" Failed to return tokens back to user: {}", e);
-           //   Err("");
+            //   Err("");
         }
     }
 }
