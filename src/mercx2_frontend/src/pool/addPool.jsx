@@ -7,6 +7,8 @@ import * as Yup from "yup";
 import PoolInfo from "./PoolInfo";
 import { useSearchParams } from "react-router-dom";
 import SuccessModal from "./SuccessModel"; // update path if needed
+import { parseAmount, normalizeAmount } from "./tokenUtils";
+import TokenSelector from "./TokenSelector";
 
 export default function CreatePool() {
   const { mercx_Actor } = useAuth();
@@ -24,19 +26,10 @@ export default function CreatePool() {
   const { createTokenActor, principal, isAuthenticated } = useAuth();
   const [formError, setFormError] = useState("");
 
-
-  function parseAmount(amountStr, decimals) {
-    if (typeof amountStr !== "string") amountStr = String(amountStr);
-    const [whole, fraction = ""] = amountStr.split(".");
-    const full = whole + fraction.padEnd(decimals, "0");
-    return BigInt(full);
-  }
-
-  function normalizeAmount(amount, decimals) {
-    return Number(amount) / 10 ** decimals;
-  }
-
-
+  
+ 
+  
+  
   const formik = useFormik({
     initialValues: {
       initialPrice: "",
@@ -395,51 +388,21 @@ export default function CreatePool() {
         </div>
 
 
-
         {/* Token Selection Modal */}
         {openTokenSelect && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#1a1a2e] p-6 rounded-lg space-y-4 w-80">
-              <h2 className="text-white text-lg ">Select a Token</h2>
-              {tokens.map((token) => {
-                const isDisabled =
-                  (selectingFor === "token0" && token1 && token.canister_id.toText() === token1.canister_id.toText()) ||
-                  (selectingFor === "token1" && token0 && token.canister_id.toText() === token0.canister_id.toText());
-
-                return (
-                  <button
-                    key={token.canister_id.toText()}
-                    onClick={() => handleTokenSelect(token)}
-                    disabled={isDisabled}
-                    className={`block w-full p-3 rounded-lg mb-2 ${isDisabled
-                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                      : "bg-gray-700 text-white hover:bg-gray-600"
-                      }`}
-                  >
-                    {token.symbol || token.name}
-                  </button>
-                );
-              })}
-
-              <button
-                onClick={() => {
-                  setShowImportModal(true);
-                  setOpenTokenSelect(false);
-                }}
-                className="w-full p-3 bg-blue-500 text-white rounded-lg "
-              >
-                + Import Token
-              </button>
-
-              <button
-                onClick={() => setOpenTokenSelect(false)}
-                className="w-full p-3 bg-red-500 text-white rounded-lg "
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
+  <TokenSelector
+    tokens={tokens}
+    selectingFor={selectingFor}
+    token0={token0}
+    token1={token1}
+    onSelect={handleTokenSelect}
+    onImport={() => {
+      setShowImportModal(true);
+      setOpenTokenSelect(false);
+    }}
+    onCancel={() => setOpenTokenSelect(false)}
+  />
+)}
         <ImportTokenModal
           isOpen={showImportModal}
           onClose={() => setShowImportModal(false)}

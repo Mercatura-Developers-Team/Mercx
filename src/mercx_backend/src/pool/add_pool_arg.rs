@@ -131,7 +131,7 @@ async fn process_add_pool(
         0, // ← TEMP: You must pass a valid `lp_token_id` here!
     ) {
         Ok(pool) => pool,
-        Err(e) => {
+        Err(_) => {
             return_tokens(
                 &caller_id,
                 &transfer_0,
@@ -324,7 +324,8 @@ pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
     result
 }
 
-async fn transfer_from_token(
+
+pub async fn transfer_from_token(
     from_principal_id: &Account,
     token: &StableToken,
     amount: &Nat,
@@ -387,7 +388,7 @@ async fn verify_transfer_token(
     }
 }
 
-async fn return_tokens(
+ async fn return_tokens(
     to_principal_id: &Account,
     transfer_from_token_0: &Result<(), String>,
     token_0: &StableToken,
@@ -416,7 +417,7 @@ async fn return_tokens(
     // );
 }
 
-async fn return_token(
+ pub async fn return_token(
     to_principal_id: &Account,
     token: &StableToken,
     amount: &Nat,

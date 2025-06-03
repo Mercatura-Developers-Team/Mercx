@@ -76,3 +76,21 @@ pub fn nat_to_decimal_precision(n: &Nat, from_decimal_precision: u8, to_decimal_
         }
     }
 }
+
+pub fn nat_divide(numerator: &Nat, denominator: &Nat) -> Option<Nat> {
+    if nat_is_zero(numerator) {
+        return Some(nat_zero());
+    }
+    if nat_is_zero(denominator) {
+        None?
+    }
+    Some(numerator.clone() / denominator.clone())
+}
+
+pub fn nat_multiply(n1: &Nat, n2: &Nat) -> Nat {
+    n1.clone() * n2.clone()
+}
+
+pub fn nat_sqrt(n: &Nat) -> Nat {
+    Nat::from(n.0.sqrt())
+}
