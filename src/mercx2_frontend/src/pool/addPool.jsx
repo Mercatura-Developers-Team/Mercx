@@ -25,7 +25,7 @@ export default function CreatePool() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { createTokenActor, principal, isAuthenticated } = useAuth();
   const [formError, setFormError] = useState("");
-
+  const [lastEditedField, setLastEditedField] = useState(null); // 'amountToken0' or 'amountToken1'
   
  
   
@@ -115,6 +115,40 @@ export default function CreatePool() {
           if ("Err" in approve1) throw new Error("Token1 approval failed: " + JSON.stringify(approve1.Err));
         }
 
+        if (poolExists) {
+          let addResult;
+          try {
+           addResult = await mercx_Actor.add_liquidity_transfer_from({
+            token_0: token0.symbol,
+            token_1:  token1.symbol,
+            amount_0: parseAmount(values.amountToken0, token0.decimals),
+            tx_id_0: [],
+            amount_1: parseAmount(values.amountToken1, token1.decimals),
+            tx_id_1: [],
+          });
+          console.log("Add Liquidity Result:", addResult);
+
+          if ("Err" in addResult) {
+            // Try reverse order if first attempt fails
+            addResult = await mercx_Actor.add_liquidity_transfer_from({
+              token_0: token1.symbol,
+              token_1: token0.symbol,
+              amount_0: parseAmount(values.amountToken1, token1.decimals), // Note the swap
+              tx_id_0: [],
+              amount_1: parseAmount(values.amountToken0, token0.decimals), // Note the swap
+              tx_id_1: [],
+            });
+          }
+   
+        }
+        catch (err) {
+          console.error("Add liquidity failed:", err);
+          setFormError(err.message || "Failed to add liquidity. Please try again.");
+        } }
+
+        else {
+
+        
         const args = {
           token_0: token0.canister_id.toText(),
           token_1: token1.canister_id.toText(),
@@ -128,9 +162,11 @@ export default function CreatePool() {
         const result = await mercx_Actor.add_pool(args);
         console.log("Result:", result);
         setShowSuccessModal(true);
+      }
       } catch (err) {
         console.error(" Pool creation failed:", err);
         setFormError(err.message || "Something went wrong. Please try again.");
+      
       } finally {
         setIsCreating(false);
       }
@@ -165,10 +201,17 @@ export default function CreatePool() {
 
             if (pool && "Ok" in pool) {
               const data = pool.Ok;
+              let balForToken0 = data.balance_0;
+              let balForToken1 = data.balance_1;
+              if (data.token_id_0 !== token0.token_id) {
+                // UI order is opposite to canister order ➜ swap
+                balForToken0 = data.balance_1;
+                balForToken1 = data.balance_0;
+              }
               setPoolStats({
                 poolId: data.pool_id,
-                token0Balance: normalizeAmount(data.balance_0, token0.decimals),
-                token1Balance: normalizeAmount(data.balance_1, token1.decimals),
+                token0Balance: normalizeAmount(balForToken0, token0.decimals),
+                token1Balance: normalizeAmount(balForToken1, token1.decimals),
                 tvl: Number(data.amount_0) + Number(data.amount_1),
               });
             } else {
@@ -195,6 +238,52 @@ export default function CreatePool() {
     }
   }, [token0, token1, isCreating]);
 
+  useEffect(() => {
+  if (!token0 || !token1 || !poolExists || !lastEditedField || !mercx_Actor) return;
+
+  const calculateAmounts = async () => {
+    try {
+      const amount = lastEditedField === 'amountToken0' 
+        ? formik.values.amountToken0 
+        : formik.values.amountToken1;
+
+      if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) return;
+
+      const parsedAmount = parseAmount(amount, 
+        lastEditedField === 'amountToken0' ? token0.decimals : token1.decimals);
+
+      // Call the function with the correct parameters based on which field was edited
+      const result = await mercx_Actor.add_liquidity_amounts(
+        lastEditedField === 'amountToken0' ? token0.symbol : token1.symbol,
+        parsedAmount,
+        lastEditedField === 'amountToken0' ? token1.symbol : token0.symbol
+      );
+
+      if ("Ok" in result) {
+        const reply = result.Ok;
+        if (lastEditedField === 'amountToken0') {
+          formik.setFieldValue(
+            'amountToken1',
+            normalizeAmount(reply.amount_1, token1.decimals)
+          );
+        } else {
+          formik.setFieldValue(
+            'amountToken0',
+            normalizeAmount(reply.amount_0, token0.decimals)
+          );
+        }
+      } else {
+        console.error("Calculation failed:", result.Err);
+      }
+    } catch (err) {
+      console.error("Failed to calculate amounts:", err);
+    }
+  };
+
+  const debounceTimer = setTimeout(calculateAmounts, 500);
+  return () => clearTimeout(debounceTimer);
+}, [formik.values.amountToken0, formik.values.amountToken1, lastEditedField, token0, token1, poolExists]);
+
   //URL
   useEffect(() => {
     if (tokens.length > 0) {
@@ -220,18 +309,20 @@ export default function CreatePool() {
   }, [token0, token1, setSearchParams]);
 
   useEffect(() => {
+    if (poolExists) return; // Skip for existing pools
+  
     const price = parseFloat(formik.values.initialPrice);
     const val0 = parseFloat(formik.values.amountToken0);
     const val1 = parseFloat(formik.values.amountToken1);
-
+  
     if (!price || price <= 0) return;
-
-    if (formik.touched.amountToken0 && !isNaN(val0)) {
-      formik.setFieldValue("amountToken1", (val0 * price));
-    } else if (formik.touched.amountToken1 && !isNaN(val1)) {
-      formik.setFieldValue("amountToken0", (val1 / price));
+  
+    if (lastEditedField === 'amountToken0' && !isNaN(val0)) {
+      formik.setFieldValue("amountToken1", (val0 * price).toFixed(token1?.decimals || 8));
+    } else if (lastEditedField === 'amountToken1' && !isNaN(val1)) {
+      formik.setFieldValue("amountToken0", (val1 / price).toFixed(token0?.decimals || 8));
     }
-  }, [formik.values.initialPrice, formik.values.amountToken0, formik.values.amountToken1]);
+  }, [formik.values.initialPrice, formik.values.amountToken0, formik.values.amountToken1, lastEditedField, poolExists]);
 
 
   useEffect(() => {
@@ -340,6 +431,7 @@ export default function CreatePool() {
                     onChange={(e) => {
                       formik.handleChange(e);
                       formik.setTouched({ amountToken0: true });
+                      setLastEditedField('amountToken0');
                     }}
                     placeholder="0"
                     className="w-full p-3 bg-gray-800 text-white rounded-lg"
@@ -357,6 +449,7 @@ export default function CreatePool() {
                     onChange={(e) => {
                       formik.handleChange(e);
                       formik.setTouched({ amountToken1: true });
+                      setLastEditedField('amountToken1');
                     }}
                     placeholder="0"
                     className="w-full p-3 bg-gray-700 text-white rounded-lg"

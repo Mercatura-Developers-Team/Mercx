@@ -45,11 +45,14 @@ pub fn get_by_token_ids(token_id_0: u32, token_id_1: u32) -> Option<StablePool> 
     })
 }
 
+#[ic_cdk::query]
+pub fn get_by_tokens(token_0:String, token_1: String) -> Result<StablePool, String> {
+    let token_0: StableToken = handlers::get_by_token(&token_0)?;
+    let token_1 = handlers::get_by_token(&token_1)?;
+ 
 
-pub fn get_by_tokens(token_0:&str, token_1: &str) -> Result<StablePool, String> {
-    let token_0: StableToken = handlers::get_by_symbol(&token_0)?;
-    let token_1 = handlers::get_by_symbol(&token_1)?;
-    get_by_token_ids(token_0.token_id(), token_1.token_id()).ok_or_else(|| format!("Pool {} not found", symbol(&token_0, &token_1)))
+         get_by_token_ids(token_0.token_id(), token_1.token_id()).ok_or_else(|| format!("Pool {} not found", symbol(&token_0, &token_1)))
+
 }
 
 

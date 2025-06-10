@@ -362,7 +362,7 @@ async fn verify_transfer_token(
     ts: u64,
 ) -> Result<(), String> {
     let token_id = token.token_id();
-
+//don’t verify when using approve + transfer_from
     match verify_transfer(token, tx_id, amount).await {
         Ok(_) => {
             // insert_transfer() will use the latest state of TRANSFER_MAP so no reentrancy issues after verify_transfer()
@@ -415,6 +415,7 @@ async fn verify_transfer_token(
     // );
 }
 
+
  pub async fn return_token(
     to_principal_id: &Account,
     token: &StableToken,
@@ -444,3 +445,4 @@ async fn verify_transfer_token(
         }
     }
 }
+
