@@ -1,7 +1,11 @@
 import React from 'react';
 
-const SuccessModal = ({ isVisible, onClose }) => {
+const SuccessModal = ({ isVisible, action = "create" , onClose }) => {
     if (!isVisible) return null;
+    const headline =
+    action === "create"
+      ? "Pool created successfully."
+      : "Liquidity added successfully.";
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -23,7 +27,7 @@ const SuccessModal = ({ isVisible, onClose }) => {
                         </svg>
                         <span className="sr-only">Success</span>
                     </div>
-                    <p className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Pool created successfully.</p>
+                    <p className="mb-4 text-lg font-semibold text-gray-900 dark:text-white"> {headline}</p>
                     <button
                         type="button"
                         className="py-2 px-3 text-sm font-medium text-center text-white rounded-lg bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-900"

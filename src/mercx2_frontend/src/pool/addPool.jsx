@@ -22,6 +22,7 @@ export default function CreatePool() {
   const [selectingFor, setSelectingFor] = useState(null); // "token0" or "token1"
   const [showImportModal, setShowImportModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successAction, setSuccessAction] = useState("create");
   const [searchParams, setSearchParams] = useSearchParams();
   const { createTokenActor, principal, isAuthenticated } = useAuth();
   const [formError, setFormError] = useState("");
@@ -139,7 +140,8 @@ export default function CreatePool() {
               tx_id_1: [],
             });
           }
-   
+          setShowSuccessModal(true);
+          setSuccessAction("add");
         }
         catch (err) {
           console.error("Add liquidity failed:", err);
@@ -162,6 +164,7 @@ export default function CreatePool() {
         const result = await mercx_Actor.add_pool(args);
         console.log("Result:", result);
         setShowSuccessModal(true);
+        setSuccessAction("create");
       }
       } catch (err) {
         console.error(" Pool creation failed:", err);
@@ -468,8 +471,8 @@ export default function CreatePool() {
                   !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
                   (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
                 className={`w-full font-bold py-3 rounded-lg ${isCreating
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-green-500 hover:bg-green-600 text-black"
+ ? "bg-gray-500 cursor-not-allowed "
+      : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white"
                   }`}
               >
                 {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
@@ -529,7 +532,7 @@ export default function CreatePool() {
           }}
 
         />
-        <SuccessModal isVisible={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
+        <SuccessModal isVisible={showSuccessModal}  action={successAction} onClose={() => setShowSuccessModal(false)} />
 
       </div>
     </div>
