@@ -16,7 +16,8 @@ pub mod swap;
 pub mod transfers;
 
 pub mod add_liquidity;
-
+use crate::add_liquidity::add_liquidity_args::AddLiquidityArgs;
+use crate::add_liquidity::add_liquidity_reply::AddLiquidityReply;
 pub mod stable_mercx_settings;
 pub mod helpers;
 use candid::Principal;

@@ -16,6 +16,9 @@ use crate::token::handlers::exists_by_canister_id;
 use crate::StablePool;
 use icrc_ledger_types::icrc1::account::Account;
 
+
+
+#[ic_cdk::update]
 pub async fn add_liquidity_transfer_from(
     args: AddLiquidityArgs,
 ) -> Result<AddLiquidityReply, String> {
