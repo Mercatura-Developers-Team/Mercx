@@ -177,6 +177,7 @@ service : {
   get_icp_rate : () -> (Result_8);
   get_logo_url : (principal) -> (text);
   get_name : (principal) -> (Result_5) query;
+  get_pool_price : (text, text) -> (Result_8) query;
   get_transactions : (nat, nat) -> (Result_9);
   get_whitelisted_principals : () -> (vec text) query;
   is_whitelisted : (principal) -> (bool) query;

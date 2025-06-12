@@ -100,6 +100,17 @@ fn get_all_pools() -> Vec<AddPoolReply> {
 }
 
 
+#[ic_cdk::query]
+fn get_pool_price(token_0: String, token_1: String) -> Result<f64, String> {
+    if let Ok(pool) = get_by_tokens(token_0.clone(), token_1.clone())
+        .or_else(|_| get_by_tokens(token_1, token_0))
+    {
+        pool.get_price_as_f64().ok_or("Price unavailable".to_string())
+    } else {
+        Err("Pool not found".to_string())
+    }
+}
+
 
 #[ic_cdk::update]
 fn delete_pool(pool_id: u32) -> Result<String, String> {

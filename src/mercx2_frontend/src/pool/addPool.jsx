@@ -486,13 +486,8 @@ const calculateAmounts = async () => {
                   !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
                   (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
                 className={`w-full font-bold py-3 rounded-lg ${isCreating
-<<<<<<< HEAD
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-green-500 hover:bg-green-600 text-black"
-=======
  ? "bg-gray-500 cursor-not-allowed "
       : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white"
->>>>>>> fa7de856452cf7a88dde7ed3a135d12368653534
                   }`}
               >
                 {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}

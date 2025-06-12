@@ -28,6 +28,7 @@
   "dependencies": {
     "@dfinity/auth-client": "^2.2.0",
     "@headlessui/react": "^2.2.0",
+    "@tanstack/react-query": "^5.80.7",
     "formik": "^2.4.6",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",

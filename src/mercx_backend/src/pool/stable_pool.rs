@@ -98,6 +98,8 @@ impl StablePool {
         Some(BigRational::new(reserve_1, reserve_0))
     }
 
+
+    //#[ic_cdk::query]
     pub fn get_price_as_f64(&self) -> Option<f64> {
         price_rounded(&self.get_price()?)
     }
