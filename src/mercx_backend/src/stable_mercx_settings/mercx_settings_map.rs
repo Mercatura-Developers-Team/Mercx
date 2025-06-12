@@ -48,6 +48,19 @@ pub fn reset_token_map_idx() {
     });
 } 
 
+pub fn reset_pool_map_idx() {
+    MERCX_SETTINGS.with(|s| {
+        let mut map = s.borrow_mut();
+      
+        let current_settings = map.get();
+        let new_settings = StableMercxSettings {
+            pool_map_idx: 0,
+            ..current_settings.clone()
+        };
+        _ = map.set(new_settings);
+    });
+} 
+
 pub fn inc_transfer_map_idx() -> u64 {
     MERCX_SETTINGS.with(|s| {
         let mut map = s.borrow_mut();

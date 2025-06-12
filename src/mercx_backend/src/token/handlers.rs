@@ -75,6 +75,7 @@ pub fn get_by_token(token: &str) -> Result<StableToken, String> {
     ))
 }
 
+#[cfg(not(feature = "prod"))]
 #[ic_cdk::update]
 fn reset_tokens() -> Result<String, String> {
     TOKENS.with(|tokens| {

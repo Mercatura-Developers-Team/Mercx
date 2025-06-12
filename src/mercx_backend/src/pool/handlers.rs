@@ -8,6 +8,7 @@ use crate::token::handlers::get_by_token;
 use crate::transfers::handlers as transfer_handlers;
 use crate::pool::add_pool_reply::to_add_pool_reply;
 use crate::token::handlers::get_by_token_id;
+use crate::stable_mercx_settings::mercx_settings_map::reset_pool_map_idx;
 
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
@@ -112,6 +113,19 @@ fn delete_pool(pool_id: u32) -> Result<String, String> {
             Err(format!("Pool with id {} not found.", pool_id))
         }
     })
+}
+
+//cargo build --release --features prod
+#[cfg(not(feature = "prod"))]
+#[ic_cdk::update]
+fn reset_pools() -> Result<String, String> {
+    POOLS.with(|pools| {
+        pools.borrow_mut().clear_new(); // `clear_new()` btmsh kolo remove law hanmsh haga specific
+    });
+
+    reset_pool_map_idx();
+
+    Ok("✅ Tokens memory cleared".to_string())
 }
 
 //It stores the updated version of a liquidity pool into the global state

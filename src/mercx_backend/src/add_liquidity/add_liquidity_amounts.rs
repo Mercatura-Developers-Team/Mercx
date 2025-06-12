@@ -46,6 +46,12 @@ fn add_liquidity_amounts(token_0: String, amount: Nat, token_1: String) -> Resul
         let numerator_in_token_1_decimals = nat_multiply(&amount_0_in_token_1_decimals, &reserve_1);
         let amount_1 = nat_divide(&numerator_in_token_1_decimals, &reserve_0_in_token_1_decimals).ok_or("Invalid amount_1")?;
 
+        ic_cdk::println!("Reserves: reserve_0 = {}, reserve_1 = {}, lpfee0 = {}", reserve_0, reserve_1,pool.lp_fee_0);
+        ic_cdk::println!("Token_0 decimals = {}, Token_1 decimals = {}", token_0.decimals(), token_1.decimals());
+        
+        ic_cdk::println!("Amount_0 (converted): {}", amount_0_in_token_1_decimals);
+ic_cdk::println!("Expected amount_1: {}", amount_1);
+
         // calculate the amount of LP token user will receive
         // add_lp_token_amount = lp_total_supply * amount_0 / reserve_0
         // let amount_0_in_lp_token_decimals = nat_to_decimal_precision(&amount, token_0.decimals(), lp_token.decimals());
@@ -95,7 +101,7 @@ fn add_liquidity_amounts(token_0: String, amount: Nat, token_1: String) -> Resul
         let reserve_1_in_token_0_decimals = nat_to_decimal_precision(&reserve_1, token_1.decimals(), token_0.decimals());
         let numerator_in_token_0_decimals = nat_multiply(&amount_1_in_token_0_decimals, &reserve_0);
         let amount_0 = nat_divide(&numerator_in_token_0_decimals, &reserve_1_in_token_0_decimals).ok_or("Invalid amount_0")?;
-
+      
         // add_lp_token_amount = lp_total_supply * amount_1 / reserve_1
         // let amount_1_in_lp_token_decimals = nat_to_decimal_precision(&amount, token_1.decimals(), lp_token.decimals());
         // let reserve_1_in_lp_token_decimals = nat_to_decimal_precision(&reserve_1, token_1.decimals(), lp_token.decimals());

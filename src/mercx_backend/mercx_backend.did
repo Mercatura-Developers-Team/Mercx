@@ -182,6 +182,7 @@ service : {
   is_whitelisted : (principal) -> (bool) query;
   pool_exists : (text, text) -> (bool) query;
   remove_from_whitelist : (principal) -> ();
+  reset_pools : () -> (Result_5);
   reset_tokens : () -> (Result_5);
   sell : (nat64, principal, nat64, principal) -> (Result_5);
   send_mercx : (nat64) -> (Result_4);

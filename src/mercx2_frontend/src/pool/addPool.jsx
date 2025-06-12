@@ -116,6 +116,7 @@ export default function CreatePool() {
           if ("Err" in approve1) throw new Error("Token1 approval failed: " + JSON.stringify(approve1.Err));
         }
 
+        
         if (poolExists) {
           let addResult;
           try {
@@ -142,6 +143,8 @@ export default function CreatePool() {
           }
           setShowSuccessModal(true);
           setSuccessAction("add");
+          formik.resetForm();          // ← clears all the form fields
+setLastEditedField(null);    // ← reset which field was edited last
         }
         catch (err) {
           console.error("Add liquidity failed:", err);
@@ -165,6 +168,8 @@ export default function CreatePool() {
         console.log("Result:", result);
         setShowSuccessModal(true);
         setSuccessAction("create");
+        formik.resetForm();          // ← clears all the form fields
+setLastEditedField(null);    // ← reset which field was edited last
       }
       } catch (err) {
         console.error(" Pool creation failed:", err);
@@ -175,6 +180,13 @@ export default function CreatePool() {
       }
     },
   });
+
+  // helper – returns the pair in the order the canister knows
+async function canonicalOrder(symA, symB) {
+  const existsAB = await mercx_Actor.pool_exists(symA, symB);
+  return existsAB ? [symA, symB] : [symB, symA];
+}
+
 
 
   const [poolStats, setPoolStats] = useState(null); //information 
@@ -472,7 +484,7 @@ export default function CreatePool() {
                   (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
                 className={`w-full font-bold py-3 rounded-lg ${isCreating
  ? "bg-gray-500 cursor-not-allowed "
-      : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white"
+      : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white disabled:bg-gray-500 disabled:cursor-not-allowed disabled:hover:from-gray-500"
                   }`}
               >
                 {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
@@ -538,3 +550,4 @@ export default function CreatePool() {
     </div>
   );
 }
+
