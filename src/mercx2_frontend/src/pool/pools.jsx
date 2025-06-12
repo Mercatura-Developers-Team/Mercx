@@ -4,7 +4,7 @@ import { Principal } from "@dfinity/principal";
 import { useNavigate } from 'react-router-dom';
 
 export default function Pools() {
-
+  
   const { mercx_Actor } = useAuth();
   const [pools, setPools] = useState([]);
   const [hoveredRow, setHoveredRow] = useState(null);

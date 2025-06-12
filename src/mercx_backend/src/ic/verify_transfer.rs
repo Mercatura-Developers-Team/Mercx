@@ -15,6 +15,7 @@ const ICP_CANISTER_ID: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai"; // Mainnet ICP Ledg
 /// Verifies a transfer by checking the ledger.
 /// For ICRC3 tokens, it tries ICRC3 methods first, falling back to traditional methods.
 /// For non-ICRC3 tokens, it uses the traditional verification methods.
+/// checks if the transfer happens correctly 
 pub async fn verify_transfer(token: &StableToken, block_id: &Nat, amount: &Nat) -> Result<(), String> {
 
 

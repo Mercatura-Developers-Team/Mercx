@@ -6,7 +6,7 @@ use crate::helpers::math_helpers::{
 
 use crate::add_liquidity::add_liquidity_args::AddLiquidityArgs;
 use crate::add_liquidity::add_liquidity_reply::AddLiquidityReply;
-use crate::add_liquidity::add_liquidity_reply_helpers::to_add_liquidity_reply;
+use crate::add_liquidity::add_liquidity_reply_helpers::{to_add_liquidity_reply,to_add_liquidity_reply_failed};
 use crate::ic::general::get_time;
 use crate::ic::id::caller_id;
 use crate::pool::add_pool_arg::{return_token, transfer_from_token};
@@ -15,17 +15,21 @@ use crate::stable_mercx_settings::mercx_settings_map;
 use crate::token::handlers::exists_by_canister_id;
 use crate::StablePool;
 use icrc_ledger_types::icrc1::account::Account;
-
+use crate::transfers::tx_id::TxId;
+use crate::StableToken;
+use crate::transfers::stable_transfer::StableTransfer;
+use crate::ic::verify_transfer::verify_transfer;
+use crate::transfers::handlers::{insert,exist};
 
 
 #[ic_cdk::update]
 pub async fn add_liquidity_transfer_from(
     args: AddLiquidityArgs,
 ) -> Result<AddLiquidityReply, String> {
-    let (pool, add_amount_0, add_amount_1) = check_arguments(&args).await?;
+    let (pool, add_amount_0, add_amount_1,token_0, tx_id_0, token_1, tx_id_1) = check_arguments(&args).await?;
     let ts = get_time();
 
-    let result = match process_add_liquidity(&pool, &add_amount_0, &add_amount_1, ts).await {
+    let result = match process_add_liquidity(&pool, &add_amount_0, &add_amount_1,&token_0, tx_id_0.as_ref(), &token_1 ,tx_id_1.as_ref(),ts).await {
         Ok(reply) => Ok(reply),
         Err(e) => Err(e),
     };
@@ -37,67 +41,109 @@ async fn process_add_liquidity(
     pool: &StablePool,
     add_amount_0: &Nat,
     add_amount_1: &Nat,
+    token_0: &StableToken,
+    tx_id_0: Option<&Nat>,
+    token_1: &StableToken,
+    tx_id_1: Option<&Nat>,
     ts: u64,
 ) -> Result<AddLiquidityReply, String> {
     // Token0
-    let token_0 = pool.token_0();
+   // let token_0 = pool.token_0();
     // Token1
-    let token_1 = pool.token_1();
+    //let token_1 = pool.token_1();
 
     let caller_id = caller_id();
     let mercx_backend = mercx_settings_map::get().mercx_backend;
     let mut transfer_ids = Vec::new();
 
-    // transfer_from token_0. if this fails, nothing to return so just return the error
-    transfer_from_token(
-        &caller_id,
-        &token_0,
-        add_amount_0,
-        &mercx_backend,
-        &mut transfer_ids,
-        ts,
-    )
-    .await
-    .map_err(|e| format!("Token_0 transfer_from failed. {}", e))?;
-
-    // transfer_from token_1. if this fails, return token_0 back to user
-    if let Err(e) = transfer_from_token(
-        &caller_id,
-        &token_1,
-        add_amount_1,
-        &mercx_backend,
-        &mut transfer_ids,
-        ts,
-    )
-    .await
-    {
-        return_tokens(
-            &caller_id,
-            pool,
-            Some(add_amount_0),
-            None,
-            &mut transfer_ids,
-            ts,
-        )
-        .await;
-        return Err(format!("Token_1 transfer_from failed. {}", e));
+    let transfer_0 = match tx_id_0 {
+        Some(block_id) => {
+            verify_transfer_token(token_0, block_id, add_amount_0, &mut transfer_ids, ts).await
+        }
+        None => {
+            transfer_from_token(
+                &caller_id,
+                token_0,
+                add_amount_0,
+                &mercx_backend,
+                &mut transfer_ids,
+                ts,
+            )
+            .await
+           
+        }
+         
     };
 
+    let transfer_1 = match tx_id_1 {
+        Some(block_id) => {
+            verify_transfer_token(token_1, block_id, add_amount_1, &mut transfer_ids, ts).await
+        }
+        None => {
+            //  if transfer_token_0 failed, no need to icrc2_transfer_from token_1
+            if transfer_0.is_err() {
+                Err("Token_0 transfer failed".to_string())
+            } else {
+                transfer_from_token(
+                    &caller_id,
+                    token_1,
+                    add_amount_1,
+                    &mercx_backend,
+                    &mut transfer_ids,
+                    ts,
+                )
+                .await
+            }
+        }
+    };
+
+     // both transfers must be successful
+     if transfer_0.is_err() || transfer_1.is_err() {
+        return_tokens(
+            &caller_id,
+    pool,
+            add_amount_0,
+            add_amount_1,
+            &mut transfer_ids,
+            ts,
+            &transfer_0,
+            &transfer_1,    
+        )
+        .await;
+        if transfer_0.is_err() {
+            return Err(format!("failed. {}", transfer_0.unwrap_err()));
+        } else {
+            return Err(format!("failed. {}", transfer_1.unwrap_err()));
+        };
+    }
+
+
     // re-calculate with latest pool state and make sure amounts are valid
-    let (pool, amount_0, amount_1) = match update_liquidity_pool(pool, add_amount_0, add_amount_1) {
+    let (pool, _, _) = match update_liquidity_pool(pool, add_amount_0, add_amount_1) {
         Ok((pool, amount_0, amount_1)) => (pool, amount_0, amount_1),
-        Err(e) => {
+        Err(err) => {
+
+             //"Token with symbol 'by6od-j4aaa-aaaaa-qaadq-cai' not found"
+            ic_cdk::println!("❌ update_liquidity_pool failed: {:?}", err);
             // LP amounts are incorrect. return token_0 and token_1 back to user
             return_tokens(
                 &caller_id,
                 pool,
-                Some(add_amount_0),
-                Some(add_amount_1),
+                add_amount_0,
+                add_amount_1,
                 &mut transfer_ids,
                 ts,
+                &transfer_0,
+                &transfer_1,  
             )
-            .await;
-            return Err(format!("failed. {}", e));
+           .await;
+            return Ok(to_add_liquidity_reply_failed(       
+                pool,
+                &token_0.canister_id().expect("Missing canister_id").to_string(),
+           &token_0.symbol(),
+           &token_1.canister_id().expect("Missing canister_id").to_string(),
+           &token_1.symbol(),
+           &transfer_ids));
         }
     };
 
@@ -109,7 +155,9 @@ async fn process_add_liquidity(
     ))
 }
 
-async fn check_arguments(args: &AddLiquidityArgs) -> Result<(StablePool, Nat, Nat), String> {
+
+async fn check_arguments(args: &AddLiquidityArgs) -> Result<(StablePool, Nat, Nat,StableToken, Option<Nat>,StableToken, Option<Nat>), String> {
+
     if nat_is_zero(&args.amount_0) || nat_is_zero(&args.amount_1) {
         Err("Invalid zero amounts".to_string())?
     }
@@ -142,10 +190,29 @@ async fn check_arguments(args: &AddLiquidityArgs) -> Result<(StablePool, Nat, Na
         Err("Token_1 must support ICRC2".to_string())?
     }
 
+    //new
+    // check tx_id_0 is valid block index Nat
+    let tx_id_0 = match &args.tx_id_0 {
+        Some(TxId::BlockIndex(tx_id)) => Some(tx_id.clone()),
+        _ => None,
+    };
+
+    let tx_id_1 = match &args.tx_id_1 {
+        Some(TxId::BlockIndex(tx_id)) => Some(tx_id.clone()),
+        _ => None,
+    };
+
+    // either tx_id_0 or tx_id_1 must be valid
+    // if tx_id_0.is_none() && tx_id_1.is_none() {
+    //     Err("Tx_id_0 or Tx_id_1 is required".to_string())?
+    // }
+
+
+
     // make sure user is registered, if not create a new user
     // let user_id = user_map::insert(None)?;
 
-    Ok((pool, add_amount_0, add_amount_1))
+    Ok((pool, add_amount_0, add_amount_1,token_0, tx_id_0, token_1, tx_id_1))
 }
 
 /// calculate the ratio of amounts (amount_0 and amount_1) to be added to the pool to maintain constant K
@@ -159,7 +226,7 @@ pub fn calculate_amounts(
     amount_1: &Nat,
 ) -> Result<(StablePool, Nat, Nat), String> {
     // Pool - make sure pool exists, refresh balances of the pool to make sure we have the latest state
-    let pool = handlers::get_by_tokens(token_0, token_1)?;
+    let pool = handlers::get_by_tokens(token_0.to_string(), token_1.to_string())?;
     // Token0
     let token_0 = pool.token_0();
     // reserve_0 is the total balance of token_0 in the pool = balance_0 + lp_fee_0
@@ -289,22 +356,60 @@ pub fn update_liquidity_pool(
 async fn return_tokens(
     to_principal_id: &Account,
     pool: &StablePool,
-    amount_0: Option<&Nat>,
-    amount_1: Option<&Nat>,
+    amount_0: &Nat,
+    amount_1: &Nat,
     transfer_ids: &mut Vec<u64>,
     ts: u64,
+    transfer_0: &Result<(), String>,
+    transfer_1: &Result<(), String>,
+
 ) {
     //  let mut claim_ids = Vec::new();
-
-    if let Some(amount_0) = amount_0 {
+    if transfer_0.is_ok() {
         let token_0 = pool.token_0();
         return_token(to_principal_id, &token_0, amount_0, transfer_ids, ts).await;
     }
 
-    if let Some(amount_1) = amount_1 {
+    if transfer_1.is_ok(){
         let token_1 = pool.token_1();
         return_token(to_principal_id, &token_1, amount_1, transfer_ids, ts).await;
     }
 
     //let reply = to_add_liquidity_reply_failed(pool.pool_id, request_id, transfer_ids, ts);
+}
+
+async fn verify_transfer_token(
+    token: &StableToken,
+    tx_id: &Nat,
+    amount: &Nat,
+    transfer_ids: &mut Vec<u64>,
+    ts: u64,
+) -> Result<(), String> {
+    let token_id = token.token_id();
+
+   
+    match verify_transfer(token, tx_id, amount).await {
+        Ok(_) => {
+            // contain() will use the latest state of TRANSFER_MAP to prevent reentrancy issues after verify_transfer()
+            if exist(token_id, tx_id) {
+                let e = format!("Duplicate block id #{}", tx_id);
+           
+                return Err(e);
+            }
+            let transfer_id = insert(&StableTransfer {
+                transfer_id: 0,
+                is_send: true,
+                amount: amount.clone(),
+                token_id,
+                tx_id: TxId::BlockIndex(tx_id.clone()),
+                ts,
+            });
+            transfer_ids.push(transfer_id);
+            Ok(())
+        }
+        Err(e) => {
+         
+            Err(e)
+        }
+    }
 }
