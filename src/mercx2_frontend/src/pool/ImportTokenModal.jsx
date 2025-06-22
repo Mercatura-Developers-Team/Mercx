@@ -32,7 +32,7 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50 ">
       <div className="bg-[#1a1a2e] text-white p-6 rounded-xl shadow-2xl w-full max-w-md ">
-        <h2 className="text-xl font-semibold mb-4">Add New Token</h2>
+        <h2 className="text-xl font-semibold mb-4 ">Add New Token</h2>
         <input
           type="text"
           placeholder="e.g. ryjl3-tyaaa-aaaaa-aaaba-cai"
@@ -49,7 +49,7 @@ export default function ImportTokenModal({ onClose, onImport, isOpen }) {
         <div className="flex gap-4 mt-6">
           <button
             onClick={handleSubmit}
-            className="flex-1 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50  "
+            className="flex-1 p-3 bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700  disabled:bg-gray-500 disabled:cursor-not-allowed disabled:hover:from-gray-500 text-white rounded-lg disabled:opacity-50  "
             disabled={isSubmitting}
           >
             {isSubmitting ? "Adding..." : "Add Token"}

@@ -1,6 +1,6 @@
-mod stable_memory;
 pub mod ic;
-use crate::ic::general::{GetTransactions,TransactionResponse,TransferArgs};
+mod stable_memory;
+use crate::ic::general::{GetTransactions, TransactionResponse, TransferArgs};
 pub mod xrc_mock;
 pub use xrc_mock::get_icp_rate;
 pub mod pool;
@@ -16,15 +16,15 @@ pub mod swap;
 pub mod transfers;
 
 pub mod add_liquidity;
-use crate::add_liquidity::add_liquidity_reply::AddLiquidityReply;
-use crate::add_liquidity::add_liquidity_args::AddLiquidityArgs;
 use crate::add_liquidity::add_liquidity_amounts_reply::AddLiquidityAmountsReply;
+use crate::add_liquidity::add_liquidity_args::AddLiquidityArgs;
+use crate::add_liquidity::add_liquidity_reply::AddLiquidityReply;
 
-pub mod stable_mercx_settings;
 pub mod helpers;
+pub mod stable_mercx_settings;
+use candid::Nat;
 use candid::Principal;
 use icrc_ledger_types::icrc1::account::Account;
-use icrc_ledger_types::icrc1::transfer::NumTokens;
 use icrc_ledger_types::icrc1::transfer::BlockIndex;
-use candid::Nat;
+use icrc_ledger_types::icrc1::transfer::NumTokens;
 ic_cdk::export_candid!();

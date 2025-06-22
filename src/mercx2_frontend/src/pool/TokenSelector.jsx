@@ -38,7 +38,7 @@ export default function TokenSelector({
 
         <button
           onClick={onImport}
-          className="w-full p-3 bg-blue-500 text-white rounded-lg"
+          className="w-full p-3 bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white disabled:bg-gray-500 disabled:cursor-not-allowed disabled:hover:from-gray-500 rounded-lg"
         >
           + Import Token
         </button>

@@ -50,7 +50,7 @@ export default function CreatePool() {
     onSubmit: async (values) => {
       setIsCreating(true);
       setFormError("");
-      const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai";
+      const spenderId = "ajuq4-ruaaa-aaaaa-qaaga-cai";
       try {
         const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
         const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);
@@ -256,44 +256,62 @@ async function canonicalOrder(symA, symB) {
   useEffect(() => {
   if (!token0 || !token1 || !poolExists || !lastEditedField || !mercx_Actor) return;
 
-  const calculateAmounts = async () => {
-    try {
-      const amount = lastEditedField === 'amountToken0' 
-        ? formik.values.amountToken0 
+const calculateAmounts = async () => {
+  try {
+    const amountStr =
+      lastEditedField === "amountToken0"
+        ? formik.values.amountToken0
         : formik.values.amountToken1;
 
-      if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) return;
+    if (!amountStr || isNaN(+amountStr) || +amountStr <= 0) return;
 
-      const parsedAmount = parseAmount(amount, 
-        lastEditedField === 'amountToken0' ? token0.decimals : token1.decimals);
+    const parsedAmount = parseAmount(
+      amountStr,
+      lastEditedField === "amountToken0" ? token0.decimals : token1.decimals
+    );
 
-      // Call the function with the correct parameters based on which field was edited
-      const result = await mercx_Actor.add_liquidity_amounts(
-        lastEditedField === 'amountToken0' ? token0.symbol : token1.symbol,
-        parsedAmount,
-        lastEditedField === 'amountToken0' ? token1.symbol : token0.symbol
-      );
+    // Call canister
+    const resp = await mercx_Actor.add_liquidity_amounts(
+      lastEditedField === "amountToken0" ? token0.symbol : token1.symbol,
+      parsedAmount,
+      lastEditedField === "amountToken0" ? token1.symbol : token0.symbol
+    );
 
-      if ("Ok" in result) {
-        const reply = result.Ok;
-        if (lastEditedField === 'amountToken0') {
-          formik.setFieldValue(
-            'amountToken1',
-            normalizeAmount(reply.amount_1, token1.decimals)
-          );
-        } else {
-          formik.setFieldValue(
-            'amountToken0',
-            normalizeAmount(reply.amount_0, token0.decimals)
-          );
-        }
-      } else {
-        console.error("Calculation failed:", result.Err);
-      }
-    } catch (err) {
-      console.error("Failed to calculate amounts:", err);
+    if ("Err" in resp) {
+      console.error("Calculation failed:", resp.Err);
+      return;
     }
-  };
+
+    // ------ here is the key change ------
+    const {
+      symbol_0,
+      amount_0,
+      amount_1,
+    } = resp.Ok; // <----- destructure once
+
+    // Decide which amount belongs to which field
+    if (lastEditedField === "amountToken0") {
+      // user typed in Token0, so auto-fill Token1
+      const otherAmount =
+        symbol_0 === token0.symbol ? amount_1 : amount_0;
+      formik.setFieldValue(
+        "amountToken1",
+        normalizeAmount(otherAmount, token1.decimals)
+      );
+    } else {
+      // user typed in Token1, so auto-fill Token0
+      const otherAmount =
+        symbol_0 === token0.symbol ? amount_0 : amount_1;
+      formik.setFieldValue(
+        "amountToken0",
+        normalizeAmount(otherAmount, token0.decimals)
+      );
+    }
+  } catch (err) {
+    console.error("Failed to calculate amounts:", err);
+  }
+};
+
 
   const debounceTimer = setTimeout(calculateAmounts, 500);
   return () => clearTimeout(debounceTimer);
@@ -452,9 +470,7 @@ async function canonicalOrder(symA, symB) {
                     className="w-full p-3 bg-gray-800 text-white rounded-lg"
                   />
                   <p className="text-red-400 text-xs">{formik.errors.amountToken0}</p>
-
                 </div>
-
                 <div>
                   <label className="text-sm text-gray-300 ">Amount of {token1?.name || "Token 1"}</label>
                   <input
@@ -470,7 +486,6 @@ async function canonicalOrder(symA, symB) {
                     className="w-full p-3 bg-gray-700 text-white rounded-lg"
                   />
                   <p className="text-red-400 text-xs">{formik.errors.amountToken1}</p>
-
                 </div>
               </div>
 
