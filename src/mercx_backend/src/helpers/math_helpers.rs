@@ -3,6 +3,8 @@ use num::bigint::Sign;
 use core::cmp::Ordering;
 use num::ToPrimitive;
 use candid::Nat;
+use num::{BigUint,pow};
+
 // format price based on the amount
 pub fn price_rounded(price: &BigRational) -> Option<f64> {
     let price_f64 = price.to_f64()?;
@@ -93,4 +95,27 @@ pub fn nat_multiply(n1: &Nat, n2: &Nat) -> Nat {
 
 pub fn nat_sqrt(n: &Nat) -> Nat {
     Nat::from(n.0.sqrt())
+}
+
+
+pub fn nat_multiply_rational(n1: &Nat, n2: &BigRational) -> Option<Nat> {
+    let numerator = nat_multiply(n1, &Nat::from(n2.numer().to_biguint()?));
+    nat_divide(&numerator, &Nat::from(n2.denom().to_biguint()?))
+}
+
+pub fn nat_multiply_f64(n1: &Nat, n2: f64) -> Option<Nat> {
+    let n2 = BigRational::from_float(n2)?;
+    nat_multiply_rational(n1, &n2)
+}
+
+/// Convert Nat to f64 with decimals
+pub fn nat_to_decimals_f64(decimals: u8, amount: &Nat) -> Option<f64> {
+    let numerator = nat_to_biguint(amount);
+    let denominator = pow(BigInt::from(10), decimals.into());
+    let real_amount = BigRational::new(numerator.into(), denominator).to_f64()?;
+    Some(round_f64(real_amount, decimals))
+}
+
+pub fn nat_to_biguint(n: &Nat) -> BigUint {
+    BigUint::from_bytes_be(&n.0.to_bytes_be())
 }
