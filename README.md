@@ -2,7 +2,36 @@
 
 ## Introduction
 
-**MercX** is an innovative blockchain platform designed for the issuance and management of Real World Assets (RWA) tokens, focusing on shares in the EGX30 index. Operating on the Internet Computer Protocol (ICP) using the Rust SDK, MercX integrates the robustness of real-world finance with the flexibility of blockchain technology, reshaping asset trading and management.
+**MercX** is a decentralized tokenization platform built on the Internet Computer Protocol (ICP), designed to bring Real World Assets (RWA) to the blockchain. Starting with tokenized exposure to Egypt's top 30 companies via the EGX30 index, MercX bridges traditional finance and DeFi by enabling permissioned, compliant, and fractional asset ownership.
+
+Built with the Rust SDK, MercX integrates multiple ICRC-compliant canisters to manage token issuance, swap logic, and real-time trading across various pools, with seamless frontend integration. The platform is aligned with regulatory standards defined by the Egyptian Financial Regulatory Authority (FRA).
+
+---
+
+## 🧩 Problem Statement
+
+Egypt and the broader MENA region suffer from outdated capital market infrastructure that limits investor participation, fund liquidity, and product innovation. Retail and institutional investors alike face high entry barriers, manual onboarding, slow fund redemption, and no access to real-time price data or digital trading functions.
+
+Fund managers spend up to half their management fees on intermediaries just to handle subscriptions and redemptions. There are no tools to borrow against fund shares, no digital liquidity pools, and no integration with smart analytics or decision-making tools. As a result, capital efficiency is low, operational costs are high, and investor experience is broken.
+
+---
+
+## 🚀 MercX: A Digital Infrastructure to Revitalize MENA Capital Markets
+
+MercX offers a fully compliant platform that tokenizes regulated financial assets such as mutual funds, treasury instruments, and equities. It introduces modern digital financial infrastructure tailored to the needs of Egypt and MENA, including:
+
+- **Real-time Price Feeds** to track tokenized asset performance  
+- **Swap Functions** to enable instant, peer-to-peer exchange of fund shares  
+- **Built-in Liquidity Pools** to absorb redemptions and reduce pressure on fund managers  
+- **AI Agent Advisors** to assist users in understanding investment options and market conditions  
+- **Business Analytics Dashboards** for both investors and fund managers to make informed decisions  
+- **Borrowing and Lending Systems** that unlock capital efficiency by enabling collateralized loans on top of fund shares  
+
+MercX makes institutional-grade products accessible to retail investors starting from $100. With automated onboarding, instant trading, and deep integration with Egypt’s regulatory framework, MercX is not just digitizing capital markets; it is rebuilding them for the future.
+
+> This is the infrastructure upgrade MENA has been waiting for.
+
+---
 
 ## Key Features
 
