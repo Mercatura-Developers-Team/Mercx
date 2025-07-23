@@ -94,6 +94,8 @@ type Mint = record {
 };
 type Result = variant { Ok : AddLiquidityAmountsReply; Err : text };
 type Result_1 = variant { Ok : AddLiquidityReply; Err : text };
+type Result_10 = variant { Ok : SwapAmountsReply; Err : text };
+type Result_11 = variant { Ok : SwapReply; Err : text };
 type Result_2 = variant { Ok : AddPoolReply; Err : text };
 type Result_3 = variant { Ok : StableToken; Err : text };
 type Result_4 = variant { Ok : nat; Err : text };
@@ -126,6 +128,66 @@ type StableToken = record {
   icrc2 : bool;
   icrc3 : bool;
   symbol : text;
+};
+type SwapAmountsReply = record {
+  txs : vec SwapAmountsTxReply;
+  mid_price : float64;
+  pay_amount : nat;
+  receive_amount : nat;
+  pay_symbol : text;
+  receive_symbol : text;
+  receive_address : text;
+  pay_address : text;
+  price : float64;
+  slippage : float64;
+};
+type SwapAmountsTxReply = record {
+  pay_amount : nat;
+  receive_amount : nat;
+  pay_symbol : text;
+  receive_symbol : text;
+  receive_address : text;
+  pool_symbol : text;
+  pay_address : text;
+  price : float64;
+  lp_fee : nat;
+  gas_fee : nat;
+};
+type SwapArgs = record {
+  receive_token : text;
+  max_slippage : opt float64;
+  pay_amount : nat;
+  receive_amount : opt nat;
+  receive_address : opt text;
+  pay_token : text;
+  pay_tx_id : opt TxId;
+};
+type SwapReply = record {
+  ts : nat64;
+  txs : vec SwapTxReply;
+  transfer_ids : vec TransferIdReply;
+  mid_price : float64;
+  pay_amount : nat;
+  receive_amount : nat;
+  pay_symbol : text;
+  receive_symbol : text;
+  receive_address : text;
+  pay_address : text;
+  price : float64;
+  slippage : float64;
+};
+type SwapTxReply = record {
+  ts : nat64;
+  pay_amount : nat;
+  receive_amount : nat;
+  pay_symbol : text;
+  receive_symbol : text;
+  receive_address : text;
+  pool_symbol : text;
+  pay_address : text;
+  price : float64;
+  lp_fee : nat;
+  gas_fee : nat;
 };
 type Transaction = record {
   burn : opt Burn;
@@ -162,7 +224,6 @@ service : {
   add_pool : (AddPoolArgs) -> (Result_2);
   add_to_whitelist : (principal) -> ();
   add_token : (principal) -> (Result_3);
-  calculate_fees : (nat, nat8, nat8) -> (nat, nat, nat);
   check_balance : (Account, principal) -> (Result_4);
   check_balance_icp : (Account) -> (nat);
   check_balance_mercx : (Account) -> (nat);
@@ -185,11 +246,13 @@ service : {
   remove_from_whitelist : (principal) -> ();
   reset_pools : () -> (Result_5);
   reset_tokens : () -> (Result_5);
+  reset_whitelist : () -> ();
   sell : (nat64, principal, nat64, principal) -> (Result_5);
   send_mercx : (nat64) -> (Result_4);
   send_token : (nat64, principal) -> (Result_4);
   swap : (nat64, nat64) -> (Result_5);
-  swap_example : (nat) -> (text);
+  swap_amounts : (text, nat, text) -> (Result_10) query;
+  swap_tokens : (SwapArgs) -> (Result_11);
   transfer : (TransferArgs) -> (Result_4);
   transfer_from : (TransferArgs) -> (Result_4);
   transfer_from_general : (TransferArgs) -> (Result_4);

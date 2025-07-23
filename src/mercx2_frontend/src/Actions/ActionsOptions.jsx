@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '.././use-auth-client';
 import Sell from '../Actions/Sell/Sell';
 import Buy from './Buy/Buy';
+import Swap from './Swap/Swap';
 
 
 const ActionsOptions = () => {
@@ -49,12 +50,13 @@ const ActionsOptions = () => {
                               
                         )}
                         {currentTab === 'Swap' && (
-                           <div class="p-9 h-[480px] flex flex-col items-center justify-center">
-                           <h1 class="text-5xl animate-pulse text-white font-bold mb-8">
-                               Coming Soon
-                           </h1>
-                        
-                       </div>
+                    //        <div class="p-9 h-[480px] flex flex-col items-center justify-center">
+                    //        <h1 class="text-5xl animate-pulse text-white font-bold mb-8">
+                    //            Coming Soon
+                    //        </h1>
+                    
+                    //   </div>
+                    <Swap/>
                         )}
                         {/* Other components and logic */}
                     </div>

@@ -79,7 +79,6 @@ pub fn swap_amounts(
 
 
 /// returns (receive_amount_with_gas_and_fees, price, mid_price, slippage, swap)
-#[allow(clippy::complexity)]
 fn one_step_swaps(
     pay_token_id: u32,
     pay_amount: Option<&Nat>,
@@ -111,6 +110,8 @@ fn one_step_swaps(
     }
 
     Ok(())
+
+
 }
 
 

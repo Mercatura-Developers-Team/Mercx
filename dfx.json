@@ -7,13 +7,7 @@
       "dependencies": [
         "icrc1_ledger_canister"
       ]
-    },
-     "orderbook": {
-      "type": "motoko",
-      "main": "src/orderbook/Test.mo",
-      "dependencies": [],
-      "package": "base"   },
-    
+    },  
     "kyc": {
       "candid": "src/kyc/kyc.did",
       "package": "kyc",
@@ -72,6 +66,16 @@
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/index-ng/index-ng.did",
       "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-index-ng.wasm.gz"
+    },
+    "egx30_icrc1_ledger": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-ledger.wasm.gz"
+    },
+    "gbx_icrc1_ledger": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/rs/rosetta-api/icrc1/ledger/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/cacf86a2ea7e21150d106e9e4dda5973088f53c5/canisters/ic-icrc1-ledger.wasm.gz"
     },
     "tommy_icrc1_ledger": {
       "type": "custom",

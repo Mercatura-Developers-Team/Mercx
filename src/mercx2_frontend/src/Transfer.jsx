@@ -7,7 +7,7 @@ import SuccessModal from './SuccessModal'; // Adjust the path as needed
 
 
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor, isAuthenticated, ckUSDTActor } = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor, isAuthenticated,ckUSDTActor, Egx30Actor,  GBXActor} = useAuth();
     const { principal } = useAuth();
     const navigate = useNavigate();  // Use navigate for redirection
     const transferSectionRef = useRef(null); // Add this ref
@@ -17,12 +17,12 @@ const Transfer = () => {
 
     const tokens = useMemo(() => [
         { name: "BELLA", actor: whoamiActor, transferMethod: "icrc1_transfer", logo: "/Bella.jpeg", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"] },
-        { name: "EX30", actor: icpActor, transferMethod: "icrc1_transfer", logo: "/EX30.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: [ "Receive"], },
+        { name: "EX30", actor: Egx30Actor, transferMethod: "icrc1_transfer", logo: "/EX30.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: [ "Swap", "Send", "Receive"], },
         { name: "TOMMY", actor: tommy_Actor, transferMethod: "icrc1_transfer", logo: "/Tommy.JPG", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Swap", "Send", "Receive"], },
         { name: "FXMX", actor: fxmxActor, transferMethod: "icrc1_transfer", logo: "/FXMX logo.svg", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: ["Send", "Receive", "Transactions"], },
-        { name: "GBX", actor: ckUSDTActor, transferMethod: "icrc1_transfer", logo: "/GBX LOGO.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: [ "Receive"], }
+        { name: "GBX", actor: GBXActor, transferMethod: "icrc1_transfer", logo: "/GBX LOGO.png", balances: "icrc1_balance_of", decimals: "icrc1_decimals", actions: [ "Swap", "Send", "Receive"], }
 
-    ], [whoamiActor, icpActor, tommy_Actor, fxmxActor, ckUSDTActor]);
+    ], [whoamiActor, Egx30Actor, tommy_Actor, fxmxActor, GBXActor]);
 
     const [errorMessage, setErrorMessage] = useState("");
     const [tokenBalances, setTokenBalances] = useState({});

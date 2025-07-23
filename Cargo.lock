@@ -701,6 +701,7 @@ dependencies = [
  "ic-stable-structures",
  "icrc-ledger-types",
  "num",
+ "regex",
  "serde",
  "serde_cbor",
  "serde_derive",

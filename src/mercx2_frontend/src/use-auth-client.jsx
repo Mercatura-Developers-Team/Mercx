@@ -11,7 +11,8 @@ import { canisterId as fxmxIndexId, createActor as createFXMXindexActor } from "
 import { canisterId as ckUSDTCanisterId, createActor as createckUSDTActor } from "../../declarations/ckUSDT_ledger_canister";
 import { HttpAgent, Actor } from "@dfinity/agent";
 import { idlFactory as icrc2_idl } from "../../declarations/icrc1_ledger_canister"; // ✅ Use the correct path
-import { Principal } from "@dfinity/principal";
+import { canisterId as egx30CanisterId, createActor as createEGX30Actor } from "../../declarations/egx30_icrc1_ledger";
+import { canisterId as gbxCanisterId, createActor as createGBXActor } from "../../declarations/gbx_icrc1_ledger";
 
 // Create a React Context for sharing authentication status across the component tree
 const AuthContext = createContext();
@@ -20,7 +21,7 @@ function detectInAppBrowser() {
   return (
     ua.includes("linkedin") ||
     ua.includes("fban") || ua.includes("fbav") ||  // Facebook
-    ua.includes("instagram") ||
+    ua.includes("instagram'") ||
     ua.includes("twitter") ||
     ua.includes("edge") || ua.includes("edg")
   );
@@ -101,6 +102,8 @@ export const useAuthClient = (options = defaultOptions) => {
   const [fxmxActor, setFXMXActor] = useState(null);
   const [fxmxIndexActor, setFXMXindexActor] = useState(null);
   const [ckUSDTActor, setckUSDTActor] = useState(null);
+  const [Egx30Actor, setEgxActor] = useState(null);
+  const [GBXActor, setGBXActor] = useState(null);
 
 
   useEffect(() => {
@@ -113,7 +116,6 @@ export const useAuthClient = (options = defaultOptions) => {
       updateClient(client);
 
     });
-
 
   }, []);
 
@@ -207,6 +209,19 @@ export const useAuthClient = (options = defaultOptions) => {
     });
     setckUSDTActor(ckUSDTActor);
 
+    const egxActor = createEGX30Actor(egx30CanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setEgxActor(egxActor);
+
+    const gbxActor = createGBXActor(gbxCanisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
+    setGBXActor(gbxActor);
   }
 
   async function logout() {
@@ -246,7 +261,9 @@ export const useAuthClient = (options = defaultOptions) => {
     fxmxActor,
     fxmxIndexActor,
     ckUSDTActor,
-    createTokenActor, 
+    Egx30Actor, 
+    GBXActor,
+    createTokenActor,
   };
 };
 

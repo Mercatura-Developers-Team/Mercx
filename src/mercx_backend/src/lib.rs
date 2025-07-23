@@ -12,6 +12,11 @@ pub mod token;
 use crate::token::stable_token::StableToken;
 
 pub mod swap;
+use crate::swap::swap_reply::SwapReply;
+use crate::swap::swap_args::SwapArgs;
+
+pub mod swap_amounts;
+use crate::swap_amounts::swap_amounts_reply::SwapAmountsReply;
 
 pub mod transfers;
 

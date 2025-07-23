@@ -6,10 +6,7 @@ use icrc_ledger_types::icrc1::transfer::{BlockIndex, NumTokens, TransferArg, Tra
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 use serde::Serialize;
 //use ic_cdk::caller;
-
-use std::cell::RefCell;
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use ic_stable_structures::{StableBTreeMap, DefaultMemoryImpl};
+use crate::stable_memory::WHITELIST;
 
 
 // pub const CANISTER_ID_XRC:&str="uf6dk-hyaaa-aaaaq-qaaaq-cai";
@@ -32,21 +29,7 @@ pub const CANISTER_ID_CKUSDT_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-ca
 
 
 
-type Memory = VirtualMemory<DefaultMemoryImpl>;
-const WHITELIST_MEM_ID: MemoryId = MemoryId::new(1);
 
-thread_local! {
-
-    // Initialize memory manager
-    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
-        MemoryManager::init(DefaultMemoryImpl::default())
-    );
-
-    // Initialize the whitelist
-    static WHITELIST: RefCell<StableBTreeMap<Principal, bool, Memory>> = RefCell::new(
-        StableBTreeMap::init(MEMORY_MANAGER.with(|m| m.borrow().get(WHITELIST_MEM_ID)))
-    );
-}
 
 //The function allows you to query the principal ID of the caller of the function
 #[query]
@@ -79,6 +62,15 @@ fn remove_from_whitelist(principal: Principal) {
     });
     ic_cdk::println!("Removed {} from whitelist", principal.to_text());
 }
+
+#[ic_cdk::update]
+fn reset_whitelist() {
+    WHITELIST.with(|whitelist| {
+        whitelist.borrow_mut().clear_new();
+    });
+    ic_cdk::println!("✅ Whitelist has been reset.");
+}
+
 
 #[ic_cdk::query]
 fn get_whitelisted_principals() -> Vec<String> {
