@@ -27,7 +27,7 @@ pub struct SwapTxReply {
 //This struct wraps up the entire swap operation, including metadata and a list of sub-transactions
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct SwapReply {
-    pub tx_id: u64, //	Unique transaction ID of the swap.
+   // pub tx_id: u64, //	Unique transaction ID of the swap.
    // pub request_id: u64,
   //  pub status: String,
    // pub pay_chain: String,

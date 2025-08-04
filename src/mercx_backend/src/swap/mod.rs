@@ -7,3 +7,7 @@ pub mod swap_amounts;
 pub mod calculate_amounts;
 pub mod update_liquidity_pool;
 pub mod swap_reply_helpers;
+pub mod send_receive_token;
+pub mod return_pay_token;
+pub mod swap_transfer_from;
+pub mod swap_transfer;

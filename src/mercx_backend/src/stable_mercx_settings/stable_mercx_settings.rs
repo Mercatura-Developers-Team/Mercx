@@ -14,7 +14,7 @@ pub struct StableMercxSettings {
     pub default_mercx_fee_bps: u8,
     pub transfer_map_idx: u64, // counter for TRANSFER_MAP
     pub transfer_expiry_nanosecs: u64,
-   
+    pub default_max_slippage: f64,
 }
 
 impl Default for StableMercxSettings {
@@ -32,6 +32,7 @@ impl Default for StableMercxSettings {
             default_mercx_fee_bps: 0,
             transfer_map_idx,
             transfer_expiry_nanosecs: 3_600_000_000_000, // 1 hour (nano seconds)
+            default_max_slippage: 2.0_f64,
         }
     }
 }

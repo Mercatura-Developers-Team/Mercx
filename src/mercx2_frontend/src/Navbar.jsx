@@ -4,23 +4,21 @@ import './index.css';
 import { HiOutlineLogout, HiMenu, HiX, HiClipboardCopy } from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { useNavigate } from 'react-router-dom';  
 import { FaCopy } from "react-icons/fa";
 
 const navigation = [
   { name: "Home", to: "/" },
   { name: "Trade", to: "/trade" },
   { name: "Transactions", to: "/transactions" },
-  { name: "Wallet", to: "/wallet" }
+  { name: "Wallet", to: "/wallet" },
+  { name: "Pools", to: "/pools" }
 ];
 
 function MyNavbar() {
   const { isAuthenticated, login, logout, principal, kycActor } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const navigate = useNavigate();  // Use navigate for redirection
   const [userExists, setUserExists] = useState(false);  // State to track if user exists
-  const [isUserChecked, setIsUserChecked] = useState(false);  // State to track if the user check is complete
   const [username, setUsername] = useState(""); // State to store the username
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [initial,setInitial]  = useState("");

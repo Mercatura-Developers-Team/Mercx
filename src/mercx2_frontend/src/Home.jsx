@@ -113,8 +113,8 @@ function Home() {
 
 
 </video>
-  
-     
+
+
 
       <main className="relative z-10 min-h-screen text-white p-4">
       <section className="bg-slate-800 text-white rounded-lg shadow p-4 m-4 bg-opacity-20">

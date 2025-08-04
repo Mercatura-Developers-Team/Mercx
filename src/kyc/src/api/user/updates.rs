@@ -163,7 +163,7 @@ pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
     })?; 
 
     // Call `add_to_whitelist` in `mercx_backend`
-    let mercx_backend_canister_id: Principal = Principal::from_text("zoa6c-riaaa-aaaan-qzmta-cai").unwrap();
+    let mercx_backend_canister_id: Principal = Principal::from_text("aovwi-4maaa-aaaaa-qaagq-cai").unwrap();
 
     match call::<(Principal,), ()>(mercx_backend_canister_id, "add_to_whitelist", (principal,)).await {
         Ok(_) => Ok("KYC verified and user added to whitelist.".to_string()),
@@ -214,12 +214,9 @@ fn add_admin(principal: Principal) -> Result<(), String> {
     Ok(())
 }
 
-
-
-
-
 // Optional: Helper function for future use
 // fn is_authorized(principal: Principal) -> bool {
 //     // Add authorization logic here
 //     false
 // }
+

@@ -4,6 +4,8 @@ use std::cell::RefCell;
 
 use crate::transfers::stable_transfer::{StableTransferId,StableTransfer};
 
+use candid::Principal;
+
 use crate::pool::stable_pool::{StablePool, StablePoolId};
 use crate::token::stable_token::{StableTokenId, StableToken};
 use crate::stable_mercx_settings::stable_mercx_settings::StableMercxSettings;
@@ -15,6 +17,7 @@ pub const POOL_MEMORY_ID: MemoryId = MemoryId::new(0);
 pub const TOKEN_MEMORY_ID: MemoryId = MemoryId::new(1);
 pub const MERCX_SETTINGS_MEMORY_ID: MemoryId = MemoryId::new(3);
 pub const TRANSFER_MEMORY_ID: MemoryId = MemoryId::new(4);
+pub const WHITELIST_MEM_ID: MemoryId = MemoryId::new(5);
 
 
 
@@ -42,6 +45,10 @@ thread_local! {
 
     pub static TRANSFERS: RefCell<StableBTreeMap<StableTransferId, StableTransfer, Memory>> = RefCell::new(
         StableBTreeMap::init(MEMORY_MANAGER.with(|m| m.borrow().get(TRANSFER_MEMORY_ID)))
+    );
+
+    pub static WHITELIST: RefCell<StableBTreeMap<Principal, bool, Memory>> = RefCell::new(
+        StableBTreeMap::init(MEMORY_MANAGER.with(|m| m.borrow().get(WHITELIST_MEM_ID)))
     );
     
   

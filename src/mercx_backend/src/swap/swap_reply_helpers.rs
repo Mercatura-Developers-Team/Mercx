@@ -13,7 +13,7 @@ use crate::token::handlers as token_handler;
 // use crate::stable_tx::swap_tx::SwapTx;
 use crate::transfers::transfer_reply_helpers::to_transfer_ids;
 
-fn to_swap_tx_reply(swap: &SwapCalc, ts: u64) -> Option<SwapTxReply> {
+pub fn to_swap_tx_reply(swap: &SwapCalc, ts: u64) -> Option<SwapTxReply> {
     let pool = handlers::get_by_pool_id(swap.pool_id)?;
     let pay_token = token_handler::get_by_token_id(swap.pay_token_id)?;
    // let pay_chain = pay_token.chain().to_string();
@@ -43,7 +43,7 @@ fn to_swap_tx_reply(swap: &SwapCalc, ts: u64) -> Option<SwapTxReply> {
 }
 
 //txs:A slice of SwapCalc objects — each one represents a swap calculation (i.e., what the user will pay/receive, the fees, the pool used, etc.).
-fn to_txs(txs: &[SwapCalc], ts: u64) -> Vec<SwapTxReply> {
+pub fn to_txs(txs: &[SwapCalc], ts: u64) -> Vec<SwapTxReply> {
     txs.iter().filter_map(|tx| to_swap_tx_reply(tx, ts)).collect()
 }
 
@@ -71,28 +71,32 @@ fn get_tokens_info(pay_token_id: u32, receive_token_id: u32) -> ( String, String
     ( pay_address, pay_symbol, receive_address, receive_symbol)
 }
 
-// pub fn to_swap_reply(swap: &SwapCalc, ts: u64) -> SwapReply {
-//     let (pay_chain, pay_address, pay_symbol, receive_chain, receive_address, receive_symbol) =
-//     get_tokens_info(pay_token_id, receive_token_id);
-//     SwapReply {
-//      //   tx_id: swap_tx.tx_id,
-//      //   request_id: swap_tx.request_id,
-//       //  status: swap_tx.status.to_string(),
-//       //  pay_chain,
-//         pay_address,
-//         pay_symbol,
-//         pay_amount: swap.pay_amount.clone(),
-//         receive_address,
-//         receive_symbol,
-//         receive_amount: swap.receive_amount.clone(),
-//         mid_price: swap_tx.mid_price,
-//         price: swap_tx.price,
-//         slippage: swap_tx.slippage,
-//         txs: to_txs(&swap_tx.txs, swap_tx.ts),
-//         transfer_ids: to_transfer_ids(&swap_tx.transfer_ids).expect("REASON"),
-//         ts: swap_tx.ts,
-//     }
-// }
+pub fn to_swap_reply(swap: &SwapCalc, ts: u64,pay_token_id: u32,receive_token_id: u32,mid_price: f64,slippage: f64,transfer_ids: Vec<u64>,txs: Vec<SwapCalc>) -> SwapReply {
+
+    let ( pay_address, pay_symbol, receive_address, receive_symbol) =
+    get_tokens_info(pay_token_id, receive_token_id);
+  
+    let price = swap.get_price().unwrap_or(BigRational::zero());
+    let price_f64 = price_rounded(&price).unwrap_or(0_f64);
+    SwapReply {
+     //   tx_id: swap_tx.tx_id,
+     //   request_id: swap_tx.request_id,
+      //  status: swap_tx.status.to_string(),
+      //  pay_chain,
+        pay_address,
+        pay_symbol,
+        pay_amount: swap.pay_amount.clone(),
+        receive_address,
+        receive_symbol,
+        receive_amount: swap.receive_amount.clone(),
+        mid_price,
+        price :price_f64,
+        slippage,
+        txs: to_txs(&txs, ts),
+        transfer_ids: to_transfer_ids(&transfer_ids).expect("transfer not found"),
+        ts,
+    }
+}
 
 
 pub fn to_swap_reply_failed(
@@ -113,7 +117,7 @@ pub fn to_swap_reply_failed(
     let receive_address = receive_token.map_or_else(|| "Receive address not found".to_string(), |token| token.canister_id().expect("canister id not found").to_string());
     let receive_symbol = receive_token.map_or_else(|| "Receive symbol not found".to_string(), |token| token.symbol().to_string());
     SwapReply {
-        tx_id: 0,
+ 
         pay_address,
         pay_symbol,
         pay_amount: pay_amount.clone(),
