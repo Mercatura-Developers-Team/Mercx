@@ -111,7 +111,7 @@ const Sell = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const backend_canister = "aovwi-4maaa-aaaaa-qaagq-cai"; // Placeholder for actual canister ID
+        const backend_canister = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Placeholder for actual canister ID
         let amountBella = (inputBella) * 1e8; // Approximate
         let approvedBella = Number((amountBella) + 20000); //0.0001 lel approve we 0.0001 lel transfer lw mafesh approve 0.0001 el hatetkhesem bas 
         

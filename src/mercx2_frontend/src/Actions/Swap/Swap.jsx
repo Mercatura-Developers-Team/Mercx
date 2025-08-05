@@ -164,7 +164,7 @@ const Swap = () => {
     setError('');
 
     try {
-      const spenderId = "aovwi-4maaa-aaaaa-qaagq-cai"; // Swap canister ID
+      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Swap canister ID
       const amountIn = parseAmount(fromAmount, fromToken.decimals);
       const amountOut = parseAmount(toAmount, toToken.decimals);
 

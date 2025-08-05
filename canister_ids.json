@@ -1,9 +1,15 @@
 {
+  "egx30_icrc1_ledger": {
+    "ic": "lnaqc-daaaa-aaaan-qz42a-cai"
+  },
   "fxmx_icrc1_index": {
     "ic": "lfuhg-eaaaa-aaaan-qzxkq-cai"
   },
   "fxmx_icrc1_ledger": {
     "ic": "b7p2k-giaaa-aaaan-qzwta-cai"
+  },
+  "gbx_icrc1_ledger": {
+    "ic": "lkbww-oyaaa-aaaan-qz42q-cai"
   },
   "icp_index_canister": {
     "ic": "ne7xn-waaaa-aaaan-qzpeq-cai"
