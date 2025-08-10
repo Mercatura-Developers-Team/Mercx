@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 /// ```
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct User {
+    pub user_id: u32,
     pub principal: Principal,
     pub username: String,
     pub full_name: String,         // ✅ Added full name
@@ -34,9 +35,10 @@ pub struct User {
 }
 
 impl User {
-    pub fn new(principal: Principal, username: String, full_name: String, email: String, phone_number: String, refered_by: Option<String>) -> Self {
+    pub fn new(user_id: u32,principal: Principal, username: String, full_name: String, email: String, phone_number: String, refered_by: Option<String>) -> Self {
         let now = time();
         Self {
+             user_id,
             principal,
             username,
             full_name,
@@ -53,6 +55,29 @@ impl User {
         }
     }
 }
+
+impl Default for User {
+    fn default() -> Self {
+        let now = time();
+        Self {
+            user_id: 0,
+            principal: Principal::anonymous(),
+            username: String::new(),
+            full_name: String::new(),
+            email: String::new(),
+            phone_number: String::new(),
+            name: String::new(),
+            avatar: String::new(),
+            librarian: false,
+            admin: false,
+            refered_by: None,
+            kyc_status: false,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}
+
 
 
 /// Request payload for user signup
@@ -108,6 +133,7 @@ pub struct UsernameAvailabilityResponse {
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct UserPrincipalInfo {
+    pub user_id: u32, 
     pub principal: Principal,
     pub username: String,
     pub full_name: String,

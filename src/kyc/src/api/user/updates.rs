@@ -10,6 +10,13 @@ use crate::models::user::{SignupRequest, UpdateUserRequest, User};
 use crate::validations::user::{validate_username, validate_name, validate_avatar_url};
 use crate::user_queries::get_user;
 use crate::user_queries::is_admin;
+use std::sync::atomic::{AtomicU32, Ordering};
+
+static USER_ID_COUNTER: AtomicU32 = AtomicU32::new(1); // Start at 1
+
+pub fn next_user_id() -> u32 {
+    USER_ID_COUNTER.fetch_add(1, Ordering::Relaxed)
+}
 
 #[update]
 pub fn signup(request: SignupRequest) -> Result<User, String> {
@@ -59,7 +66,10 @@ pub fn signup(request: SignupRequest) -> Result<User, String> {
             return Err("Referred username does not exist.".to_string());
         }
     }
+    let user_id = next_user_id();
+
     let user = User::new(
+        user_id,    
         caller,
         username.clone(),
         request.full_name.clone(),
@@ -213,13 +223,40 @@ fn add_admin(principal: Principal) -> Result<(), String> {
 
     Ok(())
 }
+#[cfg(not(feature = "prod"))]
+#[update]
+pub fn delete_all_users() -> Result<String, String> {
+   // let caller = ic_cdk::api::caller();
 
+    // Optional: restrict this function to admin only
+    // if caller != Principal::from_text("your-admin-principal-id-here").unwrap() {
+    //     return Err("Only admin can delete all users.".to_string());
+    // }
 
+    USERS.with(|users| {
+        users.borrow_mut().clear_new(); // ✅ clears all users
+    });
 
+    USERNAMES.with(|usernames| {
+        usernames.borrow_mut().clear_new(); // ✅ clears all username mappings
+    });
 
+    Ok("All users deleted successfully.".to_string())
+}
+
+#[update]
+pub fn get_user_by_principal(principal: Principal) -> Result<Option<User>, String> {
+    if principal == Principal::anonymous() {
+        return Err("Anonymous principal not allowed".to_string());
+    }
+
+    let maybe_user = USERS.with(|users| users.borrow().get(&principal).clone());
+    Ok(maybe_user)
+}
 
 // Optional: Helper function for future use
 // fn is_authorized(principal: Principal) -> bool {
 //     // Add authorization logic here
 //     false
 // }
+

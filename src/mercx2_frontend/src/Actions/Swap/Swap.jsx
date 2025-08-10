@@ -6,6 +6,7 @@ import TokenSelector from '../../pool/TokenSelector';
 import SuccessModal from './SuccessModel';
 
 const Swap = () => {
+
   const { mercx_Actor, isAuthenticated, principal, createTokenActor } = useAuth();
   // Token state
   const [tokens, setTokens] = useState([]);
@@ -58,7 +59,6 @@ const Swap = () => {
         // Fetch logos for all tokens
         const logoMap = await fetchTokenLogos(tokenList);
         setLogos(logoMap);
-
         // // Set defaults if available
         // const icp = tokenList.find(t => t.symbol === "ICP");
         // const bella = tokenList.find(t => t.symbol === "BELLA");
@@ -228,33 +228,37 @@ const Swap = () => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gray-900 p-4">
-      <div className="w-full bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <div className="shadow-xl rounded-3xl h-[480px] border-t-[1px] border-slate-800 bg-slate-800">
+      <div className=" border-gray-900 shadow-md p-3">
+
         {/* Header */}
-        <div className="p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold text-white text-center">Swap Tokens</h2>
-        </div>
+        <p className="text-gray-300 text-center text-sm">
+          Swap Tokens
+        </p>
 
         {/* Main Content */}
-        <div className="p-4">
+        <div className="p-5">
           {/* From Token */}
-          <div className="mb-4 bg-gray-700 rounded-lg p-3">
-            <div className="flex justify-between items-center mb-2">
+          <div className="mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4  border border-gray-700 hover:border-indigo-500/50 transition-all duration-300">
+             
+            <div className="flex justify-between items-center mb-3">
               <button
                 onClick={() => { setSelectingFor('from'); setOpenTokenSelect(true); }}
-                className="flex items-center gap-2 bg-gray-600 hover:bg-gray-500 rounded-full px-3 py-1 transition"
+                className="flex items-center gap-2 shadow-md rounded-md hover:bg-gray-500 px-3 py-1 transition"
               >
                 {fromToken ? (
                   <>
+                  
                     <img
                       src={logos[fromToken.symbol] || "./favicon.ico"}
                       alt={fromToken.symbol}
-                      className="w-8 h-8 rounded-full shadow-md border border-slate-500"
+                      className="w-8 h-8 rounded-full shadow-md border-2 border-indigo-400/50"
                     />
                     <span className="font-medium text-white">{fromToken.symbol}</span>
+                 
                   </>
                 ) : (
-                  <span className="text-white">Select Token</span>
+                  <span className="text-white  ">Select Token</span>
                 )}
                 <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -280,16 +284,16 @@ const Swap = () => {
                 value={fromAmount}
                 onChange={handleFromAmountChange}
                 placeholder="0.0"
-                className="w-full bg-transparent text-white text-2xl outline-none"
+                className="w-full bg-transparent text-white text-2xl outline-none placeholder-gray-500 font-medium"
                 disabled={!fromToken || !toToken}
               />
               {fromToken && (
                 <button
-                onClick={() => {
-                  const v = formatBalance(fromBalance, fromToken.decimals);
-                  setFromAmount(v);     // ← already sets the input
-                  calculateRate(v);     // ← add this line ─ recompute the other field
-                }}
+                  onClick={() => {
+                    const v = formatBalance(fromBalance, fromToken.decimals);
+                    setFromAmount(v);     // ← already sets the input
+                    calculateRate(v);     // ← add this line ─ recompute the other field
+                  }}
                   className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded"
                 >
                   MAX
@@ -299,7 +303,7 @@ const Swap = () => {
           </div>
 
           {/* Swap Direction Arrow */}
-          <div className="flex justify-center my-2">
+          <div className="flex justify-center my-3">
             <button
               onClick={() => {
                 const temp = fromToken;
@@ -308,7 +312,7 @@ const Swap = () => {
                 setFromAmount('');
                 setToAmount('');
               }}
-              className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full text-gray-300 transition"
+              className="p-3 bg-gray-700 hover:bg-indigo-700 rounded-full text-gray-300 transition-all duration-300 hover:-translate-y-0.5 shadow-md"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -317,11 +321,11 @@ const Swap = () => {
           </div>
 
           {/* To Token */}
-          <div className="mb-4 bg-gray-700 rounded-lg p-3">
-            <div className="flex justify-between items-center mb-2">
+          <div className="mb-6 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 border border-gray-700 hover:border-indigo-500/50 transition-all duration-300">
+            <div className="flex justify-between items-center mb-3">
               <button
                 onClick={() => { setSelectingFor('to'); setOpenTokenSelect(true); }}
-                className="flex items-center gap-2 bg-gray-600 hover:bg-gray-500 rounded-full px-3 py-1 transition"
+                className="flex items-center gap-2 shadow-md rounded-md hover:bg-gray-500  px-3 py-1 transition"
               >
                 {toToken ? (
                   <>
@@ -384,8 +388,8 @@ const Swap = () => {
                   className="w-4 h-4 rounded-full"
                 />
               )}
-    <span>1 {fromToken?.symbol} = {formatRate(rate)} {toToken?.symbol}</span>
-    {toToken && (
+              <span>1 {fromToken?.symbol} = {formatRate(rate)} {toToken?.symbol}</span>
+              {toToken && (
                 <img
                   src={logos[toToken.symbol] || "./Bella.jpeg"}
                   alt={toToken.symbol}
@@ -403,7 +407,7 @@ const Swap = () => {
           )}
 
           {/* Swap Button */}
-          <button
+          {/* <button
             onClick={handleSwap}
             disabled={!isAuthenticated || !fromAmount || isLoading || isSwapping || !fromToken || !toToken}
             className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${isSwapping ? 'bg-indigo-400 cursor-not-allowed' :
@@ -411,14 +415,22 @@ const Swap = () => {
                   !fromAmount || !fromToken || !toToken ? 'bg-gray-600 cursor-not-allowed' :
                     'bg-indigo-600 hover:bg-indigo-700'
               }`}
-          >
-            {!isAuthenticated ? 'Connect Wallet' :
-              isSwapping ? 'Swapping...' :
-                !fromToken || !toToken ? 'Select Tokens' :
-                  !fromAmount ? 'Enter Amount' :
-                    'Swap'}
-          </button>
+          > */}
+          <div className="flex justify-center">
+            <button
+              onClick={handleSwap}
+              disabled={!isAuthenticated || !fromAmount || isLoading || isSwapping || !fromToken || !toToken}
+              className="place-content-center py-2 px-6 text-sm font-bold text-white bg-indigo-600 rounded-md bg-opacity-85 hover:bg-opacity-90 disabled:bg-indigo-400 disabled:cursor-not-allowed transition"
+            >
 
+
+              {!isAuthenticated ? 'Connect Wallet' :
+                isSwapping ? 'Swapping...' :
+                  !fromToken || !toToken ? 'Select Tokens' :
+                    !fromAmount ? 'Enter Amount' :
+                      'Swap'}
+            </button>
+          </div>
           {/* Network Info */}
           <div className="flex items-center justify-center gap-2 mt-4 text-xs text-gray-500">
             {/* <img 

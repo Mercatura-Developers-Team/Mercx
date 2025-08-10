@@ -158,3 +158,12 @@ pub fn pool_exists(token_0: String, token_1: String) -> bool {
 
     exists(&token_0, &token_1)
 }
+
+/// Get pool by LP token's id.
+pub fn get_by_lp_token_id(lp_token_id: u32) -> Option<StablePool> {
+    POOLS.with(|m| {
+        m.borrow()
+            .iter()
+            .find_map(|(_, v)| if v.lp_token_id == lp_token_id { Some(v) } else { None })
+    })
+}

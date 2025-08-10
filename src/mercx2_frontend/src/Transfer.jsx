@@ -7,7 +7,7 @@ import SuccessModal from './SuccessModal'; // Adjust the path as needed
 
 
 const Transfer = () => {
-    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor, isAuthenticated,ckUSDTActor, Egx30Actor,  GBXActor} = useAuth();
+    const { whoamiActor, icpActor, mercx_Actor, tommy_Actor, fxmxActor, kycActor, isAuthenticated , ckUSDTActor, Egx30Actor,  GBXActor} = useAuth();
     const { principal } = useAuth();
     const navigate = useNavigate();  // Use navigate for redirection
     const transferSectionRef = useRef(null); // Add this ref
@@ -44,7 +44,6 @@ const Transfer = () => {
         }
     };
 
-
     async function fetchTokenBalances(principalId) {
         try {
             const owner = typeof principalId === 'string' ? Principal.fromText(principalId) : principalId;
@@ -75,7 +74,6 @@ const Transfer = () => {
                         return; // Stop here if not authenticated
                     }
 
-
                     const balanceResult = await token.actor[token.balances]({
                         owner,
                         subaccount: []
@@ -84,7 +82,6 @@ const Transfer = () => {
                     //Decimals
                     const decimalsResult = await token.actor[token.decimals]();
                     const decimals = typeof decimalsResult === 'number' ? decimalsResult : 8; // fallback to 8
-
                     const numericBalance = Number(balanceResult) / Math.pow(10, decimals);
                     balances[token.name] = numericBalance;
                 } catch (error) {

@@ -25,6 +25,15 @@ use crate::add_liquidity::add_liquidity_amounts_reply::AddLiquidityAmountsReply;
 use crate::add_liquidity::add_liquidity_args::AddLiquidityArgs;
 use crate::add_liquidity::add_liquidity_reply::AddLiquidityReply;
 
+pub mod lp_metadata;
+
+pub mod stable_lp_token;
+use crate::stable_lp_token::stable_lp_token::StableLPToken;
+use crate::lp_metadata::stable_lp_metadata::LPToken;
+
+pub mod kyc;
+use crate::kyc::kyc_id::User;
+
 pub mod helpers;
 pub mod stable_mercx_settings;
 use candid::Nat;

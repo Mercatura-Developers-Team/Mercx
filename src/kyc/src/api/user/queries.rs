@@ -89,6 +89,7 @@ pub fn get_all_users() -> Result<Vec<UserPrincipalInfo>, String> {
                 Err("User data integrity error: Required fields are missing".to_string())
             } else {
                 Ok(UserPrincipalInfo {
+                   user_id: user.user_id.clone(),
                     principal,
                     username: user.username.clone(),
                     email: user.email.clone(),
@@ -141,4 +142,20 @@ pub fn get_principal_by_username(username: String) -> Result<Principal, String> 
             .ok_or_else(|| "Username not found please try a valid username ".to_string())
     })
 }
+
+// pub fn get_by_principal_id(principal_id_str: &str) -> Result<Option<User>, String> {
+//     // Convert string to Principal
+//     let principal = Principal::from_text(principal_id_str)
+//         .map_err(|_| "Invalid Principal format".to_string())?;
+
+//     // Reject anonymous principal
+//     if principal == Principal::anonymous() {
+//         return Err("Anonymous principal not allowed".to_string());
+//     }
+
+//     // Look up user directly
+//     let maybe_user = USERS.with(|users| users.borrow().get(&principal).clone());
+
+//     Ok(maybe_user)
+// }
 

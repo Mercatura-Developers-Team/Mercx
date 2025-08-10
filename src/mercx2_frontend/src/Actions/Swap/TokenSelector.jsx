@@ -7,7 +7,7 @@ export default function TokenSelector({ tokens, onSelect, onCancel }) {
         <h2 className="text-white text-lg text-center">Select a Token</h2>
         {tokens.length === 0 ? (
           <p className="text-gray-400 text-center">Coming soon...</p>
-        ) : (
+        ) : ( 
           tokens.map((token) => (
             <button
               key={token.canister_id.toText()}

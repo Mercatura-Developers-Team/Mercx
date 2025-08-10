@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 echo "===========SETUP========="
 dfx start --background --clean
 
@@ -167,7 +166,6 @@ dfx deploy icp_ledger_canister --argument "
     }
   })
 "
-
 
 
 echo "DONE"

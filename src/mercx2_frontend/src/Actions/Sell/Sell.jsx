@@ -226,9 +226,7 @@ const Sell = () => {
                 <div >
                     <div className="shadow-xl rounded-3xl h-[480px] border-t-[1px] border-slate-800 bg-slate-800">
                         <div className="border-b-[1px] border-gray-900 shadow-md p-3">
-                            {/* <p className="text-lg font-bold text-center text-gray-200">
-                                Swap
-                            </p> */}
+                        
                             <p className="text-gray-300 text-center text-sm">
                                 Sell Bella and get Tommy
                             </p>
@@ -248,7 +246,7 @@ const Sell = () => {
                                     onFocus={(e) => e.target.select()}
                                     onChange={(e) => handleAmountChange(e)}
                                     className="block w-full text-right outline-0 text-gray-200 bg-inherit"
-                                    //   disabled={token?.address ? false : true}
+                                    //disabled={token?.address ? false : true}
                                     placeholder="0.0"
                                 />
                                 {inputError && <p className="text-red-500 text-sm mt-2">{inputError}</p>}

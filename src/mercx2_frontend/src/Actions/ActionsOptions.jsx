@@ -15,6 +15,7 @@ const ActionsOptions = () => {
 
     return (
         <div className="min-h-screen bg-gray-900">
+            
             <main>
                 <div className="max-w-xl mx-auto sm:px-6 lg:px-8 pt-8 lg:pt-14 2xl:pt-18">
                     <div className="shadow-xl rounded-3xl h-auto border-t-[1px] border-slate-800 bg-slate-800">
