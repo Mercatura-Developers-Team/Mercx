@@ -1,4 +1,5 @@
-use crate::helpers::math_helpers::{nat_add, nat_is_zero, nat_subtract, nat_zero};
+use crate::helpers::math_helpers::{nat_add, nat_is_zero, nat_subtract, nat_zero,nat_to_decimal_precision,nat_sqrt,nat_multiply};
+use crate::lp_metadata::stable_lp_metadata::LP_DECIMALS;
 use crate::ic::id::caller_id;
 use crate::ic::transfer::icrc1_transfer;
 use crate::ic::transfer::icrc2_transfer_from;
@@ -6,9 +7,13 @@ use crate::ic::verify_transfer::verify_transfer;
 use crate::pool::add_pool_reply::{to_add_pool_reply, to_add_pool_reply_failed, AddPoolReply};
 //use crate::transfers::transfer_reply_helpers::to_transfer_ids;
 use crate::pool::handlers;
+use crate::lp_metadata::handlers as lp_metadata_handlers;
+use crate::stable_lp_token::lp_token_map;
 use crate::stable_mercx_settings::mercx_settings_map;
 use crate::token::add_token::add_token;
 use crate::token::handlers::get_by_token;
+use crate::token::stable_token;
+use crate::StableLPToken;
 use crate::transfers::handlers as transfer_handlers;
 use crate::transfers::stable_transfer::StableTransfer;
 use crate::transfers::tx_id::TxId;
@@ -16,6 +21,7 @@ use crate::StablePool;
 use crate::StableToken;
 use candid::{CandidType, Nat, Principal};
 use icrc_ledger_types::icrc1::account::Account;
+use crate::kyc::kyc_id::get_user_by_caller;
 use serde::{Deserialize, Serialize};
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
@@ -49,6 +55,7 @@ fn add_new_pool(
 }
 
 async fn process_add_pool(
+    user_id: u32,
     token_0: &StableToken,
     amount_0: &Nat,
     tx_id_0: Option<&Nat>,
@@ -57,6 +64,7 @@ async fn process_add_pool(
     tx_id_1: Option<&Nat>,
     lp_fee_bps: u8,
     mercx_fee_bps: u8,
+    add_lp_token_amount: &Nat,
     ts: u64,
 ) -> Result<AddPoolReply, String> {
     let caller_id = caller_id(); // Uncomment if you need caller_id later
@@ -122,13 +130,36 @@ async fn process_add_pool(
         };
     }
 
+    // add LP token
+    // default to None for LP token metadata
+    let lp_token = match lp_metadata_handlers::add_lp_token(token_0, token_1) {
+        Ok(lp_token) => {
+            lp_token
+        }
+        Err(e) => {
+            return_tokens(
+                &caller_id,
+                &transfer_0,
+                token_0,
+                amount_0,
+                &transfer_1,
+                token_1,
+                amount_1,
+                &mut transfer_ids,
+                ts,
+            )
+            .await;
+            Err(format!("failed. {}", e))?
+        }
+    };
+
     //add pool
     let pool = match add_new_pool(
         token_0.token_id(),
         token_1.token_id(),
         lp_fee_bps,
         mercx_fee_bps,
-        0, // ← TEMP: You must pass a valid `lp_token_id` here!
+        lp_token.token_id(), // ← TEMP: You must pass a valid `lp_token_id` here!
     ) {
         Ok(pool) => pool,
         Err(_) => {
@@ -161,7 +192,7 @@ async fn process_add_pool(
     };
 
     // update pool with new balances
-    update_liquidity_pool(&pool, amount_0, amount_1);
+    update_liquidity_pool(user_id,&pool, amount_0, amount_1,add_lp_token_amount,ts);
 
     // TODO: Return actual AddPoolReply here, depending on your logic
     Ok(to_add_pool_reply(&pool, token_0, token_1, &transfer_ids))
@@ -169,12 +200,12 @@ async fn process_add_pool(
 
 //update balance
 fn update_liquidity_pool(
-    // user_id: u32,
+     user_id: u32,
     pool: &StablePool,
     amount_0: &Nat,
     amount_1: &Nat,
-    // add_lp_token_amount: &Nat,
-    // ts: u64,
+    add_lp_token_amount: &Nat,
+   ts: u64,
 ) {
     let update_pool = StablePool {
         balance_0: nat_add(&pool.balance_0, amount_0),
@@ -184,13 +215,42 @@ fn update_liquidity_pool(
     handlers::update(&update_pool);
 
     // update user's LP token amount
-    // update_lp_token(request_id, user_id, pool.lp_token_id, add_lp_token_amount, ts);
+    update_lp_token( user_id, pool.lp_token_id, add_lp_token_amount, ts);
+}
+
+async fn  update_lp_token( user_id: u32, lp_token_id: u32, add_lp_token_amount: &Nat, ts: u64) {
+   //UpdateUserLPTokenAmount
+
+    // refresh with the latest state if the entry exists
+    match lp_token_map::get_by_token_id(lp_token_id).await {
+        Some(lp_token) => {
+            // update adding the new deposit amount
+            let new_user_lp_token = StableLPToken {
+                amount: nat_add(&lp_token.amount, add_lp_token_amount),
+                ts,
+                ..lp_token.clone()
+            };
+            lp_token_map::update(&new_user_lp_token);
+        }
+        None => {
+            // new entry
+            let new_user_lp_token = StableLPToken::new(user_id, lp_token_id, add_lp_token_amount.clone(), ts);
+            match lp_token_map::insert(&new_user_lp_token) {
+                Ok(_) => {
+                    ic_cdk::println!("✅ LP token inserted successfully");
+                }
+                Err(e) => {
+                    ic_cdk::println!("❌ Failed to insert LP token: {}", e);
+                }
+            };
+        }
+    }
 }
 
 async fn check_arguments(
     args: &AddPoolArgs,
 ) -> Result<
-    (
+    (u32,
         StableToken,
         Nat,
         Option<Nat>,
@@ -199,6 +259,7 @@ async fn check_arguments(
         Option<Nat>,
         u8,
         u8,
+        Nat
     ),
     String,
 > {
@@ -265,10 +326,10 @@ async fn check_arguments(
     };
 
     // make sure LP token does not already exist
-    // let lp_token_address = token::address(&token_0, &token_1);
-    // if token_map::exists(&lp_token_address) {
-    //     Err(format!("LP token {} already exists", token::symbol(&token_0, &token_1)))?
-    // }
+    let lp_token_symbol = stable_token::symbol(&token_0, &token_1);
+    if lp_metadata_handlers::exists(&lp_token_symbol) {
+        Err(format!("LP token {} already exists", lp_token_symbol))?
+    }
 
     // make sure pool does not already exist
     if handlers::exists(&token_0, &token_1) {
@@ -278,33 +339,50 @@ async fn check_arguments(
         ))?
     }
 
-    //  let (add_amount_0, add_amount_1, add_lp_token_amount) = calculate_amounts(&token_0, &args.amount_0, &token_1, &args.amount_1)?;
+      let (add_amount_0, add_amount_1, add_lp_token_amount) = calculate_amounts(&token_0, &args.amount_0, &token_1, &args.amount_1)?;
 
     // make sure user is registered, if not create a new user
     //let user_id = user_map::insert(None)?;
+    let user_id = get_user_by_caller()
+        .await
+        .map_err(|e| format!("KYC lookup failed: {}", e))?
+        .ok_or("User not found. Please sign up in KYC first.")?
+        .user_id;
 
     Ok((
-        //  user_id,
+          user_id,
         token_0,
-        args.amount_0.clone(),
+        add_amount_0,
         tx_id_0,
         token_1,
-        args.amount_1.clone(),
+        add_amount_1,
         tx_id_1,
         lp_fee_bps,
         mercx_fee_bps,
-        // add_lp_token_amount,
+         add_lp_token_amount,
     ))
+}
+
+pub fn calculate_amounts(token_0: &StableToken, amount_0: &Nat, token_1: &StableToken, amount_1: &Nat) -> Result<(Nat, Nat, Nat), String> {
+    // new pool as there are no balances - take user amounts as initial ratio
+    // initialize LP tokens as sqrt(amount_0 * amount_1)
+    // convert the amounts to the same decimal precision as the LP token
+    let amount_0_in_lp_token_decimals = nat_to_decimal_precision(amount_0, token_0.decimals(), LP_DECIMALS);
+    let amount_1_in_lp_token_decimals = nat_to_decimal_precision(amount_1, token_1.decimals(), LP_DECIMALS);
+    let add_lp_token_amount = nat_sqrt(&nat_multiply(&amount_0_in_lp_token_decimals, &amount_1_in_lp_token_decimals));
+
+    Ok((amount_0.clone(), amount_1.clone(), add_lp_token_amount))
 }
 
 #[ic_cdk::update]
 pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
-    let (token_0, add_amount_0, tx_id_0, token_1, add_amount_1, tx_id_1, lp_fee_bps, kong_fee_bps) =
+    let (user_id,token_0, add_amount_0, tx_id_0, token_1, add_amount_1, tx_id_1, lp_fee_bps, kong_fee_bps,add_lp_token_amount) =
         check_arguments(&args).await?;
     let ts = ic_cdk::api::time();
     //  let request_id = request_map::insert(&StableRequest::new(user_id, &Request::AddPool(args), ts));
 
     let result = match process_add_pool(
+        user_id,
         &token_0,
         &add_amount_0,
         tx_id_0.as_ref(),
@@ -313,6 +391,7 @@ pub async fn add_pool(args: AddPoolArgs) -> Result<AddPoolReply, String> {
         tx_id_1.as_ref(),
         lp_fee_bps,
         kong_fee_bps,
+        &add_lp_token_amount,
         ts,
     )
     .await

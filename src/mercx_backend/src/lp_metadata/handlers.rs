@@ -2,6 +2,7 @@
 use crate::lp_metadata::stable_lp_metadata::{StableLpMetadataId,LPToken};
 use crate::stable_memory::LPMETADATA;
 use crate::stable_mercx_settings::mercx_settings_map;
+use crate::StableToken;
 
 pub fn get_by_token_id(token_id: u32) -> Option<LPToken> {
     LPMETADATA.with(|m| m.borrow().get(&StableLpMetadataId(token_id)))
@@ -42,7 +43,7 @@ pub fn lp_token_exists_by_symbol(symbol: &str) -> bool {
 }
 
 
-pub fn insert(token: LPToken) -> Result<u32, String> {
+pub fn insert(token: &LPToken) -> Result<u32, String> {
      // 1. Check if LP token with the same symbol already exists
     if lp_token_exists_by_symbol(&token.symbol) {
         //i dont know if I should remove return here?
@@ -61,4 +62,20 @@ pub fn insert(token: LPToken) -> Result<u32, String> {
 
     // 3. Return the new token_id
     Ok(insert_token.token_id())
+}
+
+pub fn add_lp_token(token_0: &StableToken, token_1: &StableToken) -> Result<LPToken, String> {
+    let lp_token = LPToken::new(token_0, token_1);
+    let token_id = insert(&lp_token)?;
+
+    // Retrieves the inserted token by its token_id
+    get_by_token_id(token_id).ok_or_else(|| "Failed to add LP token".to_string())
+}
+
+pub fn exists(symbol: &str) -> bool {
+    LPMETADATA.with(|map| {
+        map.borrow()
+            .iter()
+            .any(|(_, lp_token)| lp_token.symbol == symbol)
+    })
 }

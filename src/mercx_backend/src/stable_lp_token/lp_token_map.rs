@@ -60,3 +60,9 @@ pub fn insert(lp_token: &StableLPToken) -> Result<u64, String> {
 
     Ok(insert_lp_token.lp_token_id)
 }
+
+
+pub fn update(lp_token: &StableLPToken) {
+    LP_TOKEN_MAP.with(|m| m.borrow_mut().insert(StableLPTokenId(lp_token.lp_token_id), lp_token.clone()));
+
+}

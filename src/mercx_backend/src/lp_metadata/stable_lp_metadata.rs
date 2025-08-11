@@ -63,6 +63,7 @@ impl LPToken {
     }
 }
 
+
 impl Storable for LPToken {
     fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
         serde_cbor::to_vec(self).unwrap().into()

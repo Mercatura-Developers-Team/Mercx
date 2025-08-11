@@ -1,10 +1,12 @@
 use candid::{CandidType, Nat};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
+use crate::lp_metadata::handlers as lp_handlers;
 use crate::token::stable_token::StableToken;
 use crate::token::handlers;
 use crate::helpers::math_helpers::{price_rounded,nat_to_bigint,nat_to_decimal_precision,nat_is_zero,nat_add,nat_zero};
 use num::BigRational;
+use crate::LPToken;
 
 #[derive(CandidType, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct StablePoolId(pub u32);
@@ -81,6 +83,11 @@ impl StablePool {
 
    pub fn canister_id_1(&self) -> String {
             self.token_1().canister_id().expect("Canister ID missing").to_string()    }
+
+
+    pub fn lp_token(&self) -> LPToken {
+        lp_handlers::get_by_token_id(self.lp_token_id).unwrap()
+    }
 
     pub fn get_price(&self) -> Option<BigRational> {
         let reserve_0 = nat_add(&self.balance_0, &self.lp_fee_0);
