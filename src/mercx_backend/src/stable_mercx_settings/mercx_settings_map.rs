@@ -21,19 +21,25 @@ pub fn inc_token_map_idx() -> u32 {
 }
 
 
+ 
 pub fn inc_lp_metadata_map_idx() -> u32 {
-    MERCX_SETTINGS.with(|s| {
-        let mut map = s.borrow_mut();
-        let mercx_settings = map.get();
-        let token_map_idx = mercx_settings.lp_metadata_map_idx + 1;
-        let new_mercx_settings = StableMercxSettings {
-            token_map_idx,
-            ..mercx_settings.clone()
-        };
-        _ = map.set(new_mercx_settings);
-        token_map_idx
+    MERCX_SETTINGS.with(|rc| {
+        // Borrow the RefCell mutably to access the StableCell
+        let mut cell = rc.borrow_mut();
+
+        // Read current settings (clone because get() returns &T)
+        let mut st = cell.get().clone();
+
+        // Increment safely
+        st.lp_metadata_map_idx = st.lp_metadata_map_idx.saturating_add(1);
+
+        // Persist back to StableCell
+        cell.set(st.clone()).expect("Failed to save settings");
+
+        st.lp_metadata_map_idx
     })
 }
+
 
 
 pub fn inc_pool_map_idx() -> u32 {
