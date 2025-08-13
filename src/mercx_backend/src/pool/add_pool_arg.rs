@@ -192,14 +192,14 @@ async fn process_add_pool(
     };
 
     // update pool with new balances
-    update_liquidity_pool(user_id,&pool, amount_0, amount_1,add_lp_token_amount,ts);
+    update_liquidity_pool(user_id,&pool, amount_0, amount_1,add_lp_token_amount,ts).await;
 
     // TODO: Return actual AddPoolReply here, depending on your logic
-    Ok(to_add_pool_reply(&pool, token_0, token_1, &transfer_ids))
+    Ok(to_add_pool_reply(&pool, token_0, token_1, add_lp_token_amount.clone(),&transfer_ids))
 }
 
 //update balance
-fn update_liquidity_pool(
+async fn update_liquidity_pool(
      user_id: u32,
     pool: &StablePool,
     amount_0: &Nat,
@@ -215,12 +215,14 @@ fn update_liquidity_pool(
     handlers::update(&update_pool);
 
     // update user's LP token amount
-    update_lp_token( user_id, pool.lp_token_id, add_lp_token_amount, ts);
+    update_lp_token( user_id, pool.lp_token_id, add_lp_token_amount, ts).await;
 }
 
 async fn  update_lp_token( user_id: u32, lp_token_id: u32, add_lp_token_amount: &Nat, ts: u64) {
    //UpdateUserLPTokenAmount
-
+    // if you want the current caller’s principal here
+    let principal: Principal = ic_cdk::api::caller();
+    ic_cdk::println!("principal {}",principal);
     // refresh with the latest state if the entry exists
     match lp_token_map::get_by_token_id(lp_token_id).await {
         Some(lp_token) => {
@@ -234,7 +236,7 @@ async fn  update_lp_token( user_id: u32, lp_token_id: u32, add_lp_token_amount: 
         }
         None => {
             // new entry
-            let new_user_lp_token = StableLPToken::new(user_id, lp_token_id, add_lp_token_amount.clone(), ts);
+            let new_user_lp_token = StableLPToken::new(user_id,principal, lp_token_id, add_lp_token_amount.clone(), ts);
             match lp_token_map::insert(&new_user_lp_token) {
                 Ok(_) => {
                     ic_cdk::println!("✅ LP token inserted successfully");

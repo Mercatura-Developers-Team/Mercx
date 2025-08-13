@@ -21,10 +21,15 @@ export default function Pools() {
 
       try {
         const result = await mercx_Actor.get_all_pools();
-        setPools(result);
 
-        const logoMap = await fetchTokenLogos(result);
-        setLogos(logoMap);
+        if (result?.Ok) {
+          setPools(result.Ok);
+          const logoMap = await fetchTokenLogos(result.Ok); // ✅ use result.Ok, not raw result
+          setLogos(logoMap);
+        } else {
+          console.error("get_all_pools error:", result?.Err || result);
+        }
+      
       } catch (err) {
         console.error("Failed to load pools or logos", err);
       }

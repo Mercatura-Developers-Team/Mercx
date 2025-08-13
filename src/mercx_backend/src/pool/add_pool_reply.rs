@@ -23,6 +23,7 @@ pub struct AddPoolReply {
     pub lp_fee_1: Nat,
     pub lp_fee_bps: u8,              // confirmed LP fee
     pub lp_token_symbol: String,     // FXMX_ckUSDT_LP
+    pub add_lp_token_amount: Nat,
     pub transfer_ids: Option<Vec<TransferIdReply>>,
 }
 
@@ -48,11 +49,12 @@ pub fn to_add_pool_reply_failed(
         lp_fee_1: nat_zero(),
         lp_fee_bps: 0,
         lp_token_symbol: "LP token not added".to_string(),
+        add_lp_token_amount:nat_zero(),
         transfer_ids: to_transfer_ids(transfer_ids),
     }
 }
 
-pub fn to_add_pool_reply(pool: &StablePool,token0:&StableToken,token1:&StableToken, transfer_ids: &[u64],) -> AddPoolReply {
+pub fn to_add_pool_reply(pool: &StablePool,token0:&StableToken,token1:&StableToken,  add_lp_token_amount: Nat,transfer_ids: &[u64],) -> AddPoolReply {
     let lp_token = pool.lp_token();
     let lp_token_symbol = lp_token.name().to_string();
   AddPoolReply {
@@ -70,6 +72,7 @@ pub fn to_add_pool_reply(pool: &StablePool,token0:&StableToken,token1:&StableTok
       //lazem neghayrha
       lp_fee_bps:pool.lp_fee_bps,
       lp_token_symbol,
+      add_lp_token_amount: add_lp_token_amount.clone(),    // <-- set it
       transfer_ids: to_transfer_ids(transfer_ids),
     }
 }

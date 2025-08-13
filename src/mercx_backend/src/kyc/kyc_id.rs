@@ -37,3 +37,4 @@ pub async fn get_user_by_caller() -> Result<Option<User>, String> {
 
     result
 }
+

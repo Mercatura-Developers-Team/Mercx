@@ -1,5 +1,5 @@
 
-use candid::{CandidType, Nat};
+use candid::{CandidType, Nat,Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
@@ -22,16 +22,18 @@ impl Storable for StableLPTokenId {
 pub struct StableLPToken {
     pub lp_token_id: u64, // unique id (same as StableLPTokenLedgerId) for LP_TOKEN_LEDGER
     pub user_id: u32,     // user id of the token holder
+    pub principal: Principal, // 
     pub token_id: u32,    // token id of the token //linked later with lp_metadata_token_id struct
     pub amount: Nat,      // amount the user holds of the token
     pub ts: u64,          // timestamp of the last token update
 }
 
 impl StableLPToken {
-    pub fn new(user_id: u32, token_id: u32, amount: Nat, ts: u64) -> Self {
+    pub fn new(user_id: u32, principal: Principal, token_id: u32, amount: Nat, ts: u64) -> Self {
         Self {
             lp_token_id: 0,
             user_id,
+            principal,
             token_id,
             amount,
             ts,

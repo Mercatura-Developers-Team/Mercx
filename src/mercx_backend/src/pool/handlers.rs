@@ -9,6 +9,10 @@ use crate::transfers::handlers as transfer_handlers;
 use crate::pool::add_pool_reply::to_add_pool_reply;
 use crate::token::handlers::get_by_token_id;
 use crate::stable_mercx_settings::mercx_settings_map::reset_pool_map_idx;
+use crate::helpers::math_helpers::nat_zero;
+use candid::Nat;
+use candid::Principal;
+use crate::stable_lp_token::lp_token_map::{get_by_token_id_by_principal};
 
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
@@ -82,22 +86,39 @@ pub fn insert(pool: &StablePool) -> Result<u32, String> {
     Ok(insert_pool.pool_id)
 }
 
-#[ic_cdk::query]
-fn get_all_pools() -> Vec<AddPoolReply> {
-    POOLS.with(|pools| {
-        pools
-            .borrow()
-            .iter()
-            .map(|(_, pool)| {
-                let transfer_ids = transfer_handlers::get_by_token_ids(pool.token_id_0, pool.token_id_1);
 
-                let token0 = get_by_token_id(pool.token_id_0).unwrap(); // You must implement or import this
-                let token1 = get_by_token_id(pool.token_id_1).unwrap(); // You must implement or import this
 
-                to_add_pool_reply(&pool, &token0, &token1, &transfer_ids)
-            })
-            .collect()
-    })
+// (optional) tiny helper: LP amount for this pool & principal
+fn lp_amount_for_pool_and_principal(pool: &StablePool, principal: Principal) -> Nat {
+    get_by_token_id_by_principal(pool.lp_token_id, principal)
+        .map(|row| row.amount)
+        .unwrap_or_else(nat_zero)
+}
+
+#[ic_cdk::query] // update, not query
+pub async fn get_all_pools() -> Result<Vec<AddPoolReply>, String> {
+    
+    let caller_principal = ic_cdk::api::caller();
+
+
+    let list = POOLS.with(|pools| {
+        pools.borrow().iter().map(|(_, pool)| {
+            let transfer_ids =
+                transfer_handlers::get_by_token_ids(pool.token_id_0, pool.token_id_1);
+
+            let token0 = get_by_token_id(pool.token_id_0).unwrap();
+            let token1 = get_by_token_id(pool.token_id_1).unwrap();
+
+            // If you really want the caller’s LP amount here, compute it. Otherwise use nat_zero().
+         //   let _lp_amount = get_user_lp_amount_for_pool(&pool, user_id);
+         // actual LP amount of the caller for this pool
+         let lp_amount = lp_amount_for_pool_and_principal(&pool, caller_principal);
+
+            to_add_pool_reply(&pool, &token0, &token1, lp_amount, &transfer_ids)
+        }).collect::<Vec<_>>()
+    });
+
+    Ok(list)
 }
 
 

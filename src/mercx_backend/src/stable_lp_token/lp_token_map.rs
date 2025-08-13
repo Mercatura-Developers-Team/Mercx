@@ -1,3 +1,4 @@
+use candid::Principal;
 use candid::Nat;
 use super::stable_lp_token::{StableLPToken};
 use crate::stable_memory::LP_TOKEN_MAP;
@@ -5,7 +6,7 @@ use crate::kyc::kyc_id::get_user_by_caller;
 use crate::helpers::math_helpers::{nat_add,nat_zero};
 use crate::stable_lp_token::stable_lp_token::StableLPTokenId;
 use crate::stable_mercx_settings::mercx_settings_map;
-
+use crate::stable_mercx_settings::mercx_settings_map::reset_lp_map_idx;
 /// get lp_token of the caller
  #[ic_cdk::query]
 pub async fn get_by_token_id(token_id: u32) -> Option<StableLPToken> {
@@ -19,6 +20,17 @@ pub fn get_by_token_id_by_user_id(token_id: u32, user_id: u32) -> Option<StableL
     LP_TOKEN_MAP.with(|m| {
         m.borrow().iter().find_map(|(_, v)| {
             if v.user_id == user_id && v.token_id == token_id {
+                return Some(v);
+            }
+            None
+        })
+    })
+} 
+#[ic_cdk::query]
+pub fn get_by_token_id_by_principal(token_id: u32, principal: Principal) -> Option<StableLPToken> {
+    LP_TOKEN_MAP.with(|m| {
+        m.borrow().iter().find_map(|(_, v)| {
+            if v.principal == principal && v.token_id == token_id {
                 return Some(v);
             }
             None
@@ -65,4 +77,16 @@ pub fn insert(lp_token: &StableLPToken) -> Result<u64, String> {
 pub fn update(lp_token: &StableLPToken) {
     LP_TOKEN_MAP.with(|m| m.borrow_mut().insert(StableLPTokenId(lp_token.lp_token_id), lp_token.clone()));
 
+}
+
+#[cfg(not(feature = "prod"))]
+#[ic_cdk::update]
+fn reset_lp() -> Result<String, String> {
+    LP_TOKEN_MAP.with(|tokens| {
+        tokens.borrow_mut().clear_new(); // `clear_new()` btmsh kolo remove law hanmsh haga specific
+    });
+
+    reset_lp_map_idx();
+
+    Ok("✅ lp memory cleared".to_string())
 }

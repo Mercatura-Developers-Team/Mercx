@@ -20,6 +20,7 @@ pub fn inc_token_map_idx() -> u32 {
     })
 }
 
+
 pub fn inc_lp_metadata_map_idx() -> u32 {
     MERCX_SETTINGS.with(|s| {
         let mut map = s.borrow_mut();
@@ -33,6 +34,7 @@ pub fn inc_lp_metadata_map_idx() -> u32 {
         token_map_idx
     })
 }
+
 
 pub fn inc_pool_map_idx() -> u32 {
     MERCX_SETTINGS.with(|s| {
@@ -102,3 +104,30 @@ pub fn inc_lp_token_map_idx() -> u64 {
         lp_token_map_idx
     })
 }
+
+pub fn reset_lp_map_idx() {
+    MERCX_SETTINGS.with(|s| {
+        let mut map = s.borrow_mut();
+      
+        let current_settings = map.get();
+        let new_settings = StableMercxSettings {
+            lp_token_map_idx: 0,
+            ..current_settings.clone()
+        };
+        _ = map.set(new_settings);
+    });
+} 
+
+
+pub fn reset_lp_metadata_map_idx() {
+    MERCX_SETTINGS.with(|s| {
+        let mut map = s.borrow_mut();
+      
+        let current_settings = map.get();
+        let new_settings = StableMercxSettings {
+            lp_metadata_map_idx: 0,
+            ..current_settings.clone()
+        };
+        _ = map.set(new_settings);
+    });
+} 
