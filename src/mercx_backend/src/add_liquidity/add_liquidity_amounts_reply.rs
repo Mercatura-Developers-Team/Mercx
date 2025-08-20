@@ -14,5 +14,5 @@ pub struct AddLiquidityAmountsReply {
     pub symbol_1: String,
     pub amount_1: Nat,
     pub fee_1: Nat,
-  //  pub add_lp_token_amount: Nat,
+    pub add_lp_token_amount: Nat,
 }

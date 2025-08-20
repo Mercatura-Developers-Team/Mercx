@@ -1,3 +1,4 @@
+use candid::{ Nat};
 use super::add_liquidity_reply::AddLiquidityReply;
 use crate::helpers::math_helpers::nat_zero;
 use crate::transfers::transfer_reply_helpers::to_transfer_ids;
@@ -7,7 +8,7 @@ use crate::StableToken;
 
 
 
-pub fn to_add_liquidity_reply(pool: &StablePool,token0:&StableToken,token1:&StableToken, transfer_ids: &[u64],) -> AddLiquidityReply {
+pub fn to_add_liquidity_reply(pool: &StablePool,token0:&StableToken,token1:&StableToken, add_lp_token_amount: Nat , transfer_ids: &[u64],) -> AddLiquidityReply {
 
     AddLiquidityReply {
         pool_id: pool.pool_id,
@@ -20,9 +21,9 @@ pub fn to_add_liquidity_reply(pool: &StablePool,token0:&StableToken,token1:&Stab
         symbol_1:pool.symbol_1(),
         amount_1: pool.balance_1.clone(),
         //lazem neghayrha
-        lp_fee_bps:0, 
-        lp_token_symbol: "LP token not added".to_string(),
-        lp_token_amount: nat_zero(),
+        lp_fee_bps:0,   //?
+        lp_token_symbol: format!("{}_{}_LP", token0.symbol(), token1.symbol()),
+        add_lp_token_amount:add_lp_token_amount.clone(),
         transfer_ids: to_transfer_ids(transfer_ids),
       }
   }
@@ -46,9 +47,9 @@ pub fn to_add_liquidity_reply(pool: &StablePool,token0:&StableToken,token1:&Stab
         address_1: address_1.to_string(),
         symbol_1: symbol_1.to_string(),
         amount_1: nat_zero(),
-        lp_fee_bps: 0,
+        lp_fee_bps: 0,   //?
         lp_token_symbol: "LP token not added".to_string(),
-        lp_token_amount: nat_zero(),
+        add_lp_token_amount: nat_zero(),
         transfer_ids: to_transfer_ids(transfer_ids),
     }
 }
