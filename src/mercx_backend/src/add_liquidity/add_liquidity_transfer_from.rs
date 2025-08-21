@@ -425,7 +425,7 @@ async fn verify_transfer_token(
     transfer_ids: &mut Vec<u64>,
     ts: u64,
 ) -> Result<(), String> {
-    let token_id = token.token_id();
+    let token_id: u32 = token.token_id();
 
    
     match verify_transfer(token, tx_id, amount).await {
