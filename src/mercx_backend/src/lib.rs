@@ -34,6 +34,13 @@ use crate::lp_metadata::stable_lp_metadata::LPToken;
 pub mod kyc;
 use crate::kyc::kyc_id::User;
 
+pub mod remove_liquidity;
+use crate::remove_liquidity::remove_liquidity_args::RemoveLiquidityArgs;
+use crate::remove_liquidity::remove_liquidity_reply::RemoveLiquidityReply;
+
+pub mod remove_liquidity_amounts;
+use crate::remove_liquidity_amounts::remove_liquidity_amounts_reply::RemoveLiquidityAmountsReply;
+
 pub mod helpers;
 pub mod stable_mercx_settings;
 use candid::Nat;
