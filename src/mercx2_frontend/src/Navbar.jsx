@@ -1,62 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./use-auth-client";
 import './index.css';
-import { HiOutlineLogout, HiMenu, HiX, HiClipboardCopy } from "react-icons/hi";
+import {HiOutlineLogout, 
+  HiMenu, 
+  HiX, 
+  HiHome, 
+  HiCurrencyDollar, 
+  HiReceiptRefund, 
+  HiCollection, 
+  HiUserGroup,
+  HiSparkles} from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { FaCopy } from "react-icons/fa";
+import { FaCopy ,  FaExchangeAlt, 
+  FaWater, 
+  FaUserTie,
+  FaChevronDown } from "react-icons/fa";
 
 const navigation = [
-  { name: "Home", to: "/" },
-  { name: "Trade", to: "/trade" },
-  { name: "Transactions", to: "/transactions" },
-  { name: "Wallet", to: "/wallet" },
-  { name: "Pools", to: "/pools" }
+  { name: "Home", to: "/", icon: <HiHome className="mr-2" /> },
+  { name: "Trade", to: "/trade", icon: <FaExchangeAlt className="mr-2" /> },
+  { name: "Transactions", to: "/transactions", icon: <HiReceiptRefund className="mr-2" /> },
+  { name: "Wallet", to: "/wallet", icon: <HiCurrencyDollar className="mr-2" /> },
+  { 
+    name: "Pools", 
+
+    icon: <HiCollection className="mr-2" />,
+    dropdown: [
+      { name: "Liquidity Pools", to: "/pools", icon: <FaWater className="mr-2 text-blue-400" /> },
+      { name: "Liquidity Providers", to: "/liquidity", icon: <FaUserTie className="mr-2 text-purple-400" /> }
+    ]
+  }
 ];
 
 function MyNavbar() {
   const { isAuthenticated, login, logout, principal, kycActor } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [userExists, setUserExists] = useState(false);  // State to track if user exists
-  const [username, setUsername] = useState(""); // State to store the username
+  const [userExists, setUserExists] = useState(false);
+  const [username, setUsername] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [initial,setInitial]  = useState("");
-
-
-
-  // const handleLogin = async () => {
-  //   await login();
-   
-    
-  // };
+  const [initial, setInitial] = useState("");
+  const [poolsDropdownOpen, setPoolsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fetchUsername = async () => {
-      if (isAuthenticated && principal) {  
+      if (isAuthenticated && principal) {
         try {
           const exists = await kycActor.has_username_for_principal(principal);
-          console.log("User exists:", exists); // Debug log
-  
           setUserExists(exists);
-  
           if (exists) {
             const fetchedUsername = await kycActor.get_username_by_principal(principal);
-            console.log("Fetched username:", fetchedUsername); // Debug log
-  
             setUsername(fetchedUsername?.Ok || "Unknown User");
-
-            const username1 = fetchedUsername.Ok; // Extract the actual string
-            console.log("Extracted username:", username);
-
-            const userInitial = username1.charAt(0).toUpperCase(); // Use extracted string
+            const username1 = fetchedUsername.Ok;
+            const userInitial = username1.charAt(0).toUpperCase();
             setInitial(userInitial);
-            console.log("I:", userInitial); // Debug log
-
           } else {
             setUsername("Unknown User");
             setInitial("U");
-
           }
         } catch (error) {
           console.error("Error fetching username:", error);
@@ -65,40 +66,14 @@ function MyNavbar() {
         console.log("Not authenticated or no principal yet.");
       }
     };
-  
     fetchUsername();
-  }, [isAuthenticated, principal]); // We should NOT add `userExists` to dependencies
-  
-
-  // useEffect(() => {
-  //   if (isAuthenticated && principal) {
-  //     try {
-  //       setPrincipal(principal);
-  //     } catch (error) {
-  //       console.error("Failed to fetch principal:", error);
-  //       setPrincipal("Error fetching principal");
-  //     }
-  //   }
-  // }, [isAuthenticated, principal]);
-
-  // // Effect to handle redirection based on user existence
-  // useEffect(() => {
-  //   if (isUserChecked) {  // Ensure we navigate only after checking the user status
-  //     if (!userExists) {
-  //       navigate('/signup');
-  //     } else {
-  //       navigate('/');
-  //     }
-  //   }
-  // }, [userExists, isUserChecked]);  // Depend on userExists and isUserChecked
+  }, [isAuthenticated, principal]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setIsDropdownOpen(false); // Close the dropdown when the user logs out
+      setIsDropdownOpen(false);
     }
   }, [isAuthenticated]);
-
-  //const userInitial = username ? username.charAt(0).toUpperCase() : "U";
 
   return (
     <nav className="bg-gray-900">
@@ -117,50 +92,95 @@ function MyNavbar() {
           </div>
           <div className="flex-1 flex items-center justify-center sm:justify-start">
             <div className="flex-shrink-0 flex items-center">
-              <NavLink to="/" className="focus:outline-none  hidden sm:flex items-center">
+              <NavLink to="/" className="focus:outline-none hidden sm:flex items-center">
                 <img src={'j.png'} alt="Logo" className="h-10 sm:h-12 mt-2 mr-8 " />
               </NavLink>
             </div>
             <div className="hidden sm:block sm:ml-6">
               <div className="flex space-x-4">
                 {navigation.map((item) => (
-                  <NavLink
-                    key={item.name}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      isActive ? "bg-gray-700 text-white px-3 py-2 rounded-md text-sm font-medium" : "text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-                    }
-                  >
-                    {item.name}
-                  </NavLink>
+                  item.dropdown ? (
+                    <div key={item.name} className="relative group">
+                         <button
+                        className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          poolsDropdownOpen
+                            ? "bg-gradient-to-r-indigo-500-700 text-white shadow-lg"
+                            : "text-blue-100 hover:bg-gradient-to-r-indigo-500-700 hover:text-white hover:shadow-md"
+                        }`}
+                        onClick={() => setPoolsDropdownOpen(!poolsDropdownOpen)}
+                      >
+                        {item.icon}
+                        {item.name}
+                        <FaChevronDown className={`ml-2 transition-transform ${poolsDropdownOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {poolsDropdownOpen && (
+  <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-xl bg-gradient-to-b from-gray-800 to-gray-900 ring-1 ring-blue-500 ring-opacity-50 z-50 overflow-hidden">                          <div className="py-1">
+                            {item.dropdown.map((dropdownItem) => (
+                              <NavLink
+                                key={dropdownItem.name}
+                                to={dropdownItem.to}
+                                className={({ isActive }) =>
+                                    `flex items-center px-4 py-3 text-sm transition-all duration-200 hover:bg-gray-900 hover:transform hover:translate-x-1 ${
+                                    isActive
+                                      ? " text-white font-semibold"
+                                      : "text-blue-100"
+                                  }`
+                                }
+                                onClick={() => setPoolsDropdownOpen(false)}
+                              >
+                                {dropdownItem.icon}
+                                {dropdownItem.name}
+                              </NavLink>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <NavLink
+                      key={item.name}
+                      to={item.to}
+                          className={({ isActive }) =>
+                        `flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? "bg-gradient-to-r-indigo-500-700 text-white shadow-lg"
+                            : "text-blue-100 hover:bg-gradient-to-r-indigo-500-700 hover:text-white hover:shadow-md"
+                        }`
+                      }
+                    >
+                            {item.icon}
+                      {item.name}
+                    </NavLink>
+                  )
                 ))}
               </div>
             </div>
           </div>
+
           {/* User Authentication and Settings */}
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
             {isAuthenticated ? (
               <>
-
                 <input
                   type="text"
                   readOnly
                   className="text-gray-900 pl-4 pr-4 py-2 border rounded-3xl text-xs sm:text-sm"
                   value={principal || "Fetching..."}
                 />
-
-                <CopyToClipboard text={principal} onCopy={() => {
-                  setCopied(true);
-                  setTimeout(() => {
-                    setCopied(false);
-                  }, 3000);
-                }}>
-                  <button className="m-3  bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 rounded-full">
+                <CopyToClipboard
+                  text={principal}
+                  onCopy={() => {
+                    setCopied(true);
+                    setTimeout(() => {
+                      setCopied(false);
+                    }, 3000);
+                  }}
+                >
+                  <button className="m-3 bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 rounded-full">
                     <FaCopy size={19} style={{ color: 'currentColor' }} />
                   </button>
                 </CopyToClipboard>
                 {copied && <span className="text-xs p-1" style={{ color: 'lightblue' }}>Copied</span>}
-
                 <div className="relative">
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -176,51 +196,91 @@ function MyNavbar() {
                           onClick={logout}
                           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
-                          <HiOutlineLogout className="mr-2" /> {/* Logout icon */}
+                          <HiOutlineLogout className="mr-2" />
                           Logout
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
-
-                {/* <button onClick={logout} className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2">
-                  <HiOutlineLogout size={24} style={{ color: 'currentColor' }} />
-                </button> */}
               </>
             ) : (
               <button
                 onClick={login}
-                className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg  py-2 px-4 rounded"
+                className="bg-gradient-to-r-indigo-500-700 hover:bg-gradient-to-r-indigo-700-darker text-white font-bold text-lg py-2 px-4 rounded"
               >
                 Connect to Wallet
               </button>
             )}
           </div>
         </div>
-      </div>
+
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="sm:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <NavLink to="/" className="focus:outline-none">
-              <img src={'j.png'} alt="Logo" className="logo-class h-16 mt-6 " />
-            </NavLink>
-            {navigation.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.to}
-                className={({ isActive }) =>
-                  isActive ? "bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium" : "text-gray-600 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                }
-                onClick={() => setIsOpen(false)}
-              >
-                {item.name}
-              </NavLink>
-            ))}
+        {isOpen && (
+          <div className="sm:hidden bg-gray-900 shadow-inner">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              <div className="flex justify-center mb-4">
+                <img src={'j.png'} alt="Logo" className="h-14 mt-2" />
+              </div>
+              
+              {navigation.map((item) =>
+                item.dropdown ? (
+                  <div key={item.name} className="pl-3">
+                    <button
+                      className="flex items-center w-full text-left px-3 py-3 rounded-lg text-base font-medium text-blue-100 hover:bg-gray-800 transition-colors"
+                      onClick={() => setPoolsDropdownOpen(!poolsDropdownOpen)}
+                    >
+                      {item.icon}
+                      {item.name}
+                      <FaChevronDown className={`ml-auto transition-transform ${poolsDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {poolsDropdownOpen && (
+                      <div className="pl-6 mt-1 space-y-2 border-l-2 border-blue-700 ml-2">
+                        {item.dropdown.map((dropdownItem) => (
+                          <NavLink
+                            key={dropdownItem.name}
+                            to={dropdownItem.to}
+                            className={({ isActive }) =>
+                              `flex items-center px-3 py-2 rounded-lg text-base transition-all ${
+                                isActive
+                                  ? "bg-blue-700 text-white font-semibold"
+                                  : "text-blue-200 hover:bg-blue-800"
+                              }`
+                            }
+                            onClick={() => {
+                              setIsOpen(false);
+                              setPoolsDropdownOpen(false);
+                            }}
+                          >
+                            {dropdownItem.icon}
+                            {dropdownItem.name}
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <NavLink
+                    key={item.name}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `flex items-center px-3 py-3 rounded-lg text-base font-medium transition-colors ${
+                        isActive
+                          ? "bg-blue-700 text-white"
+                          : "text-blue-100 hover:bg-blue-800"
+                      }`
+                    }
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </NavLink>
+             ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   );
 }

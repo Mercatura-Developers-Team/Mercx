@@ -20,7 +20,7 @@ fn get_pool_info(pool_id: u32) -> (String, String, String, String, String) {
                 pool.name(),
                 pool.canister_id_0(),
                 pool.symbol_0(),
-                pool.canister_id_0(),
+                pool.canister_id_1(),
                 pool.symbol_1(),
             )
         },
@@ -38,7 +38,7 @@ pub fn to_remove_liquidity_reply(
     transfer_ids: Vec<u64>,
     ts: u64,
 ) -> RemoveLiquidityReply {
-    let (symbol, symbol_0, address_0, address_1, symbol_1) = get_pool_info(pool_id);
+    let (symbol,address_0, symbol_0, address_1, symbol_1) = get_pool_info(pool_id);
 
     RemoveLiquidityReply {
  
