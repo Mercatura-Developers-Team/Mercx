@@ -1,30 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./use-auth-client";
 import './index.css';
-import {HiOutlineLogout, 
-  HiMenu, 
-  HiX, 
-  HiHome, 
-  HiCurrencyDollar, 
-  HiReceiptRefund, 
-  HiCollection, 
+import {
+  HiOutlineLogout,
+  HiMenu,
+  HiX,
+  HiHome,
+  HiCurrencyDollar,
+  HiReceiptRefund,
+  HiCollection,
   HiUserGroup,
-  HiSparkles} from "react-icons/hi";
+  HiSparkles
+} from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { FaCopy ,  FaExchangeAlt, 
-  FaWater, 
+import {
+  FaCopy, FaExchangeAlt,
+  FaWater,
   FaUserTie,
-  FaChevronDown } from "react-icons/fa";
+  FaChevronDown
+} from "react-icons/fa";
 
 const navigation = [
   { name: "Home", to: "/", icon: <HiHome className="mr-2" /> },
   { name: "Trade", to: "/trade", icon: <FaExchangeAlt className="mr-2" /> },
   { name: "Transactions", to: "/transactions", icon: <HiReceiptRefund className="mr-2" /> },
   { name: "Wallet", to: "/wallet", icon: <HiCurrencyDollar className="mr-2" /> },
-  { 
-    name: "Pools", 
-
+  {
+    name: "Pools",
     icon: <HiCollection className="mr-2" />,
     dropdown: [
       { name: "Liquidity Pools", to: "/pools", icon: <FaWater className="mr-2 text-blue-400" /> },
@@ -101,12 +104,11 @@ function MyNavbar() {
                 {navigation.map((item) => (
                   item.dropdown ? (
                     <div key={item.name} className="relative group">
-                         <button
-                        className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          poolsDropdownOpen
-                            ? "bg-gradient-to-r-indigo-500-700 text-white shadow-lg"
-                            : "text-blue-100 hover:bg-gradient-to-r-indigo-500-700 hover:text-white hover:shadow-md"
-                        }`}
+                      <button
+                        className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${poolsDropdownOpen
+                          ? "bg-gradient-to-r-indigo-500-700 text-white shadow-lg"
+                          : "text-blue-100 hover:bg-gradient-to-r-indigo-500-700 hover:text-white hover:shadow-md"
+                          }`}
                         onClick={() => setPoolsDropdownOpen(!poolsDropdownOpen)}
                       >
                         {item.icon}
@@ -114,25 +116,24 @@ function MyNavbar() {
                         <FaChevronDown className={`ml-2 transition-transform ${poolsDropdownOpen ? "rotate-180" : ""}`} />
                       </button>
                       {poolsDropdownOpen && (
-  <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-xl bg-gradient-to-b from-gray-800 to-gray-900 ring-1 ring-blue-500 ring-opacity-50 z-50 overflow-hidden">                          <div className="py-1">
-                            {item.dropdown.map((dropdownItem) => (
-                              <NavLink
-                                key={dropdownItem.name}
-                                to={dropdownItem.to}
-                                className={({ isActive }) =>
-                                    `flex items-center px-4 py-3 text-sm transition-all duration-200 hover:bg-gray-900 hover:transform hover:translate-x-1 ${
-                                    isActive
-                                      ? " text-white font-semibold"
-                                      : "text-blue-100"
-                                  }`
-                                }
-                                onClick={() => setPoolsDropdownOpen(false)}
-                              >
-                                {dropdownItem.icon}
-                                {dropdownItem.name}
-                              </NavLink>
-                            ))}
-                          </div>
+                        <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-xl bg-gradient-to-b from-gray-800 to-gray-900 ring-1 ring-blue-500 ring-opacity-50 z-50 overflow-hidden">                          <div className="py-1">
+                          {item.dropdown.map((dropdownItem) => (
+                            <NavLink
+                              key={dropdownItem.name}
+                              to={dropdownItem.to}
+                              className={({ isActive }) =>
+                                `flex items-center px-4 py-3 text-sm transition-all duration-200 hover:bg-gray-900 hover:transform hover:translate-x-1 ${isActive
+                                  ? " text-white font-semibold"
+                                  : "text-blue-100"
+                                }`
+                              }
+                              onClick={() => setPoolsDropdownOpen(false)}
+                            >
+                              {dropdownItem.icon}
+                              {dropdownItem.name}
+                            </NavLink>
+                          ))}
+                        </div>
                         </div>
                       )}
                     </div>
@@ -140,15 +141,14 @@ function MyNavbar() {
                     <NavLink
                       key={item.name}
                       to={item.to}
-                          className={({ isActive }) =>
-                        `flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          isActive
-                            ? "bg-gradient-to-r-indigo-500-700 text-white shadow-lg"
-                            : "text-blue-100 hover:bg-gradient-to-r-indigo-500-700 hover:text-white hover:shadow-md"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                          ? "bg-gradient-to-r-indigo-500-700 text-white shadow-lg"
+                          : "text-blue-100 hover:bg-gradient-to-r-indigo-500-700 hover:text-white hover:shadow-md"
                         }`
                       }
                     >
-                            {item.icon}
+                      {item.icon}
                       {item.name}
                     </NavLink>
                   )
@@ -215,14 +215,14 @@ function MyNavbar() {
           </div>
         </div>
 
-      {/* Mobile Menu */}
+        {/* Mobile Menu */}
         {isOpen && (
           <div className="sm:hidden bg-gray-900 shadow-inner">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <div className="flex justify-center mb-4">
                 <img src={'j.png'} alt="Logo" className="h-14 mt-2" />
               </div>
-              
+
               {navigation.map((item) =>
                 item.dropdown ? (
                   <div key={item.name} className="pl-3">
@@ -230,11 +230,11 @@ function MyNavbar() {
                       className="flex items-center w-full text-left px-3 py-3 rounded-lg text-base font-medium text-blue-100 hover:bg-gray-800 transition-colors"
                       onClick={() => setPoolsDropdownOpen(!poolsDropdownOpen)}
                     >
-                      {item.icon}
+                      {item.icon} a
                       {item.name}
                       <FaChevronDown className={`ml-auto transition-transform ${poolsDropdownOpen ? "rotate-180" : ""}`} />
                     </button>
-                    
+
                     {poolsDropdownOpen && (
                       <div className="pl-6 mt-1 space-y-2 border-l-2 border-blue-700 ml-2">
                         {item.dropdown.map((dropdownItem) => (
@@ -242,10 +242,9 @@ function MyNavbar() {
                             key={dropdownItem.name}
                             to={dropdownItem.to}
                             className={({ isActive }) =>
-                              `flex items-center px-3 py-2 rounded-lg text-base transition-all ${
-                                isActive
-                                  ? "bg-blue-700 text-white font-semibold"
-                                  : "text-blue-200 hover:bg-blue-800"
+                              `flex items-center px-3 py-2 rounded-lg text-base transition-all ${isActive
+                                ? "bg-blue-700 text-white font-semibold"
+                                : "text-blue-200 hover:bg-blue-800"
                               }`
                             }
                             onClick={() => {
@@ -265,10 +264,9 @@ function MyNavbar() {
                     key={item.name}
                     to={item.to}
                     className={({ isActive }) =>
-                      `flex items-center px-3 py-3 rounded-lg text-base font-medium transition-colors ${
-                        isActive
-                          ? "bg-blue-700 text-white"
-                          : "text-blue-100 hover:bg-blue-800"
+                      `flex items-center px-3 py-3 rounded-lg text-base font-medium transition-colors ${isActive
+                        ? "bg-blue-700 text-white"
+                        : "text-blue-100 hover:bg-blue-800"
                       }`
                     }
                     onClick={() => setIsOpen(false)}
@@ -276,7 +274,7 @@ function MyNavbar() {
                     {item.icon}
                     {item.name}
                   </NavLink>
-             ))}
+                ))}
             </div>
           </div>
         )}

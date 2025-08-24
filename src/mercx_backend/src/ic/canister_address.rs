@@ -1,5 +1,5 @@
 pub const MERCX_BACKEND: &str = if cfg!(feature = "staging") {
-    "ahw5u-keaaa-aaaaa-qaaha-cai"
+    "a3shf-5eaaa-aaaaa-qaafa-cai"
 } else {
     "zoa6c-riaaa-aaaan-qzmta-cai"
 };

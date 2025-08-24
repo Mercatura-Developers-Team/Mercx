@@ -173,6 +173,7 @@ setLastEditedField(null);    // ← reset which field was edited last
       }
       } catch (err) {
         console.error(" Pool creation failed:", err);
+           setShowSuccessModal(false);
         setFormError(err.message || "Something went wrong. Please try again.");
       
       } finally {
