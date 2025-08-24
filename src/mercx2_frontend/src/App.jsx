@@ -11,6 +11,9 @@ import InappBrowser from './InappBrowser';
 import CreatePool from './pool/addPool';
 import Pools from './pool/pools';
 import Orderbook from './Orderbook';
+import TableLiquidity from './liquidity/tableliquidity';
+import RemoveLiquidity from './liquidity/RemoveLiquidity';
+
 function App() {
   return (
     <AuthProvider>
@@ -27,6 +30,8 @@ function App() {
           <Route path="/addPool" element={<CreatePool/>} />
           <Route path="/pools" element={<Pools/>} />
           <Route path="/orderbook" element={<Orderbook />} />
+          <Route path="/liquidity" element={<TableLiquidity />} />
+          <Route path="/removeLiquidity" element={<RemoveLiquidity />} />
         </Routes>
       </div>
     </AuthProvider>

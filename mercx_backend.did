@@ -1,5 +1,6 @@
 type Account = record { owner : principal; subaccount : opt blob };
 type AddLiquidityAmountsReply = record {
+  add_lp_token_amount : nat;
   amount_0 : nat;
   amount_1 : nat;
   address_0 : text;
@@ -19,8 +20,8 @@ type AddLiquidityArgs = record {
   tx_id_1 : opt TxId;
 };
 type AddLiquidityReply = record {
-  lp_token_amount : nat;
   lp_token_symbol : text;
+  add_lp_token_amount : nat;
   transfer_ids : opt vec TransferIdReply;
   name : text;
   amount_0 : nat;
@@ -89,6 +90,7 @@ type ICTransferReply = record {
   symbol : text;
 };
 type LPToken = record { decimals : nat8; token_id : nat32; symbol : text };
+type LpTokenInfo = record { amount : nat; symbol : text };
 type Mint = record {
   to : Account;
   memo : opt blob;
@@ -297,6 +299,7 @@ service : {
   get_account_transactions : (Account, opt nat, nat) -> (Result_6);
   get_all_pools : () -> (Result_7) query;
   get_all_tokens : () -> (vec StableToken) query;
+  get_by_principal : (principal) -> (vec StableLPToken) query;
   get_by_token_id : (nat32) -> (opt StableLPToken) query;
   get_by_token_id_by_principal : (nat32, principal) -> (
       opt StableLPToken,
@@ -304,6 +307,7 @@ service : {
   get_by_tokens : (text, text) -> (Result_8) query;
   get_icp_rate : () -> (Result_9);
   get_logo_url : (principal) -> (text);
+  get_lp_tokens_by_principal : (principal) -> (vec LpTokenInfo) query;
   get_name : (principal) -> (Result_5) query;
   get_pool_price : (text, text) -> (Result_9) query;
   get_transactions : (nat, nat) -> (Result_10);

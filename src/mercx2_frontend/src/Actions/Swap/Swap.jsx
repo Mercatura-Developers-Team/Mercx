@@ -165,8 +165,7 @@ const Swap = () => {
 
     try {
       const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Swap canister ID
-      const amountIn = parseAmount(fromAmount, fromToken.decimals);
-      const amountOut = parseAmount(toAmount, toToken.decimals);
+      const amountIn = parseAmount(fromAmount, fromToken.decimals)+ BigInt(20_000);
 
       // Check and approve allowance
       const fromActor = await createTokenActor(fromToken.canister_id.toText());

@@ -2,9 +2,10 @@ use candid::Nat;
 use ic_cdk::query;
 
 use super::add_liquidity_amounts_reply::AddLiquidityAmountsReply;
-
 use crate::helpers::math_helpers::{nat_add, nat_divide, nat_is_zero, nat_multiply, nat_to_decimal_precision};
 use crate::pool::handlers;
+use crate::stable_lp_token::lp_token_map;
+use crate::lp_metadata::stable_lp_metadata::LP_DECIMALS;
 
 /// Add liquidity to a pool
 ///
@@ -30,9 +31,9 @@ fn add_liquidity_amounts(token_0: String, amount: Nat, token_1: String) -> Resul
         let reserve_1 = nat_add(&pool.balance_1, &pool.lp_fee_1);
         let fee_1 = token_1.fee();
         // LP token
-       // let lp_token = pool.lp_token();
-      //  let lp_token_id = lp_token.token_id();
-       // let lp_total_supply = lp_token_map::get_total_supply(lp_token_id);
+       let lp_token = pool.lp_token();
+       let lp_token_id = lp_token.token_id();
+       let lp_total_supply = lp_token_map::get_total_supply(lp_token_id);
 
         if nat_is_zero(&reserve_0) || nat_is_zero(&reserve_1) {
             Err(format!("Zero balances in pool {}", symbol))?
@@ -54,12 +55,17 @@ ic_cdk::println!("Expected amount_1: {}", amount_1);
 
         // calculate the amount of LP token user will receive
         // add_lp_token_amount = lp_total_supply * amount_0 / reserve_0
-        // let amount_0_in_lp_token_decimals = nat_to_decimal_precision(&amount, token_0.decimals(), lp_token.decimals());
-        // let reserve_0_in_lp_token_decimals = nat_to_decimal_precision(&reserve_0, token_0.decimals(), lp_token.decimals());
-        // let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_0_in_lp_token_decimals);
-        // let add_lp_token_amount =
-        //     nat_divide(&numerator_in_lp_token_decimals, &reserve_0_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
+        let amount_0_in_lp_token_decimals = nat_to_decimal_precision(&amount, token_0.decimals(), LP_DECIMALS);
+        let reserve_0_in_lp_token_decimals = nat_to_decimal_precision(&reserve_0, token_0.decimals(), LP_DECIMALS);
+        let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_0_in_lp_token_decimals);
+        let add_lp_token_amount =
+            nat_divide(&numerator_in_lp_token_decimals, &reserve_0_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
 
+ic_cdk::println!("amount_0 (input) = {}", amount);
+ic_cdk::println!("amount_0 in LP token decimals = {}", amount_0_in_lp_token_decimals);
+ic_cdk::println!("reserve_0 in LP token decimals = {}", reserve_0_in_lp_token_decimals);
+ic_cdk::println!("lp_total_supply = {}", lp_total_supply);
+ic_cdk::println!("Expected add_lp_token_amount = {}", add_lp_token_amount);
         return Ok(AddLiquidityAmountsReply {
             symbol,
             address_0,
@@ -70,6 +76,7 @@ ic_cdk::println!("Expected amount_1: {}", amount_1);
             symbol_1,
             amount_1,
             fee_1,
+            add_lp_token_amount,
         });
     } else if let Ok(pool) = handlers::get_by_tokens(token_1, token_0) {
         let symbol = pool.name();
@@ -86,9 +93,9 @@ ic_cdk::println!("Expected amount_1: {}", amount_1);
         let reserve_1 = nat_add(&pool.balance_1, &pool.lp_fee_1);
         let fee_1 = token_1.fee();
         // LP token
-        // let lp_token = pool.lp_token();
-        // let lp_token_id = lp_token.token_id();
-        // let lp_total_supply = lp_token_map::get_total_supply(lp_token_id);
+        let lp_token = pool.lp_token();
+        let lp_token_id = lp_token.token_id();
+        let lp_total_supply = lp_token_map::get_total_supply(lp_token_id);
 
         if nat_is_zero(&reserve_0) || nat_is_zero(&reserve_1) {
             Err(format!("Zero balances in pool {}", symbol))?
@@ -103,11 +110,14 @@ ic_cdk::println!("Expected amount_1: {}", amount_1);
         let amount_0 = nat_divide(&numerator_in_token_0_decimals, &reserve_1_in_token_0_decimals).ok_or("Invalid amount_0")?;
       
         // add_lp_token_amount = lp_total_supply * amount_1 / reserve_1
-        // let amount_1_in_lp_token_decimals = nat_to_decimal_precision(&amount, token_1.decimals(), lp_token.decimals());
-        // let reserve_1_in_lp_token_decimals = nat_to_decimal_precision(&reserve_1, token_1.decimals(), lp_token.decimals());
-        // let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_1_in_lp_token_decimals);
-        // let add_lp_token_amount =
-        //     nat_divide(&numerator_in_lp_token_decimals, &reserve_1_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
+        let amount_1_in_lp_token_decimals = nat_to_decimal_precision(&amount, token_1.decimals(), LP_DECIMALS);
+        let reserve_1_in_lp_token_decimals = nat_to_decimal_precision(&reserve_1, token_1.decimals(), LP_DECIMALS);
+        let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_1_in_lp_token_decimals);
+        let add_lp_token_amount =
+            nat_divide(&numerator_in_lp_token_decimals, &reserve_1_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
+
+
+
 
         return Ok(AddLiquidityAmountsReply {
             symbol,
@@ -119,7 +129,7 @@ ic_cdk::println!("Expected amount_1: {}", amount_1);
             symbol_1,
             amount_1: amount,
             fee_1,
-     
+            add_lp_token_amount
         });
     }
 

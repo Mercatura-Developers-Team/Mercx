@@ -37,6 +37,7 @@ use crate::kyc::kyc_id::User;
 pub mod remove_liquidity;
 use crate::remove_liquidity::remove_liquidity_args::RemoveLiquidityArgs;
 use crate::remove_liquidity::remove_liquidity_reply::RemoveLiquidityReply;
+use crate::stable_lp_token::lp_token_map::LpTokenInfo;
 
 pub mod remove_liquidity_amounts;
 use crate::remove_liquidity_amounts::remove_liquidity_amounts_reply::RemoveLiquidityAmountsReply;

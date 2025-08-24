@@ -8,6 +8,7 @@ pub fn get() -> StableMercxSettings {
 
 pub fn inc_token_map_idx() -> u32 {
     MERCX_SETTINGS.with(|s| {
+        ic_cdk::println!("🔍 MERCX_SETTINGS accessed here");
         let mut map = s.borrow_mut();
         let mercx_settings = map.get();
         let token_map_idx = mercx_settings.token_map_idx + 1;
@@ -24,6 +25,7 @@ pub fn inc_token_map_idx() -> u32 {
  
 pub fn inc_lp_metadata_map_idx() -> u32 {
     MERCX_SETTINGS.with(|rc| {
+        ic_cdk::println!("🔍 MERCX_SETTINGS accessed here");
         // Borrow the RefCell mutably to access the StableCell
         let mut cell = rc.borrow_mut();
 
@@ -37,6 +39,21 @@ pub fn inc_lp_metadata_map_idx() -> u32 {
         cell.set(st.clone()).expect("Failed to save settings");
 
         st.lp_metadata_map_idx
+    })
+}
+
+pub fn inc_lp_token_map_idx() -> u64 {
+    MERCX_SETTINGS.with(|s| {
+        ic_cdk::println!("🔍 MERCX_SETTINGS accessed here");
+        let mut map = s.borrow_mut();
+        let mercx_settings = map.get();
+        let lp_token_map_idx = mercx_settings.lp_token_map_idx + 1;
+        let new_mercx_settings = StableMercxSettings {
+            lp_token_map_idx,
+            ..mercx_settings.clone()
+        };
+        _ = map.set(new_mercx_settings);
+        lp_token_map_idx
     })
 }
 
@@ -97,19 +114,7 @@ pub fn inc_transfer_map_idx() -> u64 {
     })
 }
 
-pub fn inc_lp_token_map_idx() -> u64 {
-    MERCX_SETTINGS.with(|s| {
-        let mut map = s.borrow_mut();
-        let mercx_settings = map.get();
-        let lp_token_map_idx = mercx_settings.lp_token_map_idx + 1;
-        let new_mercx_settings = StableMercxSettings {
-            lp_token_map_idx,
-            ..mercx_settings.clone()
-        };
-        _ = map.set(new_mercx_settings);
-        lp_token_map_idx
-    })
-}
+
 
 pub fn reset_lp_map_idx() {
     MERCX_SETTINGS.with(|s| {

@@ -1,9 +1,7 @@
-use candid::Nat;
-
+use candid::{Nat,Principal};
 use crate::helpers::math_helpers::{
-    nat_add, nat_divide, nat_is_zero, nat_multiply, nat_to_decimal_precision,
+    nat_add, nat_divide, nat_is_zero, nat_multiply, nat_to_decimal_precision,nat_sqrt
 };
-
 use crate::add_liquidity::add_liquidity_args::AddLiquidityArgs;
 use crate::add_liquidity::add_liquidity_reply::AddLiquidityReply;
 use crate::add_liquidity::add_liquidity_reply_helpers::{to_add_liquidity_reply,to_add_liquidity_reply_failed};
@@ -20,16 +18,18 @@ use crate::StableToken;
 use crate::transfers::stable_transfer::StableTransfer;
 use crate::ic::verify_transfer::verify_transfer;
 use crate::transfers::handlers::{insert,exist};
-
-
+use crate::kyc::kyc_id::get_user_by_caller;
+ use crate::stable_lp_token::lp_token_map;
+ use crate::StableLPToken;
+ use crate::lp_metadata::stable_lp_metadata::LP_DECIMALS;
 #[ic_cdk::update]
 pub async fn add_liquidity_transfer_from(
     args: AddLiquidityArgs,
 ) -> Result<AddLiquidityReply, String> {
-    let (pool, add_amount_0, add_amount_1,token_0, tx_id_0, token_1, tx_id_1) = check_arguments(&args).await?;
+    let (user_id, pool, add_amount_0, add_amount_1,token_0, tx_id_0, token_1, tx_id_1) = check_arguments(&args).await?;
     let ts = get_time();
 
-    let result = match process_add_liquidity(&pool, &add_amount_0, &add_amount_1,&token_0, tx_id_0.as_ref(), &token_1 ,tx_id_1.as_ref(),ts).await {
+    let result = match process_add_liquidity(user_id,&pool, &add_amount_0, &add_amount_1,&token_0, tx_id_0.as_ref(), &token_1 ,tx_id_1.as_ref(),ts).await {
         Ok(reply) => Ok(reply),
         Err(e) => Err(e),
     };
@@ -38,6 +38,7 @@ pub async fn add_liquidity_transfer_from(
 }
 
 async fn process_add_liquidity(
+     user_id: u32,
     pool: &StablePool,
     add_amount_0: &Nat,
     add_amount_1: &Nat,
@@ -119,8 +120,8 @@ async fn process_add_liquidity(
 
 
     // re-calculate with latest pool state and make sure amounts are valid
-    let (pool, _, _) = match update_liquidity_pool(pool, add_amount_0, add_amount_1) {
-        Ok((pool, amount_0, amount_1)) => (pool, amount_0, amount_1),
+    let (pool, _, _,add_lp_token_amount) = match update_liquidity_pool(user_id,pool, add_amount_0, add_amount_1 ,ts).await {
+        Ok((pool, amount_0, amount_1,add_lp_token_amount)) => (pool, amount_0, amount_1,add_lp_token_amount),
         Err(err) => {
 
              //"Token with symbol 'by6od-j4aaa-aaaaa-qaadq-cai' not found"
@@ -151,12 +152,13 @@ async fn process_add_liquidity(
         &pool,
         &token_0,
         &token_1,
+       add_lp_token_amount,
         &transfer_ids,
     ))
 }
 
 
-async fn check_arguments(args: &AddLiquidityArgs) -> Result<(StablePool, Nat, Nat,StableToken, Option<Nat>,StableToken, Option<Nat>), String> {
+async fn check_arguments(args: &AddLiquidityArgs) -> Result<(u32,StablePool, Nat, Nat,StableToken, Option<Nat>,StableToken, Option<Nat>), String> {
 
     if nat_is_zero(&args.amount_0) || nat_is_zero(&args.amount_1) {
         Err("Invalid zero amounts".to_string())?
@@ -169,7 +171,7 @@ async fn check_arguments(args: &AddLiquidityArgs) -> Result<(StablePool, Nat, Na
 
     // add_amount_0 and add_amount_1 are the amounts to be added to the pool with the current state
     // these are the amounts that will be transferred to the pool
-    let (pool, add_amount_0, add_amount_1) =
+    let (pool, add_amount_0, add_amount_1, _) =
         calculate_amounts(&args.token_0, &args.amount_0, &args.token_1, &args.amount_1)?;
 
     let token_0 = pool.token_0();
@@ -211,8 +213,12 @@ async fn check_arguments(args: &AddLiquidityArgs) -> Result<(StablePool, Nat, Na
 
     // make sure user is registered, if not create a new user
     // let user_id = user_map::insert(None)?;
-
-    Ok((pool, add_amount_0, add_amount_1,token_0, tx_id_0, token_1, tx_id_1))
+ let user_id = get_user_by_caller()
+        .await
+        .map_err(|e| format!("KYC lookup failed: {}", e))?
+        .ok_or("User not found. Please sign up in KYC first.")?
+        .user_id;
+    Ok((user_id , pool, add_amount_0, add_amount_1,token_0, tx_id_0, token_1, tx_id_1))
 }
 
 /// calculate the ratio of amounts (amount_0 and amount_1) to be added to the pool to maintain constant K
@@ -224,7 +230,7 @@ pub fn calculate_amounts(
     amount_0: &Nat,
     token_1: &str,
     amount_1: &Nat,
-) -> Result<(StablePool, Nat, Nat), String> {
+) -> Result<(StablePool, Nat, Nat ,Nat), String> {
     // Pool - make sure pool exists, refresh balances of the pool to make sure we have the latest state
     let pool = handlers::get_by_tokens(token_0.to_string(), token_1.to_string())?;
     // Token0
@@ -235,18 +241,18 @@ pub fn calculate_amounts(
     let token_1 = pool.token_1();
     let reserve_1 = nat_add(&pool.balance_1, &pool.lp_fee_1);
     // LP token
-    // let lp_token = pool.lp_token();
-    // let lp_token_id = lp_token.token_id();
-    // let lp_total_supply = lp_token_map::get_total_supply(lp_token_id);
+    let lp_token = pool.lp_token();
+    let lp_token_id = lp_token.token_id();
+    let lp_total_supply = lp_token_map::get_total_supply(lp_token_id);
 
     if nat_is_zero(&reserve_0) || nat_is_zero(&reserve_1) {
         // new pool as there are no balances - take user amounts as initial ratio
         // initialize LP tokens as sqrt(amount_0 * amount_1)
         // convert the amounts to the same decimal precision as the LP token
-        // let amount_0_in_lp_token_decimals = nat_to_decimal_precision(amount_0, token_0.decimals(), lp_token.decimals());
-        // let amount_1_in_lp_token_decimals = nat_to_decimal_precision(amount_1, token_1.decimals(), lp_token.decimals());
-        // let add_lp_token_amount = nat_sqrt(&nat_multiply(&amount_0_in_lp_token_decimals, &amount_1_in_lp_token_decimals));
-        return Ok((pool, amount_0.clone(), amount_1.clone()));
+        let amount_0_in_lp_token_decimals = nat_to_decimal_precision(amount_0, token_0.decimals(), LP_DECIMALS);
+        let amount_1_in_lp_token_decimals = nat_to_decimal_precision(amount_1, token_1.decimals(), LP_DECIMALS);
+        let add_lp_token_amount = nat_sqrt(&nat_multiply(&amount_0_in_lp_token_decimals, &amount_1_in_lp_token_decimals));
+        return Ok((pool, amount_0.clone(), amount_1.clone(),add_lp_token_amount));
     }
 
     // amount_0 * reserve_1 = amount_1 * reserve_0 for constant K
@@ -256,13 +262,13 @@ pub fn calculate_amounts(
     // rarely happens as there are rounding precision errors
     if amount_0_reserve_1 == amount_1_reserve_0 {
         // calculate the LP token amount for the user
-        // add_lp_token_amount = lp_total_supply * amount_0 / reserve_0
-        // let amount_0_in_lp_token_decimals = nat_to_decimal_precision(amount_0, token_0.decimals(), lp_token.decimals());
-        // let reserve_0_in_lp_token_decimals = nat_to_decimal_precision(&reserve_0, token_0.decimals(), lp_token.decimals());
-        // let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_0_in_lp_token_decimals);
-        // let add_lp_token_amount =
-        //     nat_divide(&numerator_in_lp_token_decimals, &reserve_0_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
-        return Ok((pool, amount_0.clone(), amount_1.clone()));
+       // add_lp_token_amount = lp_total_supply * amount_0 / reserve_0
+        let amount_0_in_lp_token_decimals = nat_to_decimal_precision(amount_0, token_0.decimals(), LP_DECIMALS);
+        let reserve_0_in_lp_token_decimals = nat_to_decimal_precision(&reserve_0, token_0.decimals(), LP_DECIMALS);
+        let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_0_in_lp_token_decimals);
+        let add_lp_token_amount =
+            nat_divide(&numerator_in_lp_token_decimals, &reserve_0_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
+        return Ok((pool, amount_0.clone(), amount_1.clone(),add_lp_token_amount));
     }
 
     // determine if the ratio of the user amounts is same or greater than the pool ratio (reserve_1 / reserve_0)
@@ -284,12 +290,12 @@ pub fn calculate_amounts(
     if *amount_1 >= amount_1_in_token_1_decimals {
         // calculate the LP token amount for the user
         // add_lp_token_amount = lp_total_supply * amount_0 / reserve_0
-        // let amount_0_in_lp_token_decimals = nat_to_decimal_precision(amount_0, token_0.decimals(), lp_token.decimals());
-        // let reserve_0_in_lp_token_decimals = nat_to_decimal_precision(&reserve_0, token_0.decimals(), lp_token.decimals());
-        // let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_0_in_lp_token_decimals);
-        // let add_lp_token_amount =
-        //     nat_divide(&numerator_in_lp_token_decimals, &reserve_0_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
-        return Ok((pool, amount_0.clone(), amount_1_in_token_1_decimals));
+        let amount_0_in_lp_token_decimals = nat_to_decimal_precision(amount_0, token_0.decimals(), LP_DECIMALS);
+        let reserve_0_in_lp_token_decimals = nat_to_decimal_precision(&reserve_0, token_0.decimals(), LP_DECIMALS);
+        let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_0_in_lp_token_decimals);
+        let add_lp_token_amount =
+            nat_divide(&numerator_in_lp_token_decimals, &reserve_0_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
+        return Ok((pool, amount_0.clone(), amount_1_in_token_1_decimals, add_lp_token_amount));
     }
 
     // using amount_1 to calculate the amount_0 that should be added to the pool
@@ -305,12 +311,12 @@ pub fn calculate_amounts(
     )
     .ok_or("Invalid amount_0")?;
     if *amount_0 >= amount_0_in_token_0_decimals {
-        // let amount_1_in_lp_token_decimals = nat_to_decimal_precision(amount_1, token_1.decimals(), lp_token.decimals());
-        // let reserve_1_in_lp_token_decimals = nat_to_decimal_precision(&reserve_1, token_1.decimals(), lp_token.decimals());
-        // let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_1_in_lp_token_decimals);
-        // let add_lp_token_amount =
-        //     nat_divide(&numerator_in_lp_token_decimals, &reserve_1_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
-        return Ok((pool, amount_0_in_token_0_decimals, amount_1.clone()));
+        let amount_1_in_lp_token_decimals = nat_to_decimal_precision(amount_1, token_1.decimals(), LP_DECIMALS);
+        let reserve_1_in_lp_token_decimals = nat_to_decimal_precision(&reserve_1, token_1.decimals(), LP_DECIMALS);
+        let numerator_in_lp_token_decimals = nat_multiply(&lp_total_supply, &amount_1_in_lp_token_decimals);
+        let add_lp_token_amount =
+            nat_divide(&numerator_in_lp_token_decimals, &reserve_1_in_lp_token_decimals).ok_or("Invalid LP token amount")?;
+        return Ok((pool, amount_0_in_token_0_decimals, amount_1.clone(),add_lp_token_amount));
     }
 
     // pool ratio must have changed from initial calculation and amount_0 and amount_1 are not enough now
@@ -320,11 +326,13 @@ pub fn calculate_amounts(
 /// update the liquidity pool with the new liquidity amounts
 /// ensure we have the latest state of the pool before adding the new amounts
 /// //update balance
-pub fn update_liquidity_pool(
+pub async fn update_liquidity_pool(
+      user_id: u32,
     pool: &StablePool,
     add_amount_0: &Nat,
     add_amount_1: &Nat,
-) -> Result<(StablePool, Nat, Nat), String> {
+        ts: u64,
+) -> Result<(StablePool, Nat, Nat ,Nat), String> {
     let token_0 = pool
         .token_0()
         .canister_id()
@@ -339,17 +347,49 @@ pub fn update_liquidity_pool(
     // add_amount_0 and add_amount_1 are the transferred amounts from the initial calculations
     // amount_0, amount_1 and add_lp_token_amount will be the actual amounts to be added to the pool
     match calculate_amounts(&token_0, add_amount_0, &token_1, add_amount_1) {
-        Ok((mut pool, amount_0, amount_1)) => {
+        Ok((mut pool, amount_0, amount_1,add_lp_token_amount)) => {
             pool.balance_0 = nat_add(&pool.balance_0, &amount_0);
             pool.balance_1 = nat_add(&pool.balance_1, &amount_1);
             handlers::update(&pool);
 
             // update user's LP token amount
-            // update_lp_token(request_id, user_id, pool.lp_token_id, &add_lp_token_amount, ts);
+            update_lp_token(user_id, pool.lp_token_id, &add_lp_token_amount, ts).await;
 
-            Ok((pool, amount_0, amount_1))
+            Ok((pool, amount_0, amount_1,add_lp_token_amount))
         }
         Err(e) => Err(e),
+    }
+}
+/// update the user's LP token amount
+/// ensure we have the latest state of the LP token before adding the new amounts
+async fn update_lp_token(user_id: u32, lp_token_id: u32, add_lp_token_amount: &Nat, ts: u64) {
+    // if you want the current caller’s principal here
+    let principal: Principal = ic_cdk::api::caller();
+    ic_cdk::println!("principal {}",principal);
+    // refresh with the latest state if the entry exists
+    match lp_token_map::get_by_token_id(lp_token_id).await {
+        Some(lp_token) => {
+            // update adding the new deposit amount
+            let new_user_lp_token = StableLPToken {
+                amount: nat_add(&lp_token.amount, add_lp_token_amount),
+                ts,
+                ..lp_token.clone()
+            };
+            lp_token_map::update(&new_user_lp_token);
+          
+        }
+        None => {
+            // new entry
+            let new_user_lp_token = StableLPToken::new(user_id,principal, lp_token_id, add_lp_token_amount.clone(), ts);
+            match lp_token_map::insert(&new_user_lp_token) {
+                 Ok(_) => {
+                    ic_cdk::println!("✅ LP token inserted successfully");
+                }
+              Err(e) => {
+                    ic_cdk::println!("❌ Failed to insert LP token: {}", e);
+                }
+            };
+        }
     }
 }
 

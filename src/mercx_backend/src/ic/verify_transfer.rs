@@ -8,7 +8,7 @@ use crate::stable_mercx_settings::mercx_settings_map;
 use crate::ic::general::get_time;
 
 #[cfg(not(feature = "prod"))]
-const ICP_CANISTER_ID: &str = "ahw5u-keaaa-aaaaa-qaaha-cai";  // Testnet ICP Ledger
+const ICP_CANISTER_ID: &str = "avqkn-guaaa-aaaaa-qaaea-cai";  // Testnet ICP Ledger
 #[cfg(feature = "prod")]
 const ICP_CANISTER_ID: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai"; // Mainnet ICP Ledger
 

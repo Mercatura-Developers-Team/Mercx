@@ -18,7 +18,7 @@ pub struct AddLiquidityReply {
     pub amount_1: Nat,               // deposited
     pub lp_fee_bps: u8,              // confirmed LP fee
     pub lp_token_symbol: String,     // FXMX_ckUSDT_LP
-    pub lp_token_amount: Nat,        // amount of LP tokens minted
+    pub add_lp_token_amount: Nat,        // amount of LP tokens minted
     pub transfer_ids: Option<Vec<TransferIdReply>>,
  
 }
