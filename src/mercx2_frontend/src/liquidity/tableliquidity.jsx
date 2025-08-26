@@ -204,70 +204,76 @@ export default function TableLiquidity() {
                                 </tr>
                             </thead>
                             <tbody className="bg-slate-800 divide-y divide-slate-700">
-                                {pools.map((pool) => (
-                                    <tr
-                                        key={pool.pool_id}
-                                        className={`transition-all duration-200 ${hoveredRow === pool.pool_id ? "hover:bg-slate-700 scale-[1]" : "hover:bg-slate-750"}`}
-                                        onMouseEnter={() => setHoveredRow(pool.pool_id)}
-                                        onMouseLeave={() => setHoveredRow(null)}
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-3 hover:scale-105 transition-transform">
-                                                <div className="flex items-center">
-                                                    <img
-                                                        src={logos[pool.symbol_0] || "/j.png"}
-                                                        alt={pool.symbol_0}
-                                                        className="w-8 h-8 rounded-full shadow-md border border-slate-500"
-                                                    />
-                                                    <img
-                                                        src={logos[pool.symbol_1] || "/j.png"}
-                                                        alt={pool.symbol_1}
-                                                        className="w-8 h-8 rounded-full -ml-2 shadow-md border border-slate-500"
-                                                    />
-                                                </div>
-                                                <span className="text-white font-medium text-sm">
-                                                    {pool.symbol_0}/{pool.symbol_1}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-white font-medium">
-                                            <span className="text-xs text-indigo-300 border border-indigo-500 px-2 py-0.5 rounded-md">
-                                                {`${pool.symbol_0}_${pool.symbol_1} LP`}
-                                            </span>
+                                {pools
+                                    .filter((pool) => {
+                                        const amount = findLpAmount(pool.symbol_0, pool.symbol_1);
+                                        return amount !== "-" && parseFloat(amount) > 0;
+                                    })
+                                    .map((pool) => (
 
-                                            {/* <span className="bg-indigo-600/20 text-indigo-300 text-xs font-medium px-2 py-1 rounded-lg shadow-sm">
+                                        <tr
+                                            key={pool.pool_id}
+                                            className={`transition-all duration-200 ${hoveredRow === pool.pool_id ? "hover:bg-slate-700 scale-[1]" : "hover:bg-slate-750"}`}
+                                            onMouseEnter={() => setHoveredRow(pool.pool_id)}
+                                            onMouseLeave={() => setHoveredRow(null)}
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-3 hover:scale-105 transition-transform">
+                                                    <div className="flex items-center">
+                                                        <img
+                                                            src={logos[pool.symbol_0] || "/j.png"}
+                                                            alt={pool.symbol_0}
+                                                            className="w-8 h-8 rounded-full shadow-md border border-slate-500"
+                                                        />
+                                                        <img
+                                                            src={logos[pool.symbol_1] || "/j.png"}
+                                                            alt={pool.symbol_1}
+                                                            className="w-8 h-8 rounded-full -ml-2 shadow-md border border-slate-500"
+                                                        />
+                                                    </div>
+                                                    <span className="text-white font-medium text-sm">
+                                                        {pool.symbol_0}/{pool.symbol_1}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-white font-medium">
+                                                <span className="text-xs text-indigo-300 border border-indigo-500 px-2 py-0.5 rounded-md">
+                                                    {`${pool.symbol_0}_${pool.symbol_1} LP`}
+                                                </span>
+
+                                                {/* <span className="bg-indigo-600/20 text-indigo-300 text-xs font-medium px-2 py-1 rounded-lg shadow-sm">
   {`${pool.symbol_0}_${pool.symbol_1} LP`}
 </span> */}
 
 
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-white">
-                                            {findLpAmount(pool.symbol_0, pool.symbol_1) || "Not Found"}
-                                        </td>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-white">
+                                                {findLpAmount(pool.symbol_0, pool.symbol_1) || "Not Found"}
+                                            </td>
 
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    className="text-indigo-400 hover:text-indigo-300 bg-indigo-900/30 hover:bg-indigo-900/50 px-3 py-1 rounded-md text-xs font-medium transition-colors"
-                                                    onClick={() => navigate(`/addPool?token0=${pool.symbol_0}&token1=${pool.symbol_1}`)}
-                                                >
-                                                    Add Liquidity
-                                                </button>
-                                                <button className="text-white hover:text-gray-200 bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded-md text-xs font-medium transition-colors">
-                                                    Trade
-                                                </button>
-                                                <button
-                                                    className="text-indigo-400 hover:text-indigo-300 bg-indigo-900/30 hover:bg-indigo-900/50 px-3 py-1 rounded-md text-xs font-medium transition-colors"
-                                                    onClick={() =>
-                                                        navigate(`/removeLiquidity?token0=${pool.symbol_0}&token1=${pool.symbol_1}`)
-                                                    }
-                                                >
-                                                    Remove Liquidity
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <div className="flex space-x-2">
+                                                    <button
+                                                        className="text-indigo-400 hover:text-indigo-300 bg-indigo-900/30 hover:bg-indigo-900/50 px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                                                        onClick={() => navigate(`/addPool?token0=${pool.symbol_0}&token1=${pool.symbol_1}`)}
+                                                    >
+                                                        Add Liquidity
+                                                    </button>
+                                                    <button className="text-white hover:text-gray-200 bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded-md text-xs font-medium transition-colors">
+                                                        Trade
+                                                    </button>
+                                                    <button
+                                                        className="text-indigo-400 hover:text-indigo-300 bg-indigo-900/30 hover:bg-indigo-900/50 px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                                                        onClick={() =>
+                                                            navigate(`/removeLiquidity?token0=${pool.symbol_0}&token1=${pool.symbol_1}`)
+                                                        }
+                                                    >
+                                                        Remove Liquidity
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                             </tbody>
                         </table>
                     </div>

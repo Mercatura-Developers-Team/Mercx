@@ -181,9 +181,26 @@ pub async fn verify_kyc(principal: Principal) -> Result<String, String> {
     }
 }
 
+
+// #[cfg(not(feature = "prod"))]
+// #[ic_cdk::update]
+// fn reset_kyc() -> Result<String, String> {
+//     USERS.with(|pools| {
+//         pools.borrow_mut().clear_new(); // `clear_new()` btmsh kolo remove law hanmsh haga specific
+//     });
+
+//     USERNAMES.with(|m| m.borrow_mut().clear_new());
+
+//     // reset the user index counter
+//     USER_ID_COUNTER.store(1, Ordering::Relaxed);
+
+
+//     Ok("✅ Tokens memory cleared".to_string())
+// }
+
 #[update]
 pub fn delete_user(principal: Principal) -> Result<String, String> {
-    is_admin()?; // Admin check
+   // is_admin()?; // Admin check
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         

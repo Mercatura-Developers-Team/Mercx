@@ -36,6 +36,7 @@ export default function RemoveLiquidity() {
       // Check if the response has an "Ok" property and extract the data
       if (res && res.Ok) {
         setReply(res.Ok);
+        setAmount("");
         setErrorMsg(""); // clear error if successful
       } else if (res && res.Err) {
         setReply(null);

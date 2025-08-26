@@ -161,7 +161,13 @@ export default function Pools() {
                 </tr>
               </thead>
               <tbody className="bg-slate-800 divide-y divide-slate-700">
-                {pools.map((pool) => {
+              {pools
+  .filter((pool) => {
+    const key = `${pool.symbol_0}/${pool.symbol_1}`;
+    const price = prices[key];
+
+    return price !== undefined && typeof price !== "object"; // ✅ filters out undefined or Err
+  }).map((pool) => {
                   const key = `${pool.symbol_0}/${pool.symbol_1}`;
                   const price = prices[key];
 
