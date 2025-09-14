@@ -42,6 +42,9 @@ use crate::stable_lp_token::lp_token_map::LpTokenInfo;
 pub mod remove_liquidity_amounts;
 use crate::remove_liquidity_amounts::remove_liquidity_amounts_reply::RemoveLiquidityAmountsReply;
 
+pub mod pool_analytics;
+use crate::pool_analytics::analytics::{PoolTVL,PoolVolume};
+
 pub mod helpers;
 pub mod stable_mercx_settings;
 use candid::Nat;

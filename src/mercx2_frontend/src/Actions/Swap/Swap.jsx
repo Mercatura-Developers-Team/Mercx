@@ -211,10 +211,22 @@ const Swap = () => {
       setSuccessModal(true);
       setFromAmount('');
       setToAmount('');
-    } catch (err) {
+    }  catch (err) {
       console.error("Swap failed:", err);
-      setError(err.message || "Swap failed. Please try again.");
-    } finally {
+    
+      let msg = err.message || "Swap failed. Please try again.";
+    
+      // Convert specific backend error to user-friendly message
+      if (msg.includes("the debit account doesn't have enough funds")) {
+        const balanceMatch = msg.match(/current balance:\s*(\d+)/);
+        const balance = balanceMatch ? balanceMatch[1] : 'insufficient';
+    
+        msg = `🚫 Not enough funds to swap. You currently have only ${parseFloat(balance) / 100_000_000} ${fromToken?.symbol}. Please reduce the amount or add more funds.`;
+      }
+    
+      setError(msg);
+    }
+    finally {
       setIsSwapping(false);
     }
   };
@@ -400,7 +412,7 @@ const Swap = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-2 bg-red-900/30 border border-red-700 text-red-400 text-sm rounded text-center">
+            <div className="mb-4 p-2  text-red-400 text-sm rounded text-center">
               {error}
             </div>
           )}
