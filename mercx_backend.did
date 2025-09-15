@@ -340,6 +340,7 @@ service : {
   get_lp_tokens_by_principal : (principal) -> (vec LpTokenInfo) query;
   get_name : (principal) -> (Result_7) query;
   get_pool_price : (text, text) -> (Result_11) query;
+  get_rate_vs_usd : (text) -> (Result_11);
   get_transactions : (nat, nat) -> (Result_12);
   get_user_by_caller : () -> (Result_13);
   get_whitelisted_principals : () -> (vec text) query;

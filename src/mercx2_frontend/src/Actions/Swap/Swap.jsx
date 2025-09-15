@@ -5,7 +5,7 @@ import { Principal } from "@dfinity/principal";
 import TokenSelector from '../../pool/TokenSelector';
 import SuccessModal from './SuccessModel';
 
-const Swap = () => {
+const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
 
   const { mercx_Actor, isAuthenticated, principal, createTokenActor } = useAuth();
   // Token state
@@ -64,12 +64,24 @@ const Swap = () => {
         // const bella = tokenList.find(t => t.symbol === "BELLA");
         // if (icp) setFromToken(icp);
         // if (bella) setToToken(bella);
+
+          // ✅ Pre-select tokens based on props
+      if (fromTokenSymbol && toTokenSymbol) {
+        const from = tokenList.find(t => t.symbol === fromTokenSymbol);
+        const to = tokenList.find(t => t.symbol === toTokenSymbol);
+
+        // Extra safety: make sure they are not the same
+        if (from && to && from.canister_id.toText() !== to.canister_id.toText()) {
+          setFromToken(from);
+          setToToken(to);
+        }
+      }
       } catch (err) {
         console.error("Failed to fetch tokens:", err);
       }
     };
     fetchTokens();
-  }, [mercx_Actor]);
+  }, [mercx_Actor, fromTokenSymbol, toTokenSymbol]);
 
   // Fetch balances when tokens change
   useEffect(() => {
@@ -164,7 +176,7 @@ const Swap = () => {
     setError('');
 
     try {
-      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Swap canister ID
+      const spenderId = "a3shf-5eaaa-aaaaa-qaafa-cai"; // Swap canister ID
       const amountIn = parseAmount(fromAmount, fromToken.decimals)+ BigInt(20_000);
 
       // Check and approve allowance

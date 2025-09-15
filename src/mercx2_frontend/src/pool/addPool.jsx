@@ -27,10 +27,10 @@ export default function CreatePool() {
   const { createTokenActor, principal, isAuthenticated } = useAuth();
   const [formError, setFormError] = useState("");
   const [lastEditedField, setLastEditedField] = useState(null); // 'amountToken0' or 'amountToken1'
-  
- 
-  
-  
+
+
+
+
   const formik = useFormik({
     initialValues: {
       initialPrice: "",
@@ -50,7 +50,7 @@ export default function CreatePool() {
     onSubmit: async (values) => {
       setIsCreating(true);
       setFormError("");
-      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai";
+      const spenderId = "a3shf-5eaaa-aaaaa-qaafa-cai";
       try {
         const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
         const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);
@@ -116,77 +116,81 @@ export default function CreatePool() {
           if ("Err" in approve1) throw new Error("Token1 approval failed: " + JSON.stringify(approve1.Err));
         }
 
-        
+
         if (poolExists) {
           let addResult;
           try {
-           addResult = await mercx_Actor.add_liquidity_transfer_from({
-            token_0: token0.symbol,
-            token_1:  token1.symbol,
+            addResult = await mercx_Actor.add_liquidity_transfer_from({
+              token_0: token0.symbol,
+              token_1: token1.symbol,
+              amount_0: parseAmount(values.amountToken0, token0.decimals),
+              tx_id_0: [],
+              amount_1: parseAmount(values.amountToken1, token1.decimals),
+              tx_id_1: [],
+            });
+            console.log("Add Liquidity Result:", addResult);
+
+            if ("Err" in addResult) {
+              // Try reverse order if first attempt fails
+              addResult = await mercx_Actor.add_liquidity_transfer_from({
+                token_0: token1.symbol,
+                token_1: token0.symbol,
+                amount_0: parseAmount(values.amountToken1, token1.decimals), // Note the swap
+                tx_id_0: [],
+                amount_1: parseAmount(values.amountToken0, token0.decimals), // Note the swap
+                tx_id_1: [],
+              });
+            }
+            setShowSuccessModal(true);
+            setSuccessAction("add");
+            formik.resetForm();          // ← clears all the form fields
+            setLastEditedField(null);    // ← reset which field was edited last
+          }
+          catch (err) {
+            console.error("Add liquidity failed:", err);
+            setFormError(err.message || "Failed to add liquidity. Please try again.");
+          }
+        }
+
+        else {
+
+
+          const args = {
+            token_0: token0.canister_id.toText(),
+            token_1: token1.canister_id.toText(),
             amount_0: parseAmount(values.amountToken0, token0.decimals),
             tx_id_0: [],
             amount_1: parseAmount(values.amountToken1, token1.decimals),
             tx_id_1: [],
-          });
-          console.log("Add Liquidity Result:", addResult);
+            lp_fee_bps: [],
+          };
 
-          if ("Err" in addResult) {
-            // Try reverse order if first attempt fails
-            addResult = await mercx_Actor.add_liquidity_transfer_from({
-              token_0: token1.symbol,
-              token_1: token0.symbol,
-              amount_0: parseAmount(values.amountToken1, token1.decimals), // Note the swap
-              tx_id_0: [],
-              amount_1: parseAmount(values.amountToken0, token0.decimals), // Note the swap
-              tx_id_1: [],
-            });
+          const result = await mercx_Actor.add_pool(args);
+          if (result && "Ok" in result) {
+            setShowSuccessModal(true);
+            setSuccessAction("create");
+            formik.resetForm();          // ← clears all the form fields
+            setLastEditedField(null);    // ← reset which field was edited last
+          } else {
+            setShowSuccessModal(false);
+            setFormError(result?.Err || "Pool creation failed");
+            return;
           }
-          setShowSuccessModal(true);
-          setSuccessAction("add");
-          formik.resetForm();          // ← clears all the form fields
-setLastEditedField(null);    // ← reset which field was edited last
+          console.log("Result:", result);
+
         }
-        catch (err) {
-          console.error("Add liquidity failed:", err);
-          setFormError(err.message || "Failed to add liquidity. Please try again.");
-        } }
-
-        else {
-
-        
-        const args = {
-          token_0: token0.canister_id.toText(),
-          token_1: token1.canister_id.toText(),
-          amount_0: parseAmount(values.amountToken0, token0.decimals),
-          tx_id_0: [],
-          amount_1: parseAmount(values.amountToken1, token1.decimals),
-          tx_id_1: [],
-          lp_fee_bps: [],
-        };
-
-        const result = await mercx_Actor.add_pool(args);
-        console.log("Result:", result);
-        setShowSuccessModal(true);
-        setSuccessAction("create");
-        formik.resetForm();          // ← clears all the form fields
-setLastEditedField(null);    // ← reset which field was edited last
-      }
       } catch (err) {
         console.error(" Pool creation failed:", err);
-           setShowSuccessModal(false);
+        setShowSuccessModal(false);
         setFormError(err.message || "Something went wrong. Please try again.");
-      
-      } finally {
+
+      } 
+      finally {
         setIsCreating(false);
       }
     },
   });
 
-  // helper – returns the pair in the order the canister knows
-async function canonicalOrder(symA, symB) {
-  const existsAB = await mercx_Actor.pool_exists(symA, symB);
-  return existsAB ? [symA, symB] : [symB, symA];
-}
 
 
 
@@ -255,68 +259,68 @@ async function canonicalOrder(symA, symB) {
   }, [token0, token1, isCreating]);
 
   useEffect(() => {
-  if (!token0 || !token1 || !poolExists || !lastEditedField || !mercx_Actor) return;
+    if (!token0 || !token1 || !poolExists || !lastEditedField || !mercx_Actor) return;
 
-const calculateAmounts = async () => {
-  try {
-    const amountStr =
-      lastEditedField === "amountToken0"
-        ? formik.values.amountToken0
-        : formik.values.amountToken1;
+    const calculateAmounts = async () => {
+      try {
+        const amountStr =
+          lastEditedField === "amountToken0"
+            ? formik.values.amountToken0
+            : formik.values.amountToken1;
 
-    if (!amountStr || isNaN(+amountStr) || +amountStr <= 0) return;
+        if (!amountStr || isNaN(+amountStr) || +amountStr <= 0) return;
 
-    const parsedAmount = parseAmount(
-      amountStr,
-      lastEditedField === "amountToken0" ? token0.decimals : token1.decimals
-    );
+        const parsedAmount = parseAmount(
+          amountStr,
+          lastEditedField === "amountToken0" ? token0.decimals : token1.decimals
+        );
 
-    // Call canister
-    const resp = await mercx_Actor.add_liquidity_amounts(
-      lastEditedField === "amountToken0" ? token0.symbol : token1.symbol,
-      parsedAmount,
-      lastEditedField === "amountToken0" ? token1.symbol : token0.symbol
-    );
+        // Call canister
+        const resp = await mercx_Actor.add_liquidity_amounts(
+          lastEditedField === "amountToken0" ? token0.symbol : token1.symbol,
+          parsedAmount,
+          lastEditedField === "amountToken0" ? token1.symbol : token0.symbol
+        );
 
-    if ("Err" in resp) {
-      console.error("Calculation failed:", resp.Err);
-      return;
-    }
+        if ("Err" in resp) {
+          console.error("Calculation failed:", resp.Err);
+          return;
+        }
 
-    // ------ here is the key change ------
-    const {
-      symbol_0,
-      amount_0,
-      amount_1,
-    } = resp.Ok; // <----- destructure once
+        // ------ here is the key change ------
+        const {
+          symbol_0,
+          amount_0,
+          amount_1,
+        } = resp.Ok; // <----- destructure once
 
-    // Decide which amount belongs to which field
-    if (lastEditedField === "amountToken0") {
-      // user typed in Token0, so auto-fill Token1
-      const otherAmount =
-        symbol_0 === token0.symbol ? amount_1 : amount_0;
-      formik.setFieldValue(
-        "amountToken1",
-        normalizeAmount(otherAmount, token1.decimals)
-      );
-    } else {
-      // user typed in Token1, so auto-fill Token0
-      const otherAmount =
-        symbol_0 === token0.symbol ? amount_0 : amount_1;
-      formik.setFieldValue(
-        "amountToken0",
-        normalizeAmount(otherAmount, token0.decimals)
-      );
-    }
-  } catch (err) {
-    console.error("Failed to calculate amounts:", err);
-  }
-};
+        // Decide which amount belongs to which field
+        if (lastEditedField === "amountToken0") {
+          // user typed in Token0, so auto-fill Token1
+          const otherAmount =
+            symbol_0 === token0.symbol ? amount_1 : amount_0;
+          formik.setFieldValue(
+            "amountToken1",
+            normalizeAmount(otherAmount, token1.decimals)
+          );
+        } else {
+          // user typed in Token1, so auto-fill Token0
+          const otherAmount =
+            symbol_0 === token0.symbol ? amount_0 : amount_1;
+          formik.setFieldValue(
+            "amountToken0",
+            normalizeAmount(otherAmount, token0.decimals)
+          );
+        }
+      } catch (err) {
+        console.error("Failed to calculate amounts:", err);
+      }
+    };
 
 
-  const debounceTimer = setTimeout(calculateAmounts, 500);
-  return () => clearTimeout(debounceTimer);
-}, [formik.values.amountToken0, formik.values.amountToken1, lastEditedField, token0, token1, poolExists]);
+    const debounceTimer = setTimeout(calculateAmounts, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [formik.values.amountToken0, formik.values.amountToken1, lastEditedField, token0, token1, poolExists]);
 
   //URL
   useEffect(() => {
@@ -344,13 +348,13 @@ const calculateAmounts = async () => {
 
   useEffect(() => {
     if (poolExists) return; // Skip for existing pools
-  
+
     const price = parseFloat(formik.values.initialPrice);
     const val0 = parseFloat(formik.values.amountToken0);
     const val1 = parseFloat(formik.values.amountToken1);
-  
+
     if (!price || price <= 0) return;
-  
+
     if (lastEditedField === 'amountToken0' && !isNaN(val0)) {
       formik.setFieldValue("amountToken1", (val0 * price).toFixed(token1?.decimals || 8));
     } else if (lastEditedField === 'amountToken1' && !isNaN(val1)) {
@@ -499,8 +503,8 @@ const calculateAmounts = async () => {
                   !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
                   (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
                 className={`w-full font-bold py-3 rounded-lg ${isCreating
- ? "bg-gray-500 cursor-not-allowed "
-      : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white disabled:bg-gray-500 disabled:cursor-not-allowed disabled:hover:from-gray-500"
+                  ? "bg-gray-500 cursor-not-allowed "
+                  : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white disabled:bg-gray-500 disabled:cursor-not-allowed disabled:hover:from-gray-500"
                   }`}
               >
                 {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
@@ -517,19 +521,19 @@ const calculateAmounts = async () => {
 
         {/* Token Selection Modal */}
         {openTokenSelect && (
-  <TokenSelector
-    tokens={tokens}
-    selectingFor={selectingFor}
-    token0={token0}
-    token1={token1}
-    onSelect={handleTokenSelect}
-    onImport={() => {
-      setShowImportModal(true);
-      setOpenTokenSelect(false);
-    }}
-    onCancel={() => setOpenTokenSelect(false)}
-  />
-)}
+          <TokenSelector
+            tokens={tokens}
+            selectingFor={selectingFor}
+            token0={token0}
+            token1={token1}
+            onSelect={handleTokenSelect}
+            onImport={() => {
+              setShowImportModal(true);
+              setOpenTokenSelect(false);
+            }}
+            onCancel={() => setOpenTokenSelect(false)}
+          />
+        )}
         <ImportTokenModal
           isOpen={showImportModal}
           onClose={() => setShowImportModal(false)}
@@ -560,7 +564,7 @@ const calculateAmounts = async () => {
           }}
 
         />
-        <SuccessModal isVisible={showSuccessModal}  action={successAction} onClose={() => setShowSuccessModal(false)} />
+        <SuccessModal isVisible={showSuccessModal} action={successAction} onClose={() => setShowSuccessModal(false)} />
 
       </div>
     </div>

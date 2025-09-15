@@ -29,7 +29,7 @@ export default function Pools() {
         } else {
           console.error("get_all_pools error:", result?.Err || result);
         }
-      
+
       } catch (err) {
         console.error("Failed to load pools or logos", err);
       }
@@ -161,52 +161,52 @@ export default function Pools() {
                 </tr>
               </thead>
               <tbody className="bg-slate-800 divide-y divide-slate-700">
-              {pools
-  .filter((pool) => {
-    const key = `${pool.symbol_0}/${pool.symbol_1}`;
-    const price = prices[key];
+                {pools
+                  .filter((pool) => {
+                    const key = `${pool.symbol_0}/${pool.symbol_1}`;
+                    const price = prices[key];
 
-    return price !== undefined && typeof price !== "object"; // ✅ filters out undefined or Err
-  }).map((pool) => {
-                  const key = `${pool.symbol_0}/${pool.symbol_1}`;
-                  const price = prices[key];
+                    return price !== undefined && typeof price !== "object"; // ✅ filters out undefined or Err
+                  }).map((pool) => {
+                    const key = `${pool.symbol_0}/${pool.symbol_1}`;
+                    const price = prices[key];
 
-                  return (
-                    <tr
-                      key={pool.pool_id}
-                      className={`transition-all duration-200 ${hoveredRow === pool.pool_id ? "hover:bg-slate-700 scale-[1]" : "hover:bg-slate-750"
-                        }`}
-                      onMouseEnter={() => setHoveredRow(pool.pool_id)}
-                      onMouseLeave={() => setHoveredRow(null)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {renderTokenLogos(pool.symbol_0, pool.symbol_1)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white font-medium">
-                        {price !== undefined ? price : 'Loading...'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">-</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">-</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-300">
-                        {pool.lp_fee_bps / 100}%
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium">%</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            className="text-indigo-400 hover:text-indigo-300 bg-indigo-900/30 hover:bg-indigo-900/50 px-3 py-1 rounded-md text-xs font-medium transition-colors"
-                            onClick={() => navigate(`/addPool?token0=${pool.symbol_0}&token1=${pool.symbol_1}`)}
-                          >
-                            Add Liquidity
-                          </button>
-                          <button className="text-white hover:text-gray-200 bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded-md text-xs font-medium transition-colors">
-                            Trade
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                    return (
+                      <tr
+                        key={pool.pool_id}
+                        className={`transition-all duration-200 ${hoveredRow === pool.pool_id ? "hover:bg-slate-700 scale-[1]" : "hover:bg-slate-750"
+                          }`}
+                        onMouseEnter={() => setHoveredRow(pool.pool_id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {renderTokenLogos(pool.symbol_0, pool.symbol_1)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-white font-medium">
+                          {price !== undefined ? price : 'Loading...'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-white">-</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-white">-</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-300">
+                          {pool.lp_fee_bps / 100}%
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium">%</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button
+                              className="text-indigo-400 hover:text-indigo-300 bg-indigo-900/30 hover:bg-indigo-900/50 px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                              onClick={() => navigate(`/addPool?token0=${pool.symbol_0}&token1=${pool.symbol_1}`)}
+                            >
+                              Add Liquidity
+                            </button>
+                            <button className="text-white hover:text-gray-200 bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded-md text-xs font-medium transition-colors" onClick={() => navigate(`/trade?tab=Swap&from=${pool.symbol_0}&to=${pool.symbol_1}`)}>
+                              Trade
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>

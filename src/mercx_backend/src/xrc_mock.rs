@@ -123,3 +123,89 @@ pub async fn get_icp_rate() -> Result<f64, String> {
         }
         
 }
+
+
+use std::borrow::Cow;
+
+// 1) Normalize aliases to the tickers XRC actually knows
+fn normalize_symbol<'a>(sym: &'a str) -> Cow<'a, str> {
+    let s = sym.trim().to_uppercase();
+
+    // strip common “.e” suffix used by wrapped/bridged symbols (e.g., USDT.e)
+    let s = s.strip_suffix(".E").unwrap_or(&s).to_string();
+
+    match s.as_str() {
+        // Chain-key assets (IC’s wrapped tokens)
+        "CKBTC"  => Cow::from("BTC"),
+        "CKETH"  => Cow::from("ETH"),
+        "CKUSDT" => Cow::from("USDT"),
+        "CKUSDC" => Cow::from("USDC"),
+
+        // Other common wrapped aliases
+        "WBTC"   => Cow::from("BTC"),
+        "WETH"   => Cow::from("ETH"),
+
+        // Already canonical (or unknown → let XRC decide)
+        _ => Cow::from(s),
+    }
+}
+
+// classify only the **base symbol**; quote will always be USD
+fn classify_symbol(sym: &str) -> AssetClass {
+    // extend if you want to support more fiat base assets
+    if sym.eq_ignore_ascii_case("USD") {
+        AssetClass::FiatCurrency
+    } else {
+        AssetClass::Cryptocurrency
+    }
+}
+
+fn make_asset(symbol: &str, class: AssetClass) -> Asset {
+    Asset { class, symbol: symbol.to_string() }
+}
+async fn fetch_rate_generic(base_asset: Asset) -> Result<f64, String> {
+    let quote_asset = Asset {
+        class: AssetClass::FiatCurrency,
+        symbol: "USD".to_string(),
+    };
+
+    let req = GetExchangeRateRequest {
+        base_asset,
+        quote_asset,
+        timestamp: None,
+    };
+
+    let xrc_canister_id = Principal::from_text(CANISTER_ID_XRC)
+        .map_err(|e| format!("Bad XRC canister id: {e}"))?;
+
+
+
+    let call_result: Result<Vec<u8>, (ic_cdk::api::call::RejectionCode, String)> =
+        ic_cdk::api::call::call_raw(
+            xrc_canister_id,
+            "get_exchange_rate",
+            &candid::encode_args((req,)).unwrap(),
+            10_000_000_000// payment fee
+        )
+        .await;
+    let bytes = call_result.map_err(|(_code, msg)| format!("XRC call rejected: {msg}"))?;
+
+    match candid::decode_one::<XRCResponse>(&bytes) {
+        Ok(XRCResponse::Ok(resp)) => {
+            let divisor = 10f64.powi(resp.metadata.decimals as i32);
+            Ok((resp.rate as f64) / divisor)
+        }
+        Ok(XRCResponse::Err(e)) => Err(format!("XRC error: {e:?}")),
+        Err(e) => Err(format!("Decode failed: {e}")),
+    }
+}
+
+#[update]
+pub async fn get_rate_vs_usd(base_symbol: String) -> Result<f64, String> {
+
+    //Normalize first (ckETH→ETH, ckUSDT→USDT, USDT.e→USDT, …)
+    let norm = normalize_symbol(&base_symbol);
+
+    let base_class = classify_symbol(norm.as_ref());
+    fetch_rate_generic(make_asset(norm.as_ref(), base_class)).await
+}

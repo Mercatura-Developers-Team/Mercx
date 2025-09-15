@@ -345,6 +345,7 @@ async fn check_arguments(
 
     // make sure user is registered, if not create a new user
     //let user_id = user_map::insert(None)?;
+
     let user_id = get_user_by_caller()
         .await
         .map_err(|e| format!("KYC lookup failed: {}", e))?

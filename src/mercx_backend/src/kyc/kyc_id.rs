@@ -22,7 +22,7 @@ pub struct User {
 }
 
 // Replace `your_kyc_canister_id` with actual canister ID or pass it dynamically
-const KYC_CANISTER_ID: &str = "ajuq4-ruaaa-aaaaa-qaaga-cai"; // example
+const KYC_CANISTER_ID: &str = "avqkn-guaaa-aaaaa-qaaea-cai"; // example
 #[ic_cdk::update]
 pub async fn get_user_by_caller() -> Result<Option<User>, String> {
     let caller_principal = caller();
