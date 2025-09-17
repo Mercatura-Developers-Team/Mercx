@@ -35,7 +35,7 @@ const [loading, setLoading] = useState(true);
         } else {
           console.error("get_all_pools error:", result?.Err || result);
         }
-      
+
       } catch (err) {
         console.error("Failed to load pools or logos", err);
       }finally {
@@ -307,9 +307,9 @@ const [loading, setLoading] = useState(true);
                           >
                             Add Liquidity
                           </button>
-                          <button className="text-white hover:text-gray-200 bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded-md text-xs font-medium transition-colors">
-                            Trade
-                          </button>
+                          <button className="text-white hover:text-gray-200 bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded-md text-xs font-medium transition-colors" onClick={() => navigate(`/trade?tab=Swap&from=${pool.symbol_0}&to=${pool.symbol_1}`)}>
+                              Trade
+                            </button>
                         </div>
                       </td>
                     </tr>

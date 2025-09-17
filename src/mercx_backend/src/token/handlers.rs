@@ -99,8 +99,6 @@ fn reset_tokens() -> Result<String, String> {
 //         None => Err(format!("❌ Token with ID {} not found.", id)),
 //     }
 // }
-
-
 #[ic_cdk::update]
 fn delete_token_by_canister_id(canister_id: Principal) -> Result<String, String> {
     // Step 1: Find token ID from TOKENS map

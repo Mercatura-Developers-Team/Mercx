@@ -4,10 +4,18 @@ import Sell from '../Actions/Sell/Sell';
 import Buy from './Buy/Buy';
 import Swap from './Swap/Swap';
 
+import { useLocation } from 'react-router-dom';
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 const ActionsOptions = () => {
+const query = useQuery();
+const initialTab = query.get('tab') || 'Buy';
+const fromToken = query.get('from');
+const toToken = query.get('to');
 
-    const [currentTab, setCurrentTab] = useState('Buy'); // Manage the current tab
+const [currentTab, setCurrentTab] = useState(initialTab);
 
     const handleTabClick = (tabName) => {
         setCurrentTab(tabName);
@@ -57,7 +65,7 @@ const ActionsOptions = () => {
                     //        </h1>
                     
                     //   </div>
-                    <Swap/>
+               <Swap fromTokenSymbol={fromToken} toTokenSymbol={toToken} />
                         )}
                         {/* Other components and logic */}
                     </div>
