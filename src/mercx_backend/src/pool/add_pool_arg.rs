@@ -15,7 +15,7 @@ use crate::token::handlers::get_by_token;
 use crate::token::stable_token;
 use crate::StableLPToken;
 use crate::transfers::handlers as transfer_handlers;
-use crate::transfers::stable_transfer::StableTransfer;
+use crate::transfers::stable_transfer::{StableTransfer,TransferType};
 use crate::transfers::tx_id::TxId;
 use crate::StablePool;
 use crate::StableToken;
@@ -425,6 +425,7 @@ pub async fn transfer_from_token(
                 amount: amount.clone(),
                 token_id,
                 tx_id: TxId::BlockIndex(block_id),
+                 transfer_type: TransferType::LiquidityAdd,      
                 ts,
             });
             transfer_ids.push(transfer_id);
@@ -459,6 +460,7 @@ async fn verify_transfer_token(
                 amount: amount.clone(),
                 token_id,
                 tx_id: TxId::BlockIndex(tx_id.clone()),
+                transfer_type: TransferType::LiquidityAdd,      
                 ts,
             });
             transfer_ids.push(transfer_id);
@@ -516,6 +518,7 @@ async fn verify_transfer_token(
                 amount: amount_0_with_gas,
                 token_id: token.token_id(),
                 tx_id: TxId::BlockIndex(block_id),
+                transfer_type: TransferType::Transfer,      
                 ts,
             });
             transfer_ids.push(transfer_id);

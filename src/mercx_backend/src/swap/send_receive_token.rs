@@ -11,7 +11,7 @@ use crate::ic::{
     transfer::{icp_transfer, icrc1_transfer},
 };
 use crate::token::{stable_token::StableToken};
-use crate::transfers::{stable_transfer::StableTransfer, handlers, tx_id::TxId};
+use crate::transfers::{stable_transfer::{StableTransfer,TransferType}, handlers, tx_id::TxId};
 //use crate::stable_tx::{stable_tx::StableTx, swap_tx::SwapTx, tx_map};
 
 pub async fn send_receive_token(
@@ -50,6 +50,7 @@ pub async fn send_receive_token(
                 token_id: receive_token_id,
                 amount: receive_amount.clone(),
                 tx_id: TxId::BlockIndex(tx_id),
+                transfer_type: TransferType::Swap,       // This is a SWAP, not liquidity removal
                 ts,
             });
             transfer_ids.push(transfer_id);

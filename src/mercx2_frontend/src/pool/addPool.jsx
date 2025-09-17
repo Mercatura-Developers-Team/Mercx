@@ -181,17 +181,32 @@ setLastEditedField(null);    // ← reset which field was edited last
     },
   });
 
-  // helper – returns the pair in the order the canister knows
-async function canonicalOrder(symA, symB) {
-  const existsAB = await mercx_Actor.pool_exists(symA, symB);
-  return existsAB ? [symA, symB] : [symB, symA];
-}
+ // Helper functions for number conversion and formatting
+ const safeToNumber = (value) => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') return parseFloat(value) || 0;
+  if (value && typeof value === 'object' && typeof value.valueOf === 'function') {
+    const valueOf = value.valueOf();
+    if (typeof valueOf === 'number') return valueOf;
+    if (typeof valueOf === 'string') return parseFloat(valueOf) || 0;
+  }
+  return 0;
+};
+
+const formatUSD = (value) => {
+  const numValue = safeToNumber(value);
+  if (numValue === 0) return '$0';
+  if (numValue < 1000) return `$${numValue.toFixed(2)}`;
+  if (numValue < 1000000) return `$${(numValue / 1000).toFixed(1)}K`;
+  return `$${(numValue / 1000000).toFixed(1)}M`;
+};
 
 
 
   const [poolStats, setPoolStats] = useState(null); //information 
 
-  useEffect(() => {
+   // Enhanced useEffect using get_pool_metrics for comprehensive data
+   useEffect(() => {
     if (token0 && token1 && mercx_Actor) {
       (async () => {
         try {
@@ -202,12 +217,11 @@ async function canonicalOrder(symA, symB) {
 
           if (exists) {
             setPoolExists(exists);
-            // Try both symbol combinations since order matters
+            
             let pool;
             try {
               pool = await mercx_Actor.get_by_tokens(token0.symbol, token1.symbol);
               if ("Err" in pool) {
-                // Try reverse order if first attempt fails
                 pool = await mercx_Actor.get_by_tokens(token1.symbol, token0.symbol);
               }
             } catch (err) {
@@ -218,17 +232,85 @@ async function canonicalOrder(symA, symB) {
               const data = pool.Ok;
               let balForToken0 = data.balance_0;
               let balForToken1 = data.balance_1;
+              
               if (data.token_id_0 !== token0.token_id) {
-                // UI order is opposite to canister order ➜ swap
                 balForToken0 = data.balance_1;
                 balForToken1 = data.balance_0;
               }
-              setPoolStats({
-                poolId: data.pool_id,
-                token0Balance: normalizeAmount(balForToken0, token0.decimals),
-                token1Balance: normalizeAmount(balForToken1, token1.decimals),
-                tvl: Number(data.amount_0) + Number(data.amount_1),
-              });
+
+              // Use get_pool_metrics to get all analytics in one call
+              try {
+                console.log("Fetching pool metrics for pool ID:", data.pool_id);
+                const metricsResult = await mercx_Actor.get_pool_metrics(data.pool_id);
+                console.log("Pool Metrics Result:", metricsResult);
+                
+                if (metricsResult && "Ok" in metricsResult) {
+                  const metrics = metricsResult.Ok;
+                  console.log("Metrics data:", metrics);
+                  console.log("TVL USD:", metrics.tvl.tvl_usd, typeof metrics.tvl.tvl_usd);
+                  console.log("Volume 24h USD:", metrics.volume.volume_24h_usd);
+                  console.log("APY:", metrics.apy);
+                  
+                  setPoolStats({
+                    poolId: data.pool_id,
+                    token0Balance: normalizeAmount(balForToken0, token0.decimals),
+                    token1Balance: normalizeAmount(balForToken1, token1.decimals),
+                    
+                    // TVL data from metrics
+                    tvl: {
+                      usd: safeToNumber(metrics.tvl.tvl_usd),
+                      token0_usd: safeToNumber(metrics.tvl.token_0_value_usd),
+                      token1_usd: safeToNumber(metrics.tvl.token_1_value_usd),
+                      formatted: formatUSD(metrics.tvl.tvl_usd)
+                    },
+                    
+                    // Volume data from metrics
+                    volume_24h: {
+                      usd: safeToNumber(metrics.volume.volume_24h_usd),
+                      fees_usd: safeToNumber(metrics.volume.fees_24h_usd),
+                      transactions: safeToNumber(metrics.volume.transactions_24h),
+                      formatted: formatUSD(metrics.volume.volume_24h_usd)
+                    },
+                    
+                    // Additional volume data
+                    volume_7d: {
+                      usd: safeToNumber(metrics.volume.volume_7d_usd),
+                      fees_usd: safeToNumber(metrics.volume.fees_7d_usd),
+                      transactions: safeToNumber(metrics.volume.transactions_7d),
+                      formatted: formatUSD(metrics.volume.volume_7d_usd)
+                    },
+                    
+                    // APY and other metrics
+                    apy: safeToNumber(metrics.apy),
+                    utilization: safeToNumber(metrics.utilization),
+                    feeTier: data.lp_fee_bps / 100
+                  });
+                } else {
+                  console.warn("Failed to get pool metrics:", metricsResult?.Err);
+                  // Fallback to basic pool data
+                  setPoolStats({
+                    poolId: data.pool_id,
+                    token0Balance: normalizeAmount(balForToken0, token0.decimals),
+                    token1Balance: normalizeAmount(balForToken1, token1.decimals),
+                    tvl: { usd: 0, formatted: '$0' },
+                    volume_24h: { usd: 0, formatted: '$0' },
+                    apy: 0,
+                    feeTier: data.lp_fee_bps / 100
+                  });
+                }
+              } catch (err) {
+                console.error("Failed to fetch pool metrics:", err);
+                // Fallback to basic pool data
+                setPoolStats({
+                  poolId: data.pool_id,
+                  token0Balance: normalizeAmount(balForToken0, token0.decimals),
+                  token1Balance: normalizeAmount(balForToken1, token1.decimals),
+                  tvl: { usd: 0, formatted: '$0' },
+                  volume_24h: { usd: 0, formatted: '$0' },
+                  apy: 0,
+                  feeTier: data.lp_fee_bps / 100
+                });
+              }
             } else {
               console.warn("Pool exists but get_by_tokens returned error:", pool?.Err);
               setPoolStats({

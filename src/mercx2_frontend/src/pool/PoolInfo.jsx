@@ -36,10 +36,43 @@ export default function PoolInfo({ token0, token1, poolStats }) {
           <span className="text-gray-400">{token1.symbol} Balance</span>
           <span className="text-white">{poolStats.token1Balance || '0'} {token1.symbol}</span>
         </div>
-        <div className="flex justify-between">
+
+         {/* Updated TVL display using the new structured data */}
+         <div className="flex justify-between">
           <span className="text-gray-400">TVL</span>
-          <span className="text-white">${poolStats.tvl ? poolStats.tvl.toLocaleString() : '0'}</span>
+          <span className="text-white">
+            {poolStats.tvl?.formatted || '$0'}
+          </span>
         </div>
+
+        {/* Additional analytics if available */}
+        {poolStats.volume_24h && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">Volume (24h)</span>
+            <span className="text-blue-400">
+              {poolStats.volume_24h.formatted || '$0'}
+            </span>
+          </div>
+        )}
+
+        {poolStats.apy !== undefined && poolStats.apy > 0 && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">APY</span>
+            <span className="text-green-400">
+              {poolStats.apy.toFixed(2)}%
+            </span>
+          </div>
+        )}
+
+{poolStats.utilization !== undefined && poolStats.utilization > 0 && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">Utilization</span>
+            <span className="text-purple-400">
+              {poolStats.utilization.toFixed(1)}%
+            </span>
+          </div>
+        )}
+        
       </div>
     </div>
   );

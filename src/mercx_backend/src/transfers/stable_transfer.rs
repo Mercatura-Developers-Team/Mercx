@@ -28,6 +28,8 @@ impl Storable for StableTransferId {
     const BOUND: Bound = Bound::Unbounded;
 }
 
+
+
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct StableTransfer {
     pub transfer_id: u64,
@@ -35,7 +37,18 @@ pub struct StableTransfer {
     pub amount: Nat,
     pub token_id: u32, //The ID of the token being transferred.
     pub tx_id: TxId,   //The ID of the actual blockchain-level transaction.
+    pub transfer_type: TransferType, // NEW FIELD: Type of transfer
     pub ts: u64,
+}
+
+// Enum to identify different types of transfers
+#[derive(CandidType, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TransferType {
+    Swap,           // For swap transactions
+    LiquidityAdd,   // For adding liquidity
+    LiquidityRemove,// For removing liquidity
+    Transfer,            // For fee collection
+    Other,          // For other types of transfers
 }
 
 impl Storable for StableTransfer {

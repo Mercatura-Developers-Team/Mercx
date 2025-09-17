@@ -6,7 +6,7 @@ use crate::stable_lp_token::lp_token_map;
 use crate::transfers::handlers as transfer_handlers;
 use crate::{StableLPToken, StablePool, StableToken,LPToken};
 use crate::transfers::tx_id::TxId;
-use crate::transfers::stable_transfer::StableTransfer;
+use crate::transfers::stable_transfer::{StableTransfer,TransferType};
 use crate::ic::transfer::icrc1_transfer;
 use crate::ic::id::caller_id;
 use icrc_ledger_types::icrc1::account::Account;
@@ -242,6 +242,7 @@ async fn transfer_token(
                 amount: amount_with_gas,
                 token_id,
                 tx_id: TxId::BlockIndex(block_id),
+                transfer_type: TransferType::LiquidityRemove,  // Add this line
                 ts,
             });
             transfer_ids.push(transfer_id);

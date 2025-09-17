@@ -15,7 +15,7 @@ use crate::StablePool;
 use icrc_ledger_types::icrc1::account::Account;
 use crate::transfers::tx_id::TxId;
 use crate::StableToken;
-use crate::transfers::stable_transfer::StableTransfer;
+use crate::transfers::stable_transfer::{StableTransfer,TransferType};
 use crate::ic::verify_transfer::verify_transfer;
 use crate::transfers::handlers::{insert,exist};
 use crate::kyc::kyc_id::get_user_by_caller;
@@ -442,6 +442,7 @@ async fn verify_transfer_token(
                 amount: amount.clone(),
                 token_id,
                 tx_id: TxId::BlockIndex(tx_id.clone()),
+                transfer_type: TransferType::LiquidityAdd,      
                 ts,
             });
             transfer_ids.push(transfer_id);

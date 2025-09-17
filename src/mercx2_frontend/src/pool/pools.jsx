@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../use-auth-client";
 import { Principal } from "@dfinity/principal";
 import { useNavigate } from 'react-router-dom';
+import LoadingScreen from '../LoadingScreen'; // Import the reusable component
 
 
 export default function Pools() {
@@ -11,6 +12,9 @@ export default function Pools() {
   const [hoveredRow, setHoveredRow] = useState(null);
   const [logos, setLogos] = useState({});
   const [prices, setPrices] = useState({});
+const [poolAnalytics, setPoolAnalytics] = useState({}); // New state for analytics
+const [loading, setLoading] = useState(true);
+
 
   const navigate = useNavigate();
 
@@ -20,6 +24,8 @@ export default function Pools() {
       if (!mercx_Actor) return;
 
       try {
+        setLoading(true);
+
         const result = await mercx_Actor.get_all_pools();
 
         if (result?.Ok) {
@@ -32,6 +38,8 @@ export default function Pools() {
       
       } catch (err) {
         console.error("Failed to load pools or logos", err);
+      }finally {
+        setLoading(false);
       }
     };
 
@@ -72,6 +80,56 @@ export default function Pools() {
       }
     };
     fetchPrices();
+  }, [mercx_Actor, pools]);
+
+  // New useEffect to fetch pool analytics (TVL, Volume, APY)
+  useEffect(() => {
+    const fetchPoolAnalytics = async () => {
+      if (!mercx_Actor || !pools.length) return;
+
+      try {
+        const analyticsEntries = await Promise.all(
+          pools.map(async (pool) => {
+            try {
+              // Use get_pool_metrics to get all data in one call
+              const result = await mercx_Actor.get_pool_metrics(pool.pool_id);
+              
+              if (result?.Ok) {
+                return [pool.pool_id, {
+                  tvl: result.Ok.tvl.tvl_usd,
+                  volume_24h: result.Ok.volume.volume_24h_usd,
+                  apy: result.Ok.apy,
+                  loading: false
+                }];
+              } else {
+                console.warn(`Failed to get metrics for pool ${pool.pool_id}:`, result?.Err);
+                return [pool.pool_id, {
+                  tvl: 0,
+                  volume_24h: 0,
+                  apy: 0,
+                  loading: false
+                }];
+              }
+            } catch (err) {
+              console.warn(`Error fetching analytics for pool ${pool.pool_id}:`, err);
+              return [pool.pool_id, {
+                tvl: 0,
+                volume_24h: 0,
+                apy: 0,
+                loading: false
+              }];
+            }
+          })
+        );
+
+        const analyticsMap = Object.fromEntries(analyticsEntries);
+        setPoolAnalytics(analyticsMap);
+      } catch (error) {
+        console.error("Error fetching pool analytics:", error);
+      }
+    };
+
+    fetchPoolAnalytics();
   }, [mercx_Actor, pools]);
 
 
@@ -133,6 +191,31 @@ export default function Pools() {
     </div>
   );
 
+  // Helper function to format USD values
+  const formatUSD = (value) => {
+    if (value === 0) return '$0';
+    if (value < 1000) return `$${value.toFixed(2)}`;
+    if (value < 1000000) return `$${(value / 1000).toFixed(1)}K`;
+    return `$${(value / 1000000).toFixed(1)}M`;
+  };
+
+  // Helper function to format percentage
+  const formatPercentage = (value) => {
+    if (value === 0) return '0%';
+    return `${value.toFixed(2)}%`;
+  };
+  
+  if (loading) {
+    return (
+      <LoadingScreen 
+        title="Loading Pools" 
+        subtitle="Fetching pool data and analytics..." 
+        showSkeleton={true}
+        skeletonType="table"
+      />
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -170,6 +253,7 @@ export default function Pools() {
   }).map((pool) => {
                   const key = `${pool.symbol_0}/${pool.symbol_1}`;
                   const price = prices[key];
+                  const analytics = poolAnalytics[pool.pool_id];
 
                   return (
                     <tr
@@ -185,12 +269,36 @@ export default function Pools() {
                       <td className="px-6 py-4 whitespace-nowrap text-white font-medium">
                         {price !== undefined ? price : 'Loading...'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">-</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">-</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">
+                      {analytics?.loading === false ? (
+                            <span className={analytics.tvl > 0 ? 'text-green-400' : 'text-gray-400'}>
+                              {formatUSD(analytics.tvl)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">Loading...</span>
+                          )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">
+                      {analytics?.loading === false ? (
+                            <span className={analytics.volume_24h > 0 ? 'text-blue-400' : 'text-gray-400'}>
+                              {formatUSD(analytics.volume_24h)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">Loading...</span>
+                          )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-300">
                         {pool.lp_fee_bps / 100}%
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium">%</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium"> 
+                        {analytics?.loading === false ? (
+                            <span className={`${analytics.apy > 0 ? 'text-green-400' : 'text-gray-400'}`}>
+                              {formatPercentage(analytics.apy)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">Loading...</span>
+                          )}
+                          </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex space-x-2">
                           <button

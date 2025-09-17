@@ -6,7 +6,7 @@ use crate::helpers::math_helpers::{nat_subtract, nat_zero};
 use crate::ic::{transfer::icrc1_transfer};
 
 use crate::token::{stable_token::StableToken};
-use crate::transfers::{stable_transfer::StableTransfer, handlers, tx_id::TxId};
+use crate::transfers::{stable_transfer::{StableTransfer,TransferType}, handlers, tx_id::TxId};
 
 //to return the pay_token to the user in a token swap flow — typically when the swap has failed and the user needs to get their funds back. 
 pub async fn return_pay_token(
@@ -36,6 +36,7 @@ pub async fn return_pay_token(
                 amount: pay_amount_with_gas,
                 token_id,
                 tx_id: TxId::BlockIndex(tx_id),
+                transfer_type: TransferType::Transfer,       // This is a SWAP, not liquidity removal
                 ts,
             });
             transfer_ids.push(transfer_id);

@@ -2,7 +2,7 @@ use crate::ic::verify_transfer::verify_transfer;
 use crate::swap::swap_args::SwapArgs;
 use crate::token::handlers as token_handler;
 use crate::transfers::handlers;
-use crate::transfers::stable_transfer::StableTransfer;
+use crate::transfers::stable_transfer::{StableTransfer,TransferType};
 use crate::transfers::tx_id::TxId;
 use crate::StableToken;
 use candid::Nat;
@@ -203,6 +203,7 @@ async fn verify_transfer_token(
                 amount: amount.clone(),
                 token_id,
                 tx_id: TxId::BlockIndex(tx_id.clone()),
+                transfer_type: TransferType::Swap,       // This is a SWAP, not liquidity removal
                 ts,
             });
             //request_map::update_status(request_id, StatusCode::VerifyPayTokenSuccess, None);

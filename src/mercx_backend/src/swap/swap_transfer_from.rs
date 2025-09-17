@@ -11,7 +11,7 @@ use crate::stable_mercx_settings::mercx_settings_map;
 use crate::token::handlers; 
 use crate::ic::address_helpers::get_address;
 use crate::transfers::tx_id::TxId;
-use crate::transfers::stable_transfer::StableTransfer;
+use crate::transfers::stable_transfer::{StableTransfer,TransferType};
 use crate::ic::transfer::icrc2_transfer_from;
 use icrc_ledger_types::icrc1::account::Account;
 use crate::transfers::handlers as transfer_handlers;
@@ -138,6 +138,7 @@ async fn transfer_from_token(
                 amount: amount.clone(),
                 token_id,
                 tx_id: TxId::BlockIndex(tx_id),
+                transfer_type: TransferType::Swap,       // This is a SWAP, not liquidity removal
                 ts,
             });
             transfer_ids.push(transfer_id);
