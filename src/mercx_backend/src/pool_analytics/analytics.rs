@@ -4,7 +4,7 @@ use crate::pool::stable_pool::StablePoolId;
 use crate::token::stable_token::StableTokenId;
 use crate::token::stable_token::StableToken;
 use ic_stable_structures::StableBTreeMap;
-//use crate::transfers::stable_transfer::StableTransfer;
+use crate::transfers::stable_transfer::StableTransfer;
 //use crate::transfers::tx_id::TxId;
 use crate::helpers::math_helpers::{nat_add};
 use crate::ic::general::get_time;
@@ -73,6 +73,7 @@ fn get_token_price_usd(token: &StableToken) -> f64 {
         "BELLA" => 7.89,  // Your EGX30 token
         "TOMMY" => 1.02,  // Your Treasury token
         "USDC" => 1.00,
+        "FXMX" => 0.50,
         "ckUSDT" => 1.00,
         _ => 0.0,
     }
@@ -222,7 +223,6 @@ pub fn get_all_pools_tvl() -> Vec<PoolTVL> {
     })
 }
 
-// Simplified volume calculation - count input transfers directly
 #[query]
 pub fn calculate_pool_volume(pool_id: u32, hours: u64) -> Result<PoolVolume, String> {
     let current_time = get_time();
@@ -242,22 +242,87 @@ pub fn calculate_pool_volume(pool_id: u32, hours: u64) -> Result<PoolVolume, Str
                 let mut fees_usd: f64 = 0.0;
                 let mut transaction_count: u32 = 0;
 
-                // Simple approach: count all swap input transfers (is_send = true)
+                // Collect relevant transfers for this pool
+                let mut pool_transfers = Vec::new();
                 for (_, transfer) in transfers_map.iter() {
-                    if transfer.ts >= time_threshold && 
+                    if transfer.ts >= time_threshold &&
                        matches!(transfer.transfer_type, TransferType::Swap) &&
-                       (transfer.token_id == pool.token_id_0 || transfer.token_id == pool.token_id_1) &&
-                       transfer.is_send {  // Only count input transfers (user sending tokens)
+                       (transfer.token_id == pool.token_id_0 || transfer.token_id == pool.token_id_1) {
+                        pool_transfers.push(transfer);
+                    }
+                }
+
+                // Sort by timestamp
+                pool_transfers.sort_by_key(|t| t.ts);
+
+                // Group transfers by exact timestamp (nanosecond precision)
+                let mut timestamp_groups: std::collections::HashMap<u64, Vec<&StableTransfer>> = 
+                    std::collections::HashMap::new();
+
+                for transfer in &pool_transfers {
+                    timestamp_groups.entry(transfer.ts).or_default().push(transfer);
+                }
+
+                // Process each timestamp group to find valid swaps
+                for (_timestamp, transfers_at_time) in timestamp_groups {
+                    // Look for input/output pairs at the same timestamp
+                    let mut processed_transfers = std::collections::HashSet::new();
+
+                    for i in 0..transfers_at_time.len() {
+                        if processed_transfers.contains(&i) {
+                            continue;
+                        }
+
+                        let transfer1 = transfers_at_time[i];
                         
-                        if let Some(token) = tokens_map.get(&StableTokenId(transfer.token_id)) {
-                            let swap_volume_usd = token_amount_to_usd(&transfer.amount, &token);
-                            
-                            volume_usd += swap_volume_usd;
-                            
-                            let fee_rate = pool.lp_fee_bps as f64 / 10000.0;
-                            fees_usd += swap_volume_usd * fee_rate;
-                            
-                            transaction_count += 1;
+                        // Look for a matching transfer that forms a valid swap
+                        for j in (i + 1)..transfers_at_time.len() {
+                            if processed_transfers.contains(&j) {
+                                continue;
+                            }
+
+                            let transfer2 = transfers_at_time[j];
+
+                            // Check if these two transfers form a valid swap for THIS pool
+                            let is_valid_pool_swap = 
+                                ((transfer1.is_send && !transfer2.is_send && 
+                                  transfer1.token_id == pool.token_id_0 && 
+                                  transfer2.token_id == pool.token_id_1) ||
+                                 (transfer1.is_send && !transfer2.is_send && 
+                                  transfer1.token_id == pool.token_id_1 && 
+                                  transfer2.token_id == pool.token_id_0) ||
+                                 (!transfer1.is_send && transfer2.is_send && 
+                                  transfer2.token_id == pool.token_id_0 && 
+                                  transfer1.token_id == pool.token_id_1) ||
+                                 (!transfer1.is_send && transfer2.is_send && 
+                                  transfer2.token_id == pool.token_id_1 && 
+                                  transfer1.token_id == pool.token_id_0));
+
+                            if is_valid_pool_swap {
+                                // Determine which is input and which is output
+                                let (input_transfer, _output_transfer) = if transfer1.is_send {
+                                    (transfer1, transfer2)
+                                } else {
+                                    (transfer2, transfer1)
+                                };
+
+                                // Calculate volume from input transfer
+                                if let Some(input_token) = tokens_map.get(&StableTokenId(input_transfer.token_id)) {
+                                    let swap_volume_usd = token_amount_to_usd(&input_transfer.amount, &input_token);
+                                    
+                                    volume_usd += swap_volume_usd;
+                                    
+                                    let fee_rate = pool.lp_fee_bps as f64 / 10000.0;
+                                    fees_usd += swap_volume_usd * fee_rate;
+                                    
+                                    transaction_count += 1;
+                                }
+
+                                // Mark both transfers as processed
+                                processed_transfers.insert(i);
+                                processed_transfers.insert(j);
+                                break;
+                            }
                         }
                     }
                 }
@@ -302,6 +367,145 @@ pub fn calculate_pool_volume(pool_id: u32, hours: u64) -> Result<PoolVolume, Str
         })
     })
 }
+
+
+// Add this debug function to your analytics file
+#[query]
+pub fn debug_pool_volume_zero(pool_id: u32, hours: u64) -> Result<String, String> {
+    let current_time = get_time();
+    let time_threshold = current_time - (hours * 60 * 60 * 1_000_000_000);
+    
+    TRANSFERS.with(|transfers| {
+        TOKENS.with(|tokens| {
+            POOLS.with(|pools| {
+                let transfers_map = transfers.borrow();
+                let tokens_map = tokens.borrow();
+                let pools_map = pools.borrow();
+
+                let pool = pools_map.get(&StablePoolId(pool_id))
+                    .ok_or("Pool not found")?;
+
+                let mut debug_info = Vec::new();
+                
+                debug_info.push(format!("=== DEBUGGING POOL {} VOLUME ===", pool_id));
+                debug_info.push(format!("Pool: {} (token_0: {}, token_1: {})", 
+                    pool.name(), pool.token_id_0, pool.token_id_1));
+                debug_info.push(format!("Time threshold: {} (current: {})", time_threshold, current_time));
+                debug_info.push(format!("Looking for transfers after: {}", time_threshold));
+                
+                // Step 1: Count all transfers in the time window
+                let mut total_transfers = 0;
+                let mut swap_transfers = 0;
+                let mut pool_related_transfers = 0;
+                
+                for (_, transfer) in transfers_map.iter() {
+                    if transfer.ts >= time_threshold {
+                        total_transfers += 1;
+                        
+                        if matches!(transfer.transfer_type, TransferType::Swap) {
+                            swap_transfers += 1;
+                            
+                            if transfer.token_id == pool.token_id_0 || transfer.token_id == pool.token_id_1 {
+                                pool_related_transfers += 1;
+                                
+                                // Show details of first 5 relevant transfers
+                                if pool_related_transfers <= 5 {
+                                    debug_info.push(format!(
+                                        "Transfer {}: token_id={}, amount={}, is_send={}, tx_id={:?}, ts={}", 
+                                        pool_related_transfers, 
+                                        transfer.token_id, 
+                                        transfer.amount, 
+                                        transfer.is_send,
+                                        transfer.tx_id,
+                                        transfer.ts
+                                    ));
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                debug_info.push(format!("Total transfers in time window: {}", total_transfers));
+                debug_info.push(format!("Swap transfers in time window: {}", swap_transfers));
+                debug_info.push(format!("Pool-related swap transfers: {}", pool_related_transfers));
+                
+                if pool_related_transfers == 0 {
+                    debug_info.push("❌ NO POOL-RELATED SWAP TRANSFERS FOUND!".to_string());
+                    debug_info.push("Possible issues:".to_string());
+                    debug_info.push("1. No swaps in the time window".to_string());
+                    debug_info.push("2. Transfers not marked as TransferType::Swap".to_string());
+                    debug_info.push("3. Wrong token IDs in transfers".to_string());
+                    
+                    return Ok(debug_info.join("\n"));
+                }
+                
+                // Step 2: Analyze transaction groupings
+                let mut tx_id_groups: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
+                
+                for (_, transfer) in transfers_map.iter() {
+                    if transfer.ts >= time_threshold &&
+                       matches!(transfer.transfer_type, TransferType::Swap) &&
+                       (transfer.token_id == pool.token_id_0 || transfer.token_id == pool.token_id_1) {
+                        
+                        let tx_id_str = format!("{:?}", transfer.tx_id);
+                        let transfer_info = format!("token_{}_{}_{}", 
+                            transfer.token_id, 
+                            if transfer.is_send { "OUT" } else { "IN" },
+                            transfer.amount
+                        );
+                        
+                        tx_id_groups.entry(tx_id_str).or_default().push(transfer_info);
+                    }
+                }
+                
+                debug_info.push(format!("=== TRANSACTION GROUPS ({}) ===", tx_id_groups.len()));
+                
+                let mut valid_swaps = 0;
+                for (tx_id, transfers_in_tx) in tx_id_groups.iter() {
+                    debug_info.push(format!("TX {}: {} transfers", tx_id, transfers_in_tx.len()));
+                    
+                    for transfer_info in transfers_in_tx {
+                        debug_info.push(format!("  - {}", transfer_info));
+                    }
+                    
+                    // Check if this could be a valid swap
+                    if transfers_in_tx.len() >= 2 {
+                        let has_input = transfers_in_tx.iter().any(|t| t.contains("_OUT_"));
+                        let has_output = transfers_in_tx.iter().any(|t| t.contains("_IN_"));
+                        let has_both_tokens = transfers_in_tx.iter().any(|t| t.starts_with(&format!("token_{}", pool.token_id_0))) &&
+                                            transfers_in_tx.iter().any(|t| t.starts_with(&format!("token_{}", pool.token_id_1)));
+                        
+                        debug_info.push(format!("  Analysis: input={}, output={}, both_tokens={}", 
+                            has_input, has_output, has_both_tokens));
+                        
+                        if has_input && has_output && has_both_tokens {
+                            valid_swaps += 1;
+                            debug_info.push("  ✅ VALID SWAP DETECTED".to_string());
+                        } else {
+                            debug_info.push("  ❌ Invalid swap pattern".to_string());
+                        }
+                    }
+                }
+                
+                debug_info.push(format!("=== SUMMARY ==="));
+                debug_info.push(format!("Valid swaps found: {}", valid_swaps));
+                
+                if valid_swaps == 0 {
+                    debug_info.push("❌ NO VALID SWAPS FOUND!".to_string());
+                    debug_info.push("Common issues:".to_string());
+                    debug_info.push("1. Input/output transfers have different tx_id values".to_string());
+                    debug_info.push("2. Missing input or output transfer".to_string());
+                    debug_info.push("3. Both transfers are same token (not a cross-token swap)".to_string());
+                    debug_info.push("4. is_send field not set correctly".to_string());
+                }
+                
+                Ok(debug_info.join("\n"))
+            })
+        })
+    })
+}
+
+
 
 
 // #[query]
@@ -395,125 +599,125 @@ pub fn calculate_pool_volume(pool_id: u32, hours: u64) -> Result<PoolVolume, Str
 //     })
 // }
 
-// #[query]
-// pub fn calculate_pool_volume_with_tx_grouping(pool_id: u32, hours: u64) -> Result<PoolVolume, String> {
-//     let current_time = get_time();
-//     let time_threshold = current_time - (hours * 60 * 60 * 1_000_000_000);
+#[query]
+pub fn calculate_pool_volume_with_tx_grouping(pool_id: u32, hours: u64) -> Result<PoolVolume, String> {
+    let current_time = get_time();
+    let time_threshold = current_time - (hours * 60 * 60 * 1_000_000_000);
     
-//     TRANSFERS.with(|transfers| {
-//         TOKENS.with(|tokens| {
-//             POOLS.with(|pools| {
-//                 let transfers_map = transfers.borrow();
-//                 let tokens_map = tokens.borrow();
-//                 let pools_map = pools.borrow();
+    TRANSFERS.with(|transfers| {
+        TOKENS.with(|tokens| {
+            POOLS.with(|pools| {
+                let transfers_map = transfers.borrow();
+                let tokens_map = tokens.borrow();
+                let pools_map = pools.borrow();
 
-//                 let pool = pools_map.get(&StablePoolId(pool_id))
-//                     .ok_or("Pool not found")?;
+                let pool = pools_map.get(&StablePoolId(pool_id))
+                    .ok_or("Pool not found")?;
 
-//                 let mut volume_usd: f64 = 0.0;
-//                 let mut fees_usd: f64 = 0.0;
-//                 let mut transaction_count: u32 = 0;
+                let mut volume_usd: f64 = 0.0;
+                let mut fees_usd: f64 = 0.0;
+                let mut transaction_count: u32 = 0;
 
-//                 // First pass: collect transaction IDs that involve this pool
-//                 let mut relevant_tx_ids = std::collections::HashSet::new();
+                // First pass: collect transaction IDs that involve this pool
+                let mut relevant_tx_ids = std::collections::HashSet::new();
                 
-//                 for (_, transfer) in transfers_map.iter() {
-//                     if transfer.ts >= time_threshold &&
-//                        (transfer.token_id == pool.token_id_0 || transfer.token_id == pool.token_id_1) {
-//                         relevant_tx_ids.insert(transfer.tx_id.clone());
-//                     }
-//                 }
+                for (_, transfer) in transfers_map.iter() {
+                    if transfer.ts >= time_threshold &&
+                       (transfer.token_id == pool.token_id_0 || transfer.token_id == pool.token_id_1) {
+                        relevant_tx_ids.insert(transfer.tx_id.clone());
+                    }
+                }
 
-//                 // Second pass: process each relevant transaction
-//                 for tx_id in relevant_tx_ids {
-//                     let mut transfers_in_tx = Vec::new();
+                // Second pass: process each relevant transaction
+                for tx_id in relevant_tx_ids {
+                    let mut transfers_in_tx = Vec::new();
                     
-//                     // Collect all transfers for this transaction
-//                     for (_, transfer) in transfers_map.iter() {
-//                         if transfer.tx_id == tx_id {
-//                             transfers_in_tx.push(transfer);
-//                         }
-//                     }
+                    // Collect all transfers for this transaction
+                    for (_, transfer) in transfers_map.iter() {
+                        if transfer.tx_id == tx_id {
+                            transfers_in_tx.push(transfer);
+                        }
+                    }
 
-//                     // Look for swap pattern (input + output)
-//                     if transfers_in_tx.len() == 2 {
-//                         let transfer1 = &transfers_in_tx[0];
-//                         let transfer2 = &transfers_in_tx[1];
+                    // Look for swap pattern (input + output)
+                    if transfers_in_tx.len() == 2 {
+                        let transfer1 = &transfers_in_tx[0];
+                        let transfer2 = &transfers_in_tx[1];
                         
-//                         // Check if this is a valid swap (one input, one output)
-//                         if transfer1.is_send != transfer2.is_send {
-//                             let (input_transfer, output_transfer) = if !transfer1.is_send {
-//                                 (transfer1, transfer2)
-//                             } else {
-//                                 (transfer2, transfer1)
-//                             };
+                        // Check if this is a valid swap (one input, one output)
+                        if transfer1.is_send != transfer2.is_send {
+                            let (input_transfer, output_transfer) = if !transfer1.is_send {
+                                (transfer1, transfer2)
+                            } else {
+                                (transfer2, transfer1)
+                            };
 
-//                             // CRITICAL FIX: Check if it's a cross-token swap
-//                             if input_transfer.token_id != output_transfer.token_id {
+                            // CRITICAL FIX: Check if it's a cross-token swap
+                            if input_transfer.token_id != output_transfer.token_id {
                                 
-//                                 // DOUBLE CHECK: Both tokens should belong to this pool
-//                                 let valid_swap = 
-//                                     (input_transfer.token_id == pool.token_id_0 && output_transfer.token_id == pool.token_id_1) ||
-//                                     (input_transfer.token_id == pool.token_id_1 && output_transfer.token_id == pool.token_id_0);
+                                // DOUBLE CHECK: Both tokens should belong to this pool
+                                let valid_swap = 
+                                    (input_transfer.token_id == pool.token_id_0 && output_transfer.token_id == pool.token_id_1) ||
+                                    (input_transfer.token_id == pool.token_id_1 && output_transfer.token_id == pool.token_id_0);
                                 
-//                                 if valid_swap {
-//                                     // Get tokens and calculate volume
-//                                     if let Some(input_token) = tokens_map.get(&StableTokenId(input_transfer.token_id)) {
-//                                         let input_amount_usd = token_amount_to_usd(&input_transfer.amount, &input_token);
-//                                         volume_usd += input_amount_usd;
+                                if valid_swap {
+                                    // Get tokens and calculate volume
+                                    if let Some(input_token) = tokens_map.get(&StableTokenId(input_transfer.token_id)) {
+                                        let input_amount_usd = token_amount_to_usd(&input_transfer.amount, &input_token);
+                                        volume_usd += input_amount_usd;
                                         
-//                                         let fee_rate = pool.lp_fee_bps as f64 / 10000.0;
-//                                         fees_usd += input_amount_usd * fee_rate;
+                                        let fee_rate = pool.lp_fee_bps as f64 / 10000.0;
+                                        fees_usd += input_amount_usd * fee_rate;
                                         
-//                                         transaction_count += 1;
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
+                                        transaction_count += 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
-//                 let symbol = pool.name();
+                let symbol = pool.name();
 
-//                 // Return appropriate response
-//                 if hours == 24 {
-//                     Ok(PoolVolume {
-//                         pool_id,
-//                         symbol,
-//                         volume_24h_usd: volume_usd,
-//                         volume_7d_usd: 0.0,
-//                         fees_24h_usd: fees_usd,
-//                         fees_7d_usd: 0.0,
-//                         transactions_24h: transaction_count,
-//                         transactions_7d: 0,
-//                     })
-//                 } else if hours == 168 {
-//                     Ok(PoolVolume {
-//                         pool_id,
-//                         symbol,
-//                         volume_24h_usd: 0.0,
-//                         volume_7d_usd: volume_usd,
-//                         fees_24h_usd: 0.0,
-//                         fees_7d_usd: fees_usd,
-//                         transactions_24h: 0,
-//                         transactions_7d: transaction_count,
-//                     })
-//                 } else {
-//                     Ok(PoolVolume {
-//                         pool_id,
-//                         symbol,
-//                         volume_24h_usd: volume_usd,
-//                         volume_7d_usd: 0.0,
-//                         fees_24h_usd: fees_usd,
-//                         fees_7d_usd: 0.0,
-//                         transactions_24h: transaction_count,
-//                         transactions_7d: 0,
-//                     })
-//                 }
-//             })
-//         })
-//     })
-// }
+                // Return appropriate response
+                if hours == 24 {
+                    Ok(PoolVolume {
+                        pool_id,
+                        symbol,
+                        volume_24h_usd: volume_usd,
+                        volume_7d_usd: 0.0,
+                        fees_24h_usd: fees_usd,
+                        fees_7d_usd: 0.0,
+                        transactions_24h: transaction_count,
+                        transactions_7d: 0,
+                    })
+                } else if hours == 168 {
+                    Ok(PoolVolume {
+                        pool_id,
+                        symbol,
+                        volume_24h_usd: 0.0,
+                        volume_7d_usd: volume_usd,
+                        fees_24h_usd: 0.0,
+                        fees_7d_usd: fees_usd,
+                        transactions_24h: 0,
+                        transactions_7d: transaction_count,
+                    })
+                } else {
+                    Ok(PoolVolume {
+                        pool_id,
+                        symbol,
+                        volume_24h_usd: volume_usd,
+                        volume_7d_usd: 0.0,
+                        fees_24h_usd: fees_usd,
+                        fees_7d_usd: 0.0,
+                        transactions_24h: transaction_count,
+                        transactions_7d: 0,
+                    })
+                }
+            })
+        })
+    })
+}
 
 
 // Get comprehensive pool metrics

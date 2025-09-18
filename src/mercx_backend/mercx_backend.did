@@ -334,11 +334,13 @@ service : {
   add_token : (principal) -> (Result_3);
   calculate_pool_tvl : (nat32) -> (Result_4) query;
   calculate_pool_volume : (nat32, nat64) -> (Result_5) query;
+  calculate_pool_volume_with_tx_grouping : (nat32, nat64) -> (Result_5) query;
   calculate_total_tvl : () -> (float64) query;
   check_balance : (Account, principal) -> (Result_6);
   check_balance_icp : (Account) -> (nat);
   check_balance_mercx : (Account) -> (nat);
   check_transfer_types : () -> (Result_7) query;
+  debug_pool_volume_zero : (nat32, nat64) -> (Result_8) query;
   delete_pool : (nat32) -> (Result_8);
   delete_token_by_canister_id : (principal) -> (Result_8);
   deposit_icp_in_canister : (nat64) -> (Result_6);

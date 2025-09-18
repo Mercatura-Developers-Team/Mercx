@@ -50,7 +50,7 @@ export default function CreatePool() {
     onSubmit: async (values) => {
       setIsCreating(true);
       setFormError("");
-      const spenderId = "a3shf-5eaaa-aaaaa-qaafa-cai";
+      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai";
       try {
         const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
         const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);

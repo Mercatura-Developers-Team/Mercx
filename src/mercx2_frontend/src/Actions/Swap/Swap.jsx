@@ -31,22 +31,22 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
 
   // Function to fetch token logos
   const fetchTokenLogos = async (tokenList) => {
-    const logoMap = {};
-
-    for (const token of tokenList) {
-      if (!logoMap[token.symbol]) {
+    const entries = await Promise.all(
+      tokenList.map(async (token) => {
         try {
           const principal = Principal.fromText(token.canister_id.toText());
           const url = await mercx_Actor.get_logo_url(principal);
-          logoMap[token.symbol] = url;
+          return [token.symbol, url];
         } catch (e) {
           console.warn(`Failed to fetch logo for ${token.symbol}`, e);
-          logoMap[token.symbol] = "/j.png"; // Default logo
+          return [token.symbol, "/j.png"];
         }
-      }
-    }
-    return logoMap;
+      })
+    );
+  
+    return Object.fromEntries(entries);
   };
+  
 
   // Fetch tokens with logos
   useEffect(() => {
@@ -176,8 +176,9 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
     setError('');
 
     try {
-      const spenderId = "a3shf-5eaaa-aaaaa-qaafa-cai"; // Swap canister ID
+      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Swap canister ID
       const amountIn = parseAmount(fromAmount, fromToken.decimals)+ BigInt(20_000);
+      const amountInSure = parseAmount(fromAmount, fromToken.decimals)+ BigInt(10_000);
 
       // Check and approve allowance
       const fromActor = await createTokenActor(fromToken.canister_id.toText());
@@ -209,7 +210,7 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
       const swapResult = await mercx_Actor.swap_tokens({
         pay_token: fromToken.canister_id.toText(),
         receive_token: toToken.canister_id.toText(),
-        pay_amount: amountIn,
+        pay_amount: amountInSure,
         pay_tx_id: [], // Or provide TransactionHash/BlockIndex variant
         receive_amount: [], // Optional: can be left empty if not protecting with limit
         receive_address: [], // Optional
