@@ -31,22 +31,22 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
 
   // Function to fetch token logos
   const fetchTokenLogos = async (tokenList) => {
-    const entries = await Promise.all(
-      tokenList.map(async (token) => {
+    const logoMap = {};
+
+    for (const token of tokenList) {
+      if (!logoMap[token.symbol]) {
         try {
           const principal = Principal.fromText(token.canister_id.toText());
           const url = await mercx_Actor.get_logo_url(principal);
-          return [token.symbol, url];
+          logoMap[token.symbol] = url;
         } catch (e) {
           console.warn(`Failed to fetch logo for ${token.symbol}`, e);
-          return [token.symbol, "/j.png"];
+          logoMap[token.symbol] = "/j.png"; // Default logo
         }
-      })
-    );
-  
-    return Object.fromEntries(entries);
+      }
+    }
+    return logoMap;
   };
-  
 
   // Fetch tokens with logos
   useEffect(() => {
@@ -65,17 +65,17 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
         // if (icp) setFromToken(icp);
         // if (bella) setToToken(bella);
 
-          // ✅ Pre-select tokens based on props
-      if (fromTokenSymbol && toTokenSymbol) {
-        const from = tokenList.find(t => t.symbol === fromTokenSymbol);
-        const to = tokenList.find(t => t.symbol === toTokenSymbol);
+        // ✅ Pre-select tokens based on props
+        if (fromTokenSymbol && toTokenSymbol) {
+          const from = tokenList.find(t => t.symbol === fromTokenSymbol);
+          const to = tokenList.find(t => t.symbol === toTokenSymbol);
 
-        // Extra safety: make sure they are not the same
-        if (from && to && from.canister_id.toText() !== to.canister_id.toText()) {
-          setFromToken(from);
-          setToToken(to);
+          // Extra safety: make sure they are not the same
+          if (from && to && from.canister_id.toText() !== to.canister_id.toText()) {
+            setFromToken(from);
+            setToToken(to);
+          }
         }
-      }
       } catch (err) {
         console.error("Failed to fetch tokens:", err);
       }
@@ -176,10 +176,9 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
     setError('');
 
     try {
-      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Swap canister ID
-      const amountIn = parseAmount(fromAmount, fromToken.decimals)+ BigInt(20_000);
-      const amountInSure = parseAmount(fromAmount, fromToken.decimals)+ BigInt(10_000);
-
+      const spenderId = "a3shf-5eaaa-aaaaa-qaafa-cai"; // Swap canister ID
+      const amountIn = parseAmount(fromAmount, fromToken.decimals) + BigInt(20_000);
+      const amount = parseAmount(fromAmount, fromToken.decimals);
       // Check and approve allowance
       const fromActor = await createTokenActor(fromToken.canister_id.toText());
       const allowanceCheck = {
@@ -210,11 +209,11 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
       const swapResult = await mercx_Actor.swap_tokens({
         pay_token: fromToken.canister_id.toText(),
         receive_token: toToken.canister_id.toText(),
-        pay_amount: amountInSure,
-        pay_tx_id: [], // Or provide TransactionHash/BlockIndex variant
-        receive_amount: [], // Optional: can be left empty if not protecting with limit
+        pay_amount: amount,
+        pay_tx_id: [],       // Or provide TransactionHash/BlockIndex variant
+        receive_amount: [],  // Optional: can be left empty if not protecting with limit
         receive_address: [], // Optional
-        max_slippage: [], // ✅ Add this! 1% slippage (wrap in [])
+        max_slippage: [],    // ✅ Add this! 1% slippage (wrap in [])
       });
       console.log(swapResult);
 
@@ -224,19 +223,19 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
       setSuccessModal(true);
       setFromAmount('');
       setToAmount('');
-    }  catch (err) {
+    } catch (err) {
       console.error("Swap failed:", err);
-    
+
       let msg = err.message || "Swap failed. Please try again.";
-    
+
       // Convert specific backend error to user-friendly message
       if (msg.includes("the debit account doesn't have enough funds")) {
         const balanceMatch = msg.match(/current balance:\s*(\d+)/);
         const balance = balanceMatch ? balanceMatch[1] : 'insufficient';
-    
+
         msg = `🚫 Not enough funds to swap. You currently have only ${parseFloat(balance) / 100_000_000} ${fromToken?.symbol}. Please reduce the amount or add more funds.`;
       }
-    
+
       setError(msg);
     }
     finally {
@@ -264,7 +263,7 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
         <div className="p-5">
           {/* From Token */}
           <div className="mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4  border border-gray-700 hover:border-indigo-500/50 transition-all duration-300">
-             
+
             <div className="flex justify-between items-center mb-3">
               <button
                 onClick={() => { setSelectingFor('from'); setOpenTokenSelect(true); }}
@@ -272,14 +271,14 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
               >
                 {fromToken ? (
                   <>
-                  
+
                     <img
                       src={logos[fromToken.symbol] || "./favicon.ico"}
                       alt={fromToken.symbol}
                       className="w-8 h-8 rounded-full shadow-md border-2 border-indigo-400/50"
                     />
                     <span className="font-medium text-white">{fromToken.symbol}</span>
-                 
+
                   </>
                 ) : (
                   <span className="text-white  ">Select Token</span>
