@@ -366,6 +366,7 @@ service : {
   get_protocol_stats : () -> (ProtocolStats) query;
   get_rate_vs_usd : (text) -> (Result_12);
   get_transactions : (nat, nat) -> (Result_14);
+  get_usd_price_from_pools : (text) -> (Result_12);
   get_user_by_caller : () -> (Result_15);
   get_whitelisted_principals : () -> (vec text) query;
   is_whitelisted : (principal) -> (bool) query;
