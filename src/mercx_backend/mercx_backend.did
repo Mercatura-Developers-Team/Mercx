@@ -105,6 +105,12 @@ type PoolMetrics = record {
   pool_id : nat32;
   symbol : text;
 };
+type PoolSnapshot = record {
+  tvl_usd : float64;
+  timestamp : nat64;
+  pool_id : nat32;
+  volume_24h_usd : float64;
+};
 type PoolTVL = record {
   token_0_value_usd : float64;
   balance_0 : nat;
@@ -182,11 +188,11 @@ type Result_18 = variant { Ok : SwapAmountsReply; Err : text };
 type Result_19 = variant { Ok : SwapReply; Err : text };
 type Result_2 = variant { Ok : AddPoolReply; Err : text };
 type Result_3 = variant { Ok : StableToken; Err : text };
-type Result_4 = variant { Ok : PoolTVL; Err : text };
-type Result_5 = variant { Ok : PoolVolume; Err : text };
-type Result_6 = variant { Ok : nat; Err : text };
-type Result_7 = variant { Ok : vec text; Err : text };
-type Result_8 = variant { Ok : text; Err : text };
+type Result_4 = variant { Ok : text; Err : text };
+type Result_5 = variant { Ok : PoolTVL; Err : text };
+type Result_6 = variant { Ok : PoolVolume; Err : text };
+type Result_7 = variant { Ok : nat; Err : text };
+type Result_8 = variant { Ok : vec text; Err : text };
 type Result_9 = variant { Ok : GetTransactions; Err : text };
 type StableLPToken = record {
   ts : nat64;
@@ -332,25 +338,29 @@ service : {
   add_pool : (AddPoolArgs) -> (Result_2);
   add_to_whitelist : (principal) -> ();
   add_token : (principal) -> (Result_3);
-  calculate_pool_tvl : (nat32) -> (Result_4) query;
-  calculate_pool_volume : (nat32, nat64) -> (Result_5) query;
-  calculate_pool_volume_with_tx_grouping : (nat32, nat64) -> (Result_5) query;
+  analytics_cron_job : () -> (Result_4);
+  calculate_pool_tvl : (nat32) -> (Result_5) query;
+  calculate_pool_volume : (nat32, nat64) -> (Result_6) query;
+  calculate_pool_volume_with_tx_grouping : (nat32, nat64) -> (Result_6) query;
   calculate_total_tvl : () -> (float64) query;
-  check_balance : (Account, principal) -> (Result_6);
+  check_balance : (Account, principal) -> (Result_7);
   check_balance_icp : (Account) -> (nat);
   check_balance_mercx : (Account) -> (nat);
-  check_transfer_types : () -> (Result_7) query;
-  debug_pool_volume_zero : (nat32, nat64) -> (Result_8) query;
-  delete_pool : (nat32) -> (Result_8);
-  delete_token_by_canister_id : (principal) -> (Result_8);
-  deposit_icp_in_canister : (nat64) -> (Result_6);
-  deposit_token : (nat64, principal) -> (Result_6);
+  check_transfer_types : () -> (Result_8) query;
+  clear_analytics_data : () -> (text);
+  delete_pool : (nat32) -> (Result_4);
+  delete_token_by_canister_id : (principal) -> (Result_4);
+  deposit_icp_in_canister : (nat64) -> (Result_7);
+  deposit_token : (nat64, principal) -> (Result_7);
   get : () -> (vec LPToken) query;
   get_account_transactions : (Account, opt nat, nat) -> (Result_9);
   get_all_pools : () -> (Result_10) query;
   get_all_pools_metrics : () -> (vec PoolMetrics) query;
   get_all_pools_tvl : () -> (vec PoolTVL) query;
   get_all_tokens : () -> (vec StableToken) query;
+  get_analytics_summary : () -> (
+      vec record { nat32; nat32; float64; float64 },
+    ) query;
   get_by_principal : (principal) -> (vec StableLPToken) query;
   get_by_token_id : (nat32) -> (opt StableLPToken) query;
   get_by_token_id_by_principal : (nat32, principal) -> (
@@ -358,11 +368,16 @@ service : {
     ) query;
   get_by_tokens : (text, text) -> (Result_11) query;
   get_icp_rate : () -> (Result_12);
+  get_latest_pool_snapshot : (nat32) -> (opt PoolSnapshot) query;
   get_logo_url : (principal) -> (text);
   get_lp_tokens_by_principal : (principal) -> (vec LpTokenInfo) query;
-  get_name : (principal) -> (Result_8) query;
+  get_name : (principal) -> (Result_4) query;
+  get_pool_chart_data : (nat32, nat64) -> (
+      vec record { nat64; float64; float64 },
+    ) query;
   get_pool_metrics : (nat32) -> (Result_13) query;
   get_pool_price : (text, text) -> (Result_12) query;
+  get_pool_snapshot_count : (nat32) -> (nat32) query;
   get_protocol_stats : () -> (ProtocolStats) query;
   get_rate_vs_usd : (text) -> (Result_12);
   get_transactions : (nat, nat) -> (Result_14);
@@ -370,23 +385,26 @@ service : {
   get_whitelisted_principals : () -> (vec text) query;
   is_whitelisted : (principal) -> (bool) query;
   pool_exists : (text, text) -> (bool) query;
+  record_all_pools_snapshot : () -> (Result_4);
+  record_current_analytics : () -> (Result_4);
+  record_pool_snapshot : (nat32, float64, float64) -> (Result_4);
   remove_from_whitelist : (principal) -> ();
   remove_liquidity : (RemoveLiquidityArgs) -> (Result_16);
   remove_liquidity_amounts : (text, text, nat) -> (Result_17) query;
-  reset_lp : () -> (Result_8);
-  reset_lp_metadata_tokens : () -> (Result_8);
-  reset_pools : () -> (Result_8);
-  reset_tokens : () -> (Result_8);
-  reset_transfers : () -> (Result_8);
+  reset_lp : () -> (Result_4);
+  reset_lp_metadata_tokens : () -> (Result_4);
+  reset_pools : () -> (Result_4);
+  reset_tokens : () -> (Result_4);
+  reset_transfers : () -> (Result_4);
   reset_whitelist : () -> ();
-  sell : (nat64, principal, nat64, principal) -> (Result_8);
-  send_mercx : (nat64) -> (Result_6);
-  send_token : (nat64, principal) -> (Result_6);
-  swap : (nat64, nat64) -> (Result_8);
+  sell : (nat64, principal, nat64, principal) -> (Result_4);
+  send_mercx : (nat64) -> (Result_7);
+  send_token : (nat64, principal) -> (Result_7);
+  swap : (nat64, nat64) -> (Result_4);
   swap_amounts : (text, nat, text) -> (Result_18) query;
   swap_tokens : (SwapArgs) -> (Result_19);
-  transfer : (TransferArgs) -> (Result_6);
-  transfer_from : (TransferArgs) -> (Result_6);
-  transfer_from_general : (TransferArgs) -> (Result_6);
+  transfer : (TransferArgs) -> (Result_7);
+  transfer_from : (TransferArgs) -> (Result_7);
+  transfer_from_general : (TransferArgs) -> (Result_7);
   whoami : () -> (principal) query;
 }

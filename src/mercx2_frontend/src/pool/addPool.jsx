@@ -9,6 +9,8 @@ import { useSearchParams } from "react-router-dom";
 import SuccessModal from "./SuccessModel"; // update path if needed
 import { parseAmount, normalizeAmount } from "./tokenUtils";
 import TokenSelector from "./TokenSelector";
+import PoolAnalyticsCharts from "./PoolAnalyticsCharts";
+
 
 export default function CreatePool() {
   const { mercx_Actor } = useAuth();
@@ -488,173 +490,177 @@ const formatUSD = (value) => {
     : "Select Tokens to Create a Pool";
 
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0f0f23] px-4 py-8">
-      <div className="w-full max-w-6xl"> {/* Increased max width */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Column - Form */}
-          <div className="w-full lg:w-2/3 bg-[#1a1a2e] p-6 rounded-xl shadow-xl space-y-6">
-            {/* Pool header */}
-            <h2 className="text-white text-xl font-semibold">{poolHeader}</h2>
-            {!poolExists && token0 && token1 && (
-              <div className="text-yellow-400 bg-yellow-900/20 p-3 rounded-md text-sm">
-                🚀 New Pool — You are the first to create this pair. Set its initial ratio.
-              </div>
-            )}
-            {formError && (
-              <div className="mt-3 bg-red-800/20 border border-red-600 text-red-400 text-sm rounded-lg p-3">
-                {formError}
-              </div>
-            )}
-            {/* Token Select */}
-            <div className="flex gap-4">
-              <button
-                onClick={() => { setOpenTokenSelect(true); setSelectingFor("token0"); }}
-                className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
-              >
-                {token0 ? `${token0.name}` : "Select Token 0"}
-              </button>
-              <button
-                onClick={() => { setOpenTokenSelect(true); setSelectingFor("token1"); }}
-                className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
-              >
-                {token1 ? `${token1.name}` : "Select Token 1"}
-              </button>
-            </div>
-
-            <form onSubmit={formik.handleSubmit} className="space-y-4">
-              {/* Set Initial Price */}
-              {!poolExists && (
-                <div>
-                  <label className="text-sm text-gray-300">Initial Price</label>
-                  <input
-                    type="number"
-                    // value={initialPrice}
-                    // onChange={(e) => setInitialPrice(e.target.value)}
-                    name="initialPrice"
-                    value={formik.values.initialPrice}
-                    onChange={formik.handleChange}
-                    placeholder="Enter initial price"
-                    className="w-full p-3 bg-gray-800 text-white rounded-lg"
-                  />
-                  <p className="text-red-400 text-xs">{formik.errors.initialPrice}</p>
-
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0f0f23] px-4 py-8">
+        <div className="w-full max-w-7xl space-y-6">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left Column - Form */}
+            <div className="w-full lg:w-2/3 bg-[#1a1a2e] p-6 rounded-xl shadow-xl space-y-6">
+              {/* Pool header */}
+              <h2 className="text-white text-xl font-semibold">{poolHeader}</h2>
+              {!poolExists && token0 && token1 && (
+                <div className="text-yellow-400 bg-yellow-900/20 p-3 rounded-md text-sm">
+                  🚀 New Pool — You are the first to create this pair. Set its initial ratio.
                 </div>
               )}
-
-              {/* Amounts */}
-
-              <div className="w-full border border-gray-700 bg-[#1a1a2e] rounded-xl p-6 space-y-6">
-                <h4 className="text-white text-base font-semibold mb-2">Token Amounts</h4>
-
-                <div>
-                  <label className="text-sm text-gray-300 ">Amount of {token0?.name || "Token 0"}</label>
-                  <input
-                    type="text"
-                    name="amountToken0"
-                    value={formik.values.amountToken0}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      formik.setTouched({ amountToken0: true });
-                      setLastEditedField('amountToken0');
-                    }}
-                    placeholder="0"
-                    className="w-full p-3 bg-gray-800 text-white rounded-lg"
-                  />
-                  <p className="text-red-400 text-xs">{formik.errors.amountToken0}</p>
+              {formError && (
+                <div className="mt-3 bg-red-800/20 border border-red-600 text-red-400 text-sm rounded-lg p-3">
+                  {formError}
                 </div>
-                <div>
-                  <label className="text-sm text-gray-300 ">Amount of {token1?.name || "Token 1"}</label>
-                  <input
-                    type="text"
-                    name="amountToken1"
-                    value={formik.values.amountToken1}
-                    onChange={(e) => {
-                      formik.handleChange(e);
-                      formik.setTouched({ amountToken1: true });
-                      setLastEditedField('amountToken1');
-                    }}
-                    placeholder="0"
-                    className="w-full p-3 bg-gray-700 text-white rounded-lg"
-                  />
-                  <p className="text-red-400 text-xs">{formik.errors.amountToken1}</p>
-                </div>
+              )}
+              {/* Token Select */}
+              <div className="flex gap-4">
+                <button
+                  onClick={() => { setOpenTokenSelect(true); setSelectingFor("token0"); }}
+                  className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
+                >
+                  {token0 ? `${token0.name}` : "Select Token 0"}
+                </button>
+                <button
+                  onClick={() => { setOpenTokenSelect(true); setSelectingFor("token1"); }}
+                  className="flex-1 bg-gray-700 text-white p-3 rounded-lg text-center"
+                >
+                  {token1 ? `${token1.name}` : "Select Token 1"}
+                </button>
               </div>
-
-
-              {/* Create Pool */}
-              <button
-                type="submit"
-                disabled={!isAuthenticated || isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
-                  !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
-                  !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
-                  (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
-                className={`w-full font-bold py-3 rounded-lg ${isCreating
-                  ? "bg-gray-500 cursor-not-allowed "
-                  : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white disabled:bg-gray-500 disabled:cursor-not-allowed disabled:hover:from-gray-500"
-                  }`}
-              >
-                {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
-              </button>
-
-            </form>
+  
+              <form onSubmit={formik.handleSubmit} className="space-y-4">
+                {/* Set Initial Price */}
+                {!poolExists && (
+                  <div>
+                    <label className="text-sm text-gray-300">Initial Price</label>
+                    <input
+                      type="number"
+                      name="initialPrice"
+                      value={formik.values.initialPrice}
+                      onChange={formik.handleChange}
+                      placeholder="Enter initial price"
+                      className="w-full p-3 bg-gray-800 text-white rounded-lg"
+                    />
+                    <p className="text-red-400 text-xs">{formik.errors.initialPrice}</p>
+                  </div>
+                )}
+  
+                {/* Amounts */}
+                <div className="w-full border border-gray-700 bg-[#1a1a2e] rounded-xl p-6 space-y-6">
+                  <h4 className="text-white text-base font-semibold mb-2">Token Amounts</h4>
+  
+                  <div>
+                    <label className="text-sm text-gray-300 ">Amount of {token0?.name || "Token 0"}</label>
+                    <input
+                      type="text"
+                      name="amountToken0"
+                      value={formik.values.amountToken0}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        formik.setTouched({ amountToken0: true });
+                        setLastEditedField('amountToken0');
+                      }}
+                      placeholder="0"
+                      className="w-full p-3 bg-gray-800 text-white rounded-lg"
+                    />
+                    <p className="text-red-400 text-xs">{formik.errors.amountToken0}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-300 ">Amount of {token1?.name || "Token 1"}</label>
+                    <input
+                      type="text"
+                      name="amountToken1"
+                      value={formik.values.amountToken1}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        formik.setTouched({ amountToken1: true });
+                        setLastEditedField('amountToken1');
+                      }}
+                      placeholder="0"
+                      className="w-full p-3 bg-gray-700 text-white rounded-lg"
+                    />
+                    <p className="text-red-400 text-xs">{formik.errors.amountToken1}</p>
+                  </div>
+                </div>
+  
+                {/* Create Pool */}
+                <button
+                  type="submit"
+                  disabled={!isAuthenticated || isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
+                    !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
+                    !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
+                    (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
+                  className={`w-full font-bold py-3 rounded-lg ${isCreating
+                    ? "bg-gray-500 cursor-not-allowed "
+                    : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 text-white disabled:bg-gray-500 disabled:cursor-not-allowed disabled:hover:from-gray-500"
+                    }`}
+                >
+                  {isCreating ? "Creating..." : poolExists ? "Add Liquidity" : "Create Pool"}
+                </button>
+              </form>
+            </div>
+            
+            {/* Right Column - Pool Info */}
+            <div className="w-full lg:w-1/3">
+              <PoolInfo token0={token0} token1={token1} poolStats={poolStats} />
+            </div>
           </div>
-          {/* Right Column - Pool Info */}
-          <div className="w-full lg:w-1/3">
-            <PoolInfo token0={token0} token1={token1} poolStats={poolStats} />
-          </div>
-        </div>
-
-
-        {/* Token Selection Modal */}
-        {openTokenSelect && (
-          <TokenSelector
-            tokens={tokens}
-            selectingFor={selectingFor}
-            token0={token0}
-            token1={token1}
-            onSelect={handleTokenSelect}
-            onImport={() => {
-              setShowImportModal(true);
-              setOpenTokenSelect(false);
-            }}
-            onCancel={() => setOpenTokenSelect(false)}
-          />
-        )}
-        <ImportTokenModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={async (canisterIdString) => {
-            try {
-              // Validate Principal format
-              let validatedPrincipal;
+  
+          {/* Analytics Charts Section */}
+          {poolExists && poolStats && poolStats.poolId && (
+            <div className="w-full">
+              <PoolAnalyticsCharts 
+                poolId={poolStats.poolId}
+                token0={token0}
+                token1={token1}
+              />
+            </div>
+          )}
+  
+          {/* Token Selection Modal */}
+          {openTokenSelect && (
+            <TokenSelector
+              tokens={tokens}
+              selectingFor={selectingFor}
+              token0={token0}
+              token1={token1}
+              onSelect={handleTokenSelect}
+              onImport={() => {
+                setShowImportModal(true);
+                setOpenTokenSelect(false);
+              }}
+              onCancel={() => setOpenTokenSelect(false)}
+            />
+          )}
+          <ImportTokenModal
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onImport={async (canisterIdString) => {
               try {
-                validatedPrincipal = Principal.fromText(canisterIdString);
+                // Validate Principal format
+                let validatedPrincipal;
+                try {
+                  validatedPrincipal = Principal.fromText(canisterIdString);
+                } catch (err) {
+                  alert("❌ Invalid Canister ID format. Please use a valid Principal.");
+                  return;
+                }
+                // Now call with a valid Principal string
+                const result = await mercx_Actor.add_token(validatedPrincipal);
+  
+                if ("Ok" in result) {
+                  alert("✅ Token imported successfully!");
+                  const updatedTokens = await mercx_Actor.get_all_tokens();
+                  setTokens(updatedTokens);
+                } else {
+                  alert("❌ " + result.Err);
+                }
               } catch (err) {
-                alert("❌ Invalid Canister ID format. Please use a valid Principal.");
-                return;
+                console.error("Import token error:", err);
+                alert("❌ Failed to import token.");
               }
-              // Now call with a valid Principal string
-              const result = await mercx_Actor.add_token(validatedPrincipal);
-
-              if ("Ok" in result) {
-                alert("✅ Token imported successfully!");
-                const updatedTokens = await mercx_Actor.get_all_tokens();
-                setTokens(updatedTokens);
-              } else {
-                alert("❌ " + result.Err);
-              }
-            } catch (err) {
-              console.error("Import token error:", err);
-              alert("❌ Failed to import token.");
-            }
-          }}
-
-        />
-        <SuccessModal isVisible={showSuccessModal} action={successAction} onClose={() => setShowSuccessModal(false)} />
-
+            }}
+  
+          />
+          <SuccessModal isVisible={showSuccessModal} action={successAction} onClose={() => setShowSuccessModal(false)} />
+  
+        </div>
       </div>
-    </div>
-  );
-}
-
+    );
+  }
