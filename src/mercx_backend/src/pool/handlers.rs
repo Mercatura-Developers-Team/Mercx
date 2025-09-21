@@ -14,12 +14,13 @@ use candid::Nat;
 use candid::Principal;
 use crate::stable_lp_token::lp_token_map::{get_by_token_id_by_principal};
 use crate::xrc_mock::get_rate_vs_usd;
+use std::borrow::Cow;
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
 }
 
 pub fn get_by_pool_id(pool_id: u32) -> Option<StablePool> {
-    POOLS.with(|m| m.borrow().get(&StablePoolId(pool_id)))
+    POOLS.with(|m: &std::cell::RefCell<ic_stable_structures::BTreeMap<StablePoolId, StablePool, ic_stable_structures::memory_manager::VirtualMemory<std::rc::Rc<std::cell::RefCell<Vec<u8>>>>>>| m.borrow().get(&StablePoolId(pool_id)))
 }
 
 pub fn get_by_symbol(symbol: &str) -> Result<StablePool, String> {
@@ -194,7 +195,7 @@ pub fn get_by_lp_token_id(lp_token_id: u32) -> Option<StablePool> {
 // USD pricing via pools (route ≤ 2 hops)
 // =============================
 
-use std::borrow::Cow;
+
 
 // ---------- Anchors & helpers ----------
 const ANCHORS: [&str; 5] = ["USDT", "USDC", "ICP", "ETH", "BTC"];
@@ -215,30 +216,42 @@ fn normalize<'a>(sym: &'a str) -> Cow<'a, str> {
     }
 }
 
-// Uses your existing pool read; expects mid price of 1 a in b.
-// It tries both directions using your `get_by_tokens(...)` helper.
+// POOL PRICE 
 fn pool_price_a_in_b(a: &str, b: &str) -> Result<f64, String> {
-    // Your existing function already tries both orders internally:
-    // get_pool_price(token_0, token_1)
-    get_pool_price(a.to_string(), b.to_string())
+    if let Ok(pool) = get_by_tokens(a.to_string(), b.to_string())
+        .or_else(|_| get_by_tokens(b.to_string(), a.to_string()))
+    {
+        if pool.symbol_0() == a && pool.symbol_1() == b {
+            pool.get_price_as_f64().ok_or("Price unavailable".to_string())
+        } else if pool.symbol_0() == b && pool.symbol_1() == a {
+            pool.get_price_as_f64()
+                .map(|p| if p > 0.0 { 1.0 / p } else { p })
+                .ok_or("Price unavailable".to_string())
+        } else {
+            Err("Pool symbols mismatch".to_string())
+        }
+    } else {
+        Err("Pool not found".to_string())
+    }
 }
+
 
 // ---------- Core: fetch USD price via pools ----------
 #[ic_cdk::update] // make it query if you never await inter-canister calls inside
 pub async fn get_usd_price_from_pools(raw_symbol: String) -> Result<f64, String> {
-    let tkn = normalize(&raw_symbol);
+    let token = normalize(&raw_symbol);
 
-    // 0) Trivial cases
-    if tkn.as_ref() == "USD" { return Ok(1.0); }
-    if is_stable(tkn.as_ref()) { return Ok(1.0); }
+    // 0) Trivial cases [USDT,USDC,CKUSDT,CKUSDC =1 ]
+    if token.as_ref() == "USD" { return Ok(1.0); }
+    if is_stable(token.as_ref()) { return Ok(1.0); }
 
     // 1) Direct USD-pegged pairs first: TKN/USDT or TKN/USDC (ck* covered by normalize)
     for usd_sym in ["USDT", "USDC"] {
-        if let Ok(p) = pool_price_a_in_b(tkn.as_ref(), usd_sym) {
+        if let Ok(p) = pool_price_a_in_b(token.as_ref(), usd_sym) {
             // Price of 1 TKN in USDT/USDC ≈ USD
             return Ok(p);
         }
-        if let Ok(p) = pool_price_a_in_b(usd_sym, tkn.as_ref()) {
+        if let Ok(p) = pool_price_a_in_b(usd_sym, token.as_ref()) {
             // If the stored mid price is 1 USD in TKN, invert
             if p > 0.0 { return Ok(1.0 / p); }
         }
@@ -246,13 +259,13 @@ pub async fn get_usd_price_from_pools(raw_symbol: String) -> Result<f64, String>
 
     // 2) Single hop via crypto anchors {ICP, ETH, BTC}
     for anchor in ["ICP", "ETH", "BTC"] {
-        if let Ok(p_tkn_in_anchor) = pool_price_a_in_b(tkn.as_ref(), anchor) {
+        if let Ok(p_tkn_in_anchor) = pool_price_a_in_b(token.as_ref(), anchor) {
             // TKN/USD = (TKN/ANCHOR) * (ANCHOR/USD)
             let anchor_usd = get_rate_vs_usd(anchor.to_string()).await
                 .map_err(|e| format!("Failed to get {anchor}/USD: {e}"))?;
             return Ok(p_tkn_in_anchor * anchor_usd);
         }
-        if let Ok(p_anchor_in_tkn) = pool_price_a_in_b(anchor, tkn.as_ref()) {
+        if let Ok(p_anchor_in_tkn) = pool_price_a_in_b(anchor, token.as_ref()) {
             if p_anchor_in_tkn > 0.0 {
                 let anchor_usd = get_rate_vs_usd(anchor.to_string()).await
                     .map_err(|e| format!("Failed to get {anchor}/USD: {e}"))?;
@@ -262,13 +275,15 @@ pub async fn get_usd_price_from_pools(raw_symbol: String) -> Result<f64, String>
         }
     }
 
+
+
     // 3) Two-hop route: TKN -> REF -> USD, where REF ∈ ANCHORS.
     // Try REF in order of most reliable peg/coverage.
     for ref_sym in ANCHORS {
         // First leg: TKN <-> REF from your pools
-        let tkn_in_ref = match pool_price_a_in_b(tkn.as_ref(), ref_sym)
+        let tkn_in_ref = match pool_price_a_in_b(token.as_ref(), ref_sym)
             .or_else(|_| {
-                pool_price_a_in_b(ref_sym, tkn.as_ref())
+                pool_price_a_in_b(ref_sym, token.as_ref())
                     .map(|p| if p > 0.0 { 1.0 / p } else { f64::NAN })
             }) {
             Ok(v) if v.is_finite() && v > 0.0 => v,
@@ -288,6 +303,6 @@ pub async fn get_usd_price_from_pools(raw_symbol: String) -> Result<f64, String>
 
     Err(format!(
         "No USD route found for {} (no pools to anchors: USDT/USDC/ICP/ETH/BTC)",
-        tkn
+        token
     ))
 }
