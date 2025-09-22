@@ -33,20 +33,39 @@ impl PoolTimeSeries {
         }
     }
 
+    // pub fn add_snapshot(&mut self, tvl_usd: f64, volume_24h_usd: f64) {
+    //     let current_time = time();
+        
+    //     // Remove old snapshots (older than 30 days)
+    //     let cutoff_time = current_time.saturating_sub(30 * 24 * 60 * 60 * 1_000_000_000);
+    //     while let Some(front) = self.snapshots.front() {
+    //         if front.timestamp < cutoff_time {
+    //             self.snapshots.pop_front();
+    //         } else {
+    //             break;
+    //         }
+    //     }
+
+    //     // Add new snapshot
+    //     let snapshot = PoolSnapshot {
+    //         timestamp: current_time,
+    //         pool_id: self.pool_id,
+    //         tvl_usd,
+    //         volume_24h_usd,
+    //     };
+        
+    //     self.snapshots.push_back(snapshot);
+
+    //     // Failsafe: keep only MAX_SNAPSHOTS entries
+    //     while self.snapshots.len() > MAX_SNAPSHOTS {
+    //         self.snapshots.pop_front();
+    //     }
+    // }
+
     pub fn add_snapshot(&mut self, tvl_usd: f64, volume_24h_usd: f64) {
         let current_time = time();
         
-        // Remove old snapshots (older than 30 days)
-        let cutoff_time = current_time.saturating_sub(30 * 24 * 60 * 60 * 1_000_000_000);
-        while let Some(front) = self.snapshots.front() {
-            if front.timestamp < cutoff_time {
-                self.snapshots.pop_front();
-            } else {
-                break;
-            }
-        }
-
-        // Add new snapshot
+        // Add new snapshot first
         let snapshot = PoolSnapshot {
             timestamp: current_time,
             pool_id: self.pool_id,
@@ -55,10 +74,23 @@ impl PoolTimeSeries {
         };
         
         self.snapshots.push_back(snapshot);
-
-        // Failsafe: keep only MAX_SNAPSHOTS entries
+        
+        // Remove old snapshots ONLY if we exceed max capacity
+        // This is safer than time-based removal for now
         while self.snapshots.len() > MAX_SNAPSHOTS {
             self.snapshots.pop_front();
+        }
+        
+        // Alternative: More conservative time-based cleanup (only remove if older than 30 days AND we have many snapshots)
+        if self.snapshots.len() > (MAX_SNAPSHOTS / 2) {
+            let cutoff_time = current_time.saturating_sub(30 * 24 * 60 * 60 * 1_000_000_000);
+            while let Some(front) = self.snapshots.front() {
+                if front.timestamp < cutoff_time && self.snapshots.len() > 24 {
+                    self.snapshots.pop_front();
+                } else {
+                    break;
+                }
+            }
         }
     }
 

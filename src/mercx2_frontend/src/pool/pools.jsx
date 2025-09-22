@@ -3,6 +3,7 @@ import { useAuth } from "../use-auth-client";
 import { Principal } from "@dfinity/principal";
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '../LoadingScreen'; // Import the reusable component
+import ProtocolStats from './ProtocolStats'; // Add this import
 
 
 export default function Pools() {
@@ -228,6 +229,8 @@ const [loading, setLoading] = useState(true);
             Provide liquidity and earn trading fees
           </p>
         </div>
+
+        <ProtocolStats />
 
         <div className="bg-slate-800 rounded-xl shadow-2xl overflow-hidden">
           <div className="overflow-x-auto">

@@ -30,6 +30,7 @@
     "@headlessui/react": "^2.2.0",
     "@tanstack/react-query": "^5.80.7",
     "formik": "^2.4.6",
+    "ogl": "^1.0.11",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-copy-to-clipboard": "^5.1.0",
