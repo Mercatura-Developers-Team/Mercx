@@ -10,7 +10,7 @@ const PoolAnalyticsCharts = ({ poolId, token0, token1 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [snapshotStatus, setSnapshotStatus] = useState('');
-
+ 
   // Format timestamp to readable date
   const formatTimestamp = (timestamp) => {
     const date = new Date(Number(timestamp) / 1_000_000); // Convert from nanoseconds to milliseconds
@@ -64,24 +64,64 @@ const PoolAnalyticsCharts = ({ poolId, token0, token1 }) => {
     }
   };
 
-  // Record snapshots for all pools
-  const recordAllPoolsSnapshot = async () => {
-    if (!mercx_Actor) return;
+  // // Record snapshots for all pools
+  // const recordAllPoolsSnapshot = async () => {
+  //   if (!mercx_Actor) return;
     
-    setSnapshotStatus('Recording snapshots...');
-    try {
-      const result = await mercx_Actor.record_all_pools_snapshot();
-      setSnapshotStatus("");
+  //   setSnapshotStatus('Recording snapshots...');
+  //   try {
+  //     const result = await mercx_Actor.record_all_pools_snapshot();
+  //     setSnapshotStatus("");
       
-      // Refresh the chart data after recording snapshots
+  //     // Refresh the chart data after recording snapshots
+  //     setTimeout(() => {
+  //       fetchChartData();
+  //     }, 1000);
+  //   } catch (err) {
+  //     console.error('Failed to record snapshots:', err);
+  //     setSnapshotStatus('Error recording snapshots');
+  //   }
+  // };
+
+  // Record snapshot for this specific pool
+const recordPoolSnapshot = async () => {
+  if (!mercx_Actor || !poolId) return;
+  
+  setSnapshotStatus('Recording snapshot...');
+  setLoading(true);
+  
+  try {
+    // First get current pool metrics to record accurate data
+    const metricsResult = await mercx_Actor.get_pool_metrics(poolId);
+    
+    if (metricsResult?.Ok) {
+      const metrics = metricsResult.Ok;
+      const tvl_usd = metrics.tvl.tvl_usd;
+      const volume_24h_usd = metrics.volume.volume_24h_usd;
+      
+      // Record snapshot for this specific pool
+      const result = await mercx_Actor.record_pool_snapshot(poolId, tvl_usd, volume_24h_usd);
+      
+      console.log('Snapshot recording result:', result);
+      setSnapshotStatus("Snapshot recorded successfully");
+      
+      // Refresh the chart data after recording snapshot
       setTimeout(() => {
         fetchChartData();
-      }, 1000);
-    } catch (err) {
-      console.error('Failed to record snapshots:', err);
-      setSnapshotStatus('Error recording snapshots');
+        setSnapshotStatus('');
+      }, 1500);
+      
+    } else {
+      throw new Error('Failed to get current pool metrics');
     }
-  };
+  } catch (err) {
+    console.error('Failed to record snapshot:', err);
+    setSnapshotStatus('Error recording snapshot');
+    setTimeout(() => setSnapshotStatus(''), 3000);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Fetch data when component mounts or parameters change
   useEffect(() => {
@@ -134,7 +174,7 @@ const PoolAnalyticsCharts = ({ poolId, token0, token1 }) => {
           
           {/* Refresh Button */}
           <button
-            onClick={recordAllPoolsSnapshot}
+            onClick={recordPoolSnapshot}
             disabled={loading}
             className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-600 text-white rounded-lg text-sm"
           >

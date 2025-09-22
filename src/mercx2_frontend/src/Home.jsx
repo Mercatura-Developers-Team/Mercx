@@ -50,13 +50,13 @@ function Home() {
 
       // Fetch token name
       const name = await whoamiActor.icrc1_name();
-      setTokenName(name);
+    //  setTokenName(name);
 
       const icptokenname = await icpActor.icrc1_symbol();
-      setIcpTokenName(icptokenname);
+     // setIcpTokenName(icptokenname);
 
       const tommyTokenname = await tommy_Actor.icrc1_name();
-      setTommyName(tommyTokenname);
+    //  setTommyName(tommyTokenname);
 
       // Fetch logo URL
       // const logo = await whoamiActor.icrc1_metadata();
@@ -189,7 +189,8 @@ function Home() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 px-4">
+         {/* Features Section */}
+         <section className="py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
@@ -200,21 +201,60 @@ function Home() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {features.map((feature, index) => (
                 <div 
                   key={index} 
-                  className="group backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-6 hover:bg-white/15 hover:scale-105 transition-all duration-200"
+                  className="bg-slate-800 bg-opacity-40 backdrop-blur-sm border border-slate-600 border-opacity-50 rounded-none p-6 hover:bg-opacity-60 transition-all duration-200 flex flex-col items-center text-center"
                 >
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2 text-white">{feature.title}</h3>
-                  <p className="text-gray-300">{feature.description}</p>
+                  <div className="text-4xl mb-4">{feature.icon}</div>
+                  <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">{feature.description}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
+  {/* Platform Overview Section */}
+  <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="bg-slate-800 bg-opacity-40 backdrop-blur-sm border border-slate-600 border-opacity-50 rounded-2xl p-8">
+              <div className="flex items-center justify-center mb-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+                  <span className="text-blue-400 font-semibold">Decentralized Tokenization Platform</span>
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Digital Infrastructure for MENA Capital Markets</h3>
+              <p className="text-gray-300 mb-6">
+                MercX is a decentralized tokenization platform built on Internet Computer Protocol (ICP), 
+                designed to bring Real World Assets (RWA) to the blockchain. Starting with tokenized exposure 
+                to Egypt's top 30 companies via the EGX30 index.
+              </p>
+              <div className="grid md:grid-cols-2 gap-6 text-left">
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-blue-300">Platform Capabilities:</h4>
+                  <ul className="space-y-2 text-gray-300">
+                    <li>• Real-time Price Feeds</li>
+                    <li>• Built-in Liquidity Pools</li>
+                    <li>• Swap Functions</li>
+                    <li>• Business Analytics Dashboards</li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-cyan-300">Business Impact:</h4>
+                  <ul className="space-y-2 text-gray-300">
+                    <li>• Faster transactions</li>
+                    <li>• Wider investor access</li>
+                    <li>• Borrowing and Lending Systems</li>
+                    <li>• Cutting-edge fund management</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
       </main>
 
