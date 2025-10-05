@@ -10,7 +10,7 @@ use super::tx_id::TxId;
 pub struct StableTransferId(pub u64);
 
 impl Storable for StableTransferId {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> std::borrow::Cow<'_, [u8]> {
         serde_cbor::to_vec(self)
             .unwrap_or_else(|e| {
                 trap(&format!("❌ Failed to serialize StableTransferId: {:?}", e));
@@ -18,7 +18,7 @@ impl Storable for StableTransferId {
             .into()
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: std::borrow::Cow<'_, [u8]>) -> Self {
         serde_cbor::from_slice(&bytes)
             .unwrap_or_else(|e| {
                 trap(&format!("❌ Failed to deserialize StableTransferId: {:?}", e));
@@ -52,7 +52,7 @@ pub enum TransferType {
 }
 
 impl Storable for StableTransfer {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> std::borrow::Cow<'_, [u8]> {
         serde_cbor::to_vec(self)
             .unwrap_or_else(|e| {
                 trap(&format!("❌ Failed to serialize StableTransfer: {:?}", e));
@@ -60,7 +60,7 @@ impl Storable for StableTransfer {
             .into()
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: std::borrow::Cow<'_, [u8]>) -> Self {
         serde_cbor::from_slice(&bytes)
             .unwrap_or_else(|e| {
                 trap(&format!("❌ Failed to deserialize StableTransfer: {:?}", e));

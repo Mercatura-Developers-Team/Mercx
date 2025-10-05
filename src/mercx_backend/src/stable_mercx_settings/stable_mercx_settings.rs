@@ -5,6 +5,7 @@ use crate::stable_memory::{TOKENS,POOLS,TRANSFERS,LPMETADATA};
 use icrc_ledger_types::icrc1::account::Account;
 use crate::ic::canister_address::MERCX_BACKEND;
 use crate::stable_memory::LP_TOKEN_MAP;
+use crate::stable_memory::ANALYTICS_DATA;
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct StableMercxSettings {
@@ -18,6 +19,8 @@ pub struct StableMercxSettings {
     pub transfer_expiry_nanosecs: u64,
     pub default_max_slippage: f64,
     pub lp_token_map_idx: u64, // counter for LP_TOKEN_MAP
+    pub analytics_map_idx: u32, // NEW: counter for ANALYTICS_DATA
+
 }
 
 impl Default for StableMercxSettings {
@@ -27,6 +30,7 @@ impl Default for StableMercxSettings {
         let pool_map_idx = POOLS.with(|m| m.borrow().iter().map(|(k, _)| k.0).max().unwrap_or(0));
         let transfer_map_idx = TRANSFERS.with(|m| m.borrow().iter().map(|(k, _)| k.0).max().unwrap_or(0));
         let lp_token_map_idx = LP_TOKEN_MAP.with(|m| m.borrow().iter().map(|(k, _)| k.0).max().unwrap_or(0));
+        let analytics_map_idx = ANALYTICS_DATA.with(|m| m.borrow().iter().map(|(k, _)| k.0).max().unwrap_or(0)); // NEW
 
 
         Self {
@@ -40,17 +44,17 @@ impl Default for StableMercxSettings {
             transfer_expiry_nanosecs: 3_600_000_000_000, // 1 hour (nano seconds)
             default_max_slippage: 2.0_f64,
             lp_token_map_idx,
-
+            analytics_map_idx,
         }
     }
 }
 
 impl Storable for StableMercxSettings {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> std::borrow::Cow<'_, [u8]> {
         serde_cbor::to_vec(self).unwrap().into()
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: std::borrow::Cow<'_, [u8]>) -> Self {
         serde_cbor::from_slice(&bytes).unwrap_or_default()
     }
 

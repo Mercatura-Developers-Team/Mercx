@@ -12,11 +12,11 @@ use crate::LPToken;
 pub struct StablePoolId(pub u32);
 
 impl Storable for StablePoolId {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> std::borrow::Cow<'_, [u8]> {
         serde_cbor::to_vec(self).unwrap().into()
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: std::borrow::Cow<'_, [u8]>) -> Self {
         serde_cbor::from_slice(&bytes).unwrap()
     }
 
@@ -114,11 +114,11 @@ impl StablePool {
     
 }
 impl Storable for StablePool {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> std::borrow::Cow<'_, [u8]> {
         serde_cbor::to_vec(self).unwrap().into()
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: std::borrow::Cow<'_, [u8]>) -> Self {
         serde_cbor::from_slice(&bytes).unwrap()
     }
 

@@ -13,11 +13,11 @@ use crate::token::stable_token::symbol;
 pub struct StableLpMetadataId(pub u32);
 
 impl Storable for StableLpMetadataId {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> std::borrow::Cow<'_, [u8]> {
         serde_cbor::to_vec(self).unwrap().into()
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: std::borrow::Cow<'_, [u8]>) -> Self {
         serde_cbor::from_slice(&bytes).unwrap()
     }
 
@@ -65,11 +65,11 @@ impl LPToken {
 
 
 impl Storable for LPToken {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> std::borrow::Cow<'_, [u8]> {
         serde_cbor::to_vec(self).unwrap().into()
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: std::borrow::Cow<'_, [u8]>) -> Self {
         serde_cbor::from_slice(&bytes).unwrap()
     }
 

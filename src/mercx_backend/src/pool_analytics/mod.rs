@@ -1,5 +1,6 @@
 pub mod analytics;
 pub mod analytics_storage;
+pub mod stable_analytics;
 // use ic_cdk::export::candid::{CandidType, Deserialize};
 // use serde::Serialize;
 // use std::collections::HashMap;

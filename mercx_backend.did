@@ -106,6 +106,7 @@ type PoolMetrics = record {
   symbol : text;
 };
 type PoolSnapshot = record {
+  day_number : nat64;
   tvl_usd : float64;
   timestamp : nat64;
   pool_id : nat32;
@@ -347,12 +348,16 @@ service : {
   check_balance_mercx : (Account) -> (nat);
   check_transfer_types : () -> (Result_7) query;
   clear_analytics_data : () -> (text);
+  debug_pool_snapshots : (nat32) -> (
+      vec record { nat64; nat64; float64; float64 },
+    ) query;
   delete_pool : (nat32) -> (Result_8);
   delete_token_by_canister_id : (principal) -> (Result_8);
   deposit_icp_in_canister : (nat64) -> (Result_6);
   deposit_token : (nat64, principal) -> (Result_6);
   get : () -> (vec LPToken) query;
   get_account_transactions : (Account, opt nat, nat) -> (Result_9);
+  get_all_pool_snapshots : (nat32) -> (vec PoolSnapshot) query;
   get_all_pools : () -> (Result_10) query;
   get_all_pools_metrics : () -> (vec PoolMetrics) query;
   get_all_pools_tvl : () -> (vec PoolTVL) query;
@@ -374,6 +379,9 @@ service : {
   get_pool_chart_data : (nat32, nat64) -> (
       vec record { nat64; float64; float64 },
     ) query;
+  get_pool_daily_chart : (nat32, nat64) -> (
+      vec record { nat64; nat64; float64; float64 },
+    ) query;
   get_pool_metrics : (nat32) -> (Result_13) query;
   get_pool_price : (text, text) -> (Result_12) query;
   get_pool_snapshot_count : (nat32) -> (nat32) query;
@@ -388,9 +396,11 @@ service : {
   record_all_pools_snapshot : () -> (Result_8);
   record_current_analytics : () -> (Result_8);
   record_pool_snapshot : (nat32, float64, float64) -> (Result_8);
+  record_pool_snapshot2 : (nat32) -> (Result_8);
   remove_from_whitelist : (principal) -> ();
   remove_liquidity : (RemoveLiquidityArgs) -> (Result_16);
   remove_liquidity_amounts : (text, text, nat) -> (Result_17) query;
+  reset_analytics : () -> (Result_8);
   reset_lp : () -> (Result_8);
   reset_lp_metadata_tokens : () -> (Result_8);
   reset_pools : () -> (Result_8);
@@ -406,5 +416,6 @@ service : {
   transfer : (TransferArgs) -> (Result_6);
   transfer_from : (TransferArgs) -> (Result_6);
   transfer_from_general : (TransferArgs) -> (Result_6);
+  verify_analytics_persistence : () -> (text) query;
   whoami : () -> (principal) query;
 }

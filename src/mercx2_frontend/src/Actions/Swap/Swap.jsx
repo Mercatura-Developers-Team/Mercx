@@ -4,6 +4,7 @@ import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal";
 import TokenSelector from '../../pool/TokenSelector';
 import SuccessModal from './SuccessModel';
+import { MERCX_BACKEND } from '../../config/canisterIds';
 
 const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
 
@@ -176,7 +177,7 @@ const Swap = ({ fromTokenSymbol, toTokenSymbol }) => {
     setError('');
 
     try {
-      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Swap canister ID
+      const spenderId = MERCX_BACKEND; // Swap canister ID
       const amountIn = parseAmount(fromAmount, fromToken.decimals) + BigInt(20_000);
       const amount = parseAmount(fromAmount, fromToken.decimals);
       // Check and approve allowance

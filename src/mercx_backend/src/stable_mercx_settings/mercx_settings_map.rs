@@ -155,4 +155,31 @@ pub fn reset_transfers_map_idx() {
         };
         _ = map.set(new_settings);
     });
+}
+
+pub fn inc_analytics_map_idx() -> u32 {
+    MERCX_SETTINGS.with(|s| {
+        let mut map = s.borrow_mut();
+        let mercx_settings = map.get();
+        let analytics_map_idx = mercx_settings.analytics_map_idx + 1;
+        let new_mercx_settings = StableMercxSettings {
+            analytics_map_idx,
+            ..mercx_settings.clone()
+        };
+        _ = map.set(new_mercx_settings);
+        analytics_map_idx
+    })
+}
+
+pub fn reset_analytics_map_idx() {
+    MERCX_SETTINGS.with(|s| {
+        let mut map = s.borrow_mut();
+      
+        let current_settings = map.get();
+        let new_settings = StableMercxSettings {
+            analytics_map_idx: 0,
+            ..current_settings.clone()
+        };
+        _ = map.set(new_settings);
+    });
 } 

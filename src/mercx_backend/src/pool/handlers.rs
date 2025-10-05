@@ -106,8 +106,8 @@ pub async fn get_all_pools() -> Result<Vec<AddPoolReply>, String> {
 
     let list = POOLS.with(|pools| {
         pools.borrow().iter().map(|(_, pool)| {
-            let transfer_ids =
-                transfer_handlers::get_by_token_ids(pool.token_id_0, pool.token_id_1);
+            // let transfer_ids =
+            //     transfer_handlers::get_by_token_ids(pool.token_id_0, pool.token_id_1);
 
             let token0 = get_by_token_id(pool.token_id_0).unwrap();
             let token1 = get_by_token_id(pool.token_id_1).unwrap();
@@ -117,7 +117,7 @@ pub async fn get_all_pools() -> Result<Vec<AddPoolReply>, String> {
          // actual LP amount of the caller for this pool
          let lp_amount = lp_amount_for_pool_and_principal(&pool, caller_principal);
 
-            to_add_pool_reply(&pool, &token0, &token1, lp_amount, &transfer_ids)
+            to_add_pool_reply(&pool, &token0, &token1, lp_amount, &[])
         }).collect::<Vec<_>>()
     });
 

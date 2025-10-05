@@ -10,6 +10,7 @@ import SuccessModal from "./SuccessModel"; // update path if needed
 import { parseAmount, normalizeAmount } from "./tokenUtils";
 import TokenSelector from "./TokenSelector";
 import PoolAnalyticsCharts from "./PoolAnalyticsCharts";
+import { MERCX_BACKEND } from '../config/canisterIds';
 
 
 export default function CreatePool() {
@@ -29,6 +30,7 @@ export default function CreatePool() {
   const { createTokenActor, principal, isAuthenticated } = useAuth();
   const [formError, setFormError] = useState("");
   const [lastEditedField, setLastEditedField] = useState(null); // 'amountToken0' or 'amountToken1'
+  //const [lastLiquidityUpdate, setLastLiquidityUpdate] = useState(Date.now()); //used to refersh the charts 
 
 
 
@@ -41,7 +43,7 @@ export default function CreatePool() {
     },
     validationSchema: Yup.object({
       initialPrice: Yup.number().when([], {
-        is: () => !poolExists,
+        is: () => !poolExists || poolStats?.isEmpty,  
         then: (schema) =>
           schema.typeError("Enter a valid price").positive("Must be > 0").required("Required"),
         otherwise: (schema) => schema.notRequired(),
@@ -52,7 +54,7 @@ export default function CreatePool() {
     onSubmit: async (values) => {
       setIsCreating(true);
       setFormError("");
-      const spenderId = "ahw5u-keaaa-aaaaa-qaaha-cai";
+      const spenderId = MERCX_BACKEND;
       try {
         const amount0 = parseAmount(values.amountToken0, token0.decimals) + BigInt(20_000);
         const amount1 = parseAmount(values.amountToken1, token1.decimals) + BigInt(20_000);
@@ -228,7 +230,7 @@ const formatUSD = (value) => {
           );
 
           if (exists) {
-            setPoolExists(exists);
+     //       setPoolExists(exists);
             
             let pool;
             try {
@@ -250,18 +252,33 @@ const formatUSD = (value) => {
                 balForToken1 = data.balance_0;
               }
 
+              const token0Balance = normalizeAmount(balForToken0, token0.decimals);
+            const token1Balance = normalizeAmount(balForToken1, token1.decimals);
+
+            // Check if pool is empty
+            if (token0Balance === 0 && token1Balance === 0) {
+              // Treat as new pool
+              setPoolExists(true);
+              setPoolStats({
+                poolId: data.pool_id,
+                isEmpty: true,
+                message: `This pool exists but has no liquidity. Be the first to add liquidity!`,
+              });
+              return;
+            }
+
+            // Pool has liquidity - proceed normally
+            setPoolExists(true);
+
               // Use get_pool_metrics to get all analytics in one call
               try {
-                console.log("Fetching pool metrics for pool ID:", data.pool_id);
+           
                 const metricsResult = await mercx_Actor.get_pool_metrics(data.pool_id);
-                console.log("Pool Metrics Result:", metricsResult);
+     
                 
                 if (metricsResult && "Ok" in metricsResult) {
                   const metrics = metricsResult.Ok;
-                  console.log("Metrics data:", metrics);
-                  console.log("TVL USD:", metrics.tvl.tvl_usd, typeof metrics.tvl.tvl_usd);
-                  console.log("Volume 24h USD:", metrics.volume.volume_24h_usd);
-                  console.log("APY:", metrics.apy);
+              
                   
                   setPoolStats({
                     poolId: data.pool_id,
@@ -436,7 +453,8 @@ const formatUSD = (value) => {
   }, [token0, token1, setSearchParams]);
 
   useEffect(() => {
-    if (poolExists) return; // Skip for existing pools
+      // Skip ONLY for pools with liquidity (not empty pools)
+    if (poolExists && !poolStats?.isEmpty) return;
 
     const price = parseFloat(formik.values.initialPrice);
     const val0 = parseFloat(formik.values.amountToken0);
@@ -449,7 +467,7 @@ const formatUSD = (value) => {
     } else if (lastEditedField === 'amountToken1' && !isNaN(val1)) {
       formik.setFieldValue("amountToken0", (val1 / price).toFixed(token0?.decimals || 8));
     }
-  }, [formik.values.initialPrice, formik.values.amountToken0, formik.values.amountToken1, lastEditedField, poolExists]);
+  }, [formik.values.initialPrice, formik.values.amountToken0, formik.values.amountToken1, lastEditedField, poolExists, poolStats?.isEmpty]);
 
 
   useEffect(() => {
@@ -498,7 +516,12 @@ const formatUSD = (value) => {
             <div className="w-full lg:w-2/3 bg-[#1a1a2e] p-6 rounded-xl shadow-xl space-y-6">
               {/* Pool header */}
               <h2 className="text-white text-xl font-semibold">{poolHeader}</h2>
-              {!poolExists && token0 && token1 && (
+              {poolStats?.isEmpty && (
+  <div className="text-yellow-400 bg-yellow-900/20 border border-yellow-600 p-3 rounded-md text-sm">
+    ⚠️ Empty Pool — This pool exists but has no liquidity. Set the initial price and be the first LP to earn fees!
+  </div>
+)}
+              {!poolExists && token0 && token1 && !poolStats?.isEmpty && (
                 <div className="text-yellow-400 bg-yellow-900/20 p-3 rounded-md text-sm">
                   🚀 New Pool — You are the first to create this pair. Set its initial ratio.
                 </div>
@@ -526,7 +549,7 @@ const formatUSD = (value) => {
   
               <form onSubmit={formik.handleSubmit} className="space-y-4">
                 {/* Set Initial Price */}
-                {!poolExists && (
+                {(!poolExists || poolStats?.isEmpty) && (
                   <div>
                     <label className="text-sm text-gray-300">Initial Price</label>
                     <input
@@ -582,7 +605,7 @@ const formatUSD = (value) => {
                 {/* Create Pool */}
                 <button
                   type="submit"
-                  disabled={!isAuthenticated || isCreating || !token0 || !token1 || (!poolExists && !formik.values.initialPrice) ||
+                  disabled={!isAuthenticated || isCreating || !token0 || !token1 ||   ((!poolExists || poolStats?.isEmpty) && !formik.values.initialPrice) || 
                     !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken0) ||
                     !/^[0-9]*[.]?[0-9]+$/.test(formik.values.amountToken1) ||
                     (formik.errors.amountToken0 || formik.errors.amountToken1 || formik.errors.initialPrice)}
@@ -603,12 +626,14 @@ const formatUSD = (value) => {
           </div>
   
           {/* Analytics Charts Section */}
-          {poolExists && poolStats && poolStats.poolId && (
+          {poolExists && poolStats && !poolStats.isEmpty && poolStats.poolId && (
             <div className="w-full">
               <PoolAnalyticsCharts 
                 poolId={poolStats.poolId}
                 token0={token0}
                 token1={token1}
+                poolBalance0={poolStats.token0Balance}
+  poolBalance1={poolStats.token1Balance}
               />
             </div>
           )}

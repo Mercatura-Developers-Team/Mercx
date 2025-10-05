@@ -4,6 +4,7 @@ import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
 import SuccessModal from './SuccessModel';
+import { MERCX_BACKEND } from '../../config/canisterIds';
 
 const Buy = () => {
     const { whoamiActor, icpActor, mercx_Actor, isAuthenticated } = useAuth();
@@ -108,7 +109,7 @@ const Buy = () => {
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
 
-        const icp_swap_canister_id = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Placeholder for actual canister ID
+        const icp_swap_canister_id = MERCX_BACKEND; // Placeholder for actual canister ID
         let amount = (inputIcp * 1e8);
         let ApprovedIcp = Number(amount + 20000);
 

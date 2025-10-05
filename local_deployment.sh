@@ -93,8 +93,8 @@ dfx deploy tommy_icrc1_index --argument '(opt variant{Init = record {ledger_id =
 })"
 dfx deploy  fxmx_icrc1_index --argument '(opt variant{Init = record {ledger_id = principal "be2us-64aaa-aaaaa-qaabq-cai"; retrieve_blocks_from_ledger_interval_seconds = opt 86400}})'
 
-export MINTER_ACCOUNT_ID=$(dfx --identity anonymous ledger account-id)
-export DEFAULT_ACCOUNT_ID=$(dfx ledger account-id)
+export MINTER_ACCOUNT_ID=$(dfx identity --identity minter get-principal)
+export DEFAULT_ACCOUNT_ID=$(dfx identity get-principal)
 dfx deploy icp_ledger_canister --argument "
   (variant {
     Init = record {
@@ -116,6 +116,27 @@ dfx deploy icp_ledger_canister --argument "
     }
   })
 "
+
+dfx canister install icp_ledger_canister --mode reinstall --argument "(
+  variant {
+    Init = record {
+      minting_account = \"$MINTER_ACCOUNT_ID\";
+      initial_values = vec {
+        record {
+          \"$DEFAULT_ACCOUNT_ID\";
+          record { e8s = 20_000_000_000_000_000 : nat64 };
+        };
+      };
+      send_whitelist = vec {};
+      transfer_fee = opt record { e8s = 10_000 : nat64 };
+      token_symbol = opt \"ICP\";
+      token_name = opt \"Local ICP\";
+    }
+  }
+)"
+
+
+
 #dfx deploy icp_index_canister --specified-id qhbym-qaaaa-aaaaa-aaafq-cai --argument '(record {ledger_id = principal "b77ix-eeaaa-aaaaa-qaada-cai"})'
 
 

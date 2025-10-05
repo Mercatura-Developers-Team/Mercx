@@ -4,6 +4,7 @@ import TokenData from '../TokenData';
 import { useAuth } from '../../use-auth-client';
 import { Principal } from "@dfinity/principal"; // Import Principal
 import SuccessModal from './SuccessSell';
+import { MERCX_BACKEND } from '../../config/canisterIds';
 
 const Sell = () => {
     const { whoamiActor, mercx_Actor, isAuthenticated, tommy_Actor } = useAuth();
@@ -111,7 +112,7 @@ const Sell = () => {
     }
     const handleIcpApprove = async (e) => {
         setNotSwapped(false);
-        const backend_canister = "ahw5u-keaaa-aaaaa-qaaha-cai"; // Placeholder for actual canister ID
+        const backend_canister = MERCX_BACKEND; // Placeholder for actual canister ID
         let amountBella = (inputBella) * 1e8; // Approximate
         let approvedBella = Number((amountBella) + 20000); //0.0001 lel approve we 0.0001 lel transfer lw mafesh approve 0.0001 el hatetkhesem bas 
         

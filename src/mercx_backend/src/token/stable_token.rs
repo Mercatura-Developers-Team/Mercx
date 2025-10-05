@@ -8,11 +8,11 @@ use std::borrow::Cow;
 pub struct StableTokenId(pub u32);
 
 impl Storable for StableTokenId {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(Encode!(&self.0).unwrap())
     }
 
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
         let val = Decode!(bytes.as_ref(), u32)
             .unwrap_or_else(|e| ic_cdk::trap(&format!("❌ Failed to decode StableTokenId: {}", e)));
         StableTokenId(val)
@@ -120,11 +120,11 @@ pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
 
 
 impl Storable for StableToken {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(Encode!(self).unwrap())
     }
 
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
         Decode!(bytes.as_ref(), StableToken)
             .unwrap_or_else(|e| ic_cdk::trap(&format!("❌ Failed to decode StableToken: {}", e)))
     }

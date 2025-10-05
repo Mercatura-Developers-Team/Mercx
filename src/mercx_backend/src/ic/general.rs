@@ -29,7 +29,7 @@ use crate::stable_memory::WHITELIST;
 
 
 //Nour's Id
-pub const CANISTER_ID_XRC: &str = "ahw5u-keaaa-aaaaa-qaaha-cai";
+pub const CANISTER_ID_XRC: &str = "c5kvi-uuaaa-aaaaa-qaaia-cai";
 pub const CANISTER_ID_ICRC1_LEDGER_CANISTER: &str = "b77ix-eeaaa-aaaaa-qaada-cai";
 pub const CANISTER_ID_ICRC1_INDEX_CANISTER: &str = "bw4dl-smaaa-aaaaa-qaacq-cai";
 pub const CANISTER_ID_ICP_LEDGER_CANISTER: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";

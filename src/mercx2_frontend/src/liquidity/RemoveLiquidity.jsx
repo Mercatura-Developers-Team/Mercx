@@ -7,22 +7,74 @@ export default function RemoveLiquidity() {
   const token0 = searchParams.get("token0");
   const token1 = searchParams.get("token1");
   const [amount, setAmount] = useState("");
+  const [userLpBalance, setUserLpBalance] = useState(null);
+  const [isMaxAmount, setIsMaxAmount] = useState(false); // NEW FLAG
   const [reply, setReply] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const { mercx_Actor, principal } = useAuth();
 
-  const { mercx_Actor } = useAuth();
+  // Fetch user's LP balance on mount
+  useEffect(() => {
+    const fetchLpBalance = async () => {
+      if (!mercx_Actor || !principal) return;
+      
+      try {
+        const lpTokens = await mercx_Actor.get_lp_tokens_by_principal(principal);
+        
+        // Find the matching LP token
+        const normalize = (s) => (s || "").toUpperCase();
+        const match = lpTokens.find(t => {
+          const sym = normalize(t.symbol);
+          return sym === `${normalize(token0)}_${normalize(token1)}` ||
+                 sym === `${normalize(token1)}_${normalize(token0)}` ||
+                 sym === `${normalize(token0)}_${normalize(token1)} LP` ||
+                 sym === `${normalize(token1)}_${normalize(token0)} LP`;
+        });
+
+        if (match) {
+          setUserLpBalance({
+            raw: match.amount,
+            display: Number(match.amount) / 10**8
+          });
+        }
+      } catch (e) {
+        console.error("Failed to fetch LP balance:", e);
+      }
+    };
+
+    fetchLpBalance();
+  }, [mercx_Actor, principal, token0, token1]);
+
+  // Set max amount
+  const handleMaxClick = () => {
+    if (userLpBalance) {
+      setAmount(userLpBalance.display.toString());
+      setIsMaxAmount(true); // Mark that MAX was clicked
+    }
+  };
 
   const handleRemove = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
     
     setLoading(true);
-    setErrorMsg(""); // reset previous errors
+    setErrorMsg("");
 
     try {
-      const DECIMALS = 8;
-      const scaledAmount = Math.floor(parseFloat(amount) * Math.pow(10, DECIMALS));
+      let scaledAmount;
+
+      // If MAX was clicked, use exact raw amount
+      if (isMaxAmount && userLpBalance) {
+        scaledAmount = userLpBalance.raw;
+        console.log("Using exact raw amount (MAX clicked):", scaledAmount);
+      } else {
+        // Otherwise, scale the input amount
+        const DECIMALS = 8;
+        scaledAmount = Math.floor(parseFloat(amount) * Math.pow(10, DECIMALS));
+        console.log("Using scaled amount:", scaledAmount);
+      }
+
       console.log("Scaled LP amount sent:", scaledAmount);
 
       const res = await mercx_Actor.remove_liquidity({
@@ -33,22 +85,21 @@ export default function RemoveLiquidity() {
   
       console.log("Liquidity removed:", res);
       
-      // Check if the response has an "Ok" property and extract the data
       if (res && res.Ok) {
         setReply(res.Ok);
         setAmount("");
-        setErrorMsg(""); // clear error if successful
+        setIsMaxAmount(false); // Reset flag
+        setErrorMsg("");
       } else if (res && res.Err) {
         setReply(null);
-        setErrorMsg(res.Err); // set error message from backend
+        setErrorMsg(res.Err);
       } else {
         setReply(null);
         setErrorMsg("Unknown error occurred.");
       }
     } catch (e) {
-      console.error("Failed to fetch remove liquidity amounts", e);
+      console.error("Failed to remove liquidity", e);
       setErrorMsg("Failed to remove liquidity. Please try again.");
-
     } finally {
       setLoading(false);
     }
@@ -75,42 +126,61 @@ export default function RemoveLiquidity() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b bg-gray-900  px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b bg-gray-900 px-4 py-12">
       <div className="w-full max-w-lg bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-8">
         <h2 className="text-xl sm:text-2xl font-bold text-white text-center mb-6">
           Remove Liquidity <br />
           <span className="text-sm font-medium text-gray-400">
-            {shortenPrincipal(token0)}/{shortenPrincipal(token1)}
+            {token0}/{token1}
           </span>
         </h2>
 
-        <input
-          type="number"
-          placeholder="Enter LP tokens to remove"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="w-full px-4 py-2 mb-4 rounded bg-gray-700 text-white border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-700"
-        />
+        {/* Display available balance */}
+        {userLpBalance && (
+          <div className="mb-2 text-sm text-gray-400 text-right">
+            Available: {userLpBalance.display.toFixed(8)} LP tokens
+          </div>
+        )}
 
-<button
-  onClick={handleRemove}
-  disabled={loading || !amount || parseFloat(amount) <= 0}
-  className={`w-full py-2 px-4 font-bold rounded-lg text-sm flex items-center justify-center transition 
-    ${loading || !amount || parseFloat(amount) <= 0 
-      ? "bg-gray-500 cursor-not-allowed" 
-      : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 hover:to-indigo-900"} 
-    text-white`}
->
-  {loading ? (
-    <div className="flex items-center justify-center">
-      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      Processing...
-    </div>
-  ) : "Confirm Removal"}
-</button>
+        {/* Input with MAX button */}
+        <div className="relative mb-4">
+          <input
+            type="number"
+            placeholder="Enter LP tokens to remove"
+            value={amount}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setIsMaxAmount(false); // Reset flag when user manually types
+            }}
+            className="w-full px-4 py-2 pr-16 rounded bg-gray-700 text-white border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-700"
+          />
+          <button
+            onClick={handleMaxClick}
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-900/30 hover:bg-indigo-900/50 rounded transition-colors"
+          >
+            MAX
+          </button>
+        </div>
+
+        <button
+          onClick={handleRemove}
+          disabled={loading || !amount || parseFloat(amount) <= 0}
+          className={`w-full py-2 px-4 font-bold rounded-lg text-sm flex items-center justify-center transition 
+            ${loading || !amount || parseFloat(amount) <= 0 
+              ? "bg-gray-500 cursor-not-allowed" 
+              : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-700 hover:to-indigo-900"} 
+            text-white`}
+        >
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Processing...
+            </div>
+          ) : "Confirm Removal"}
+        </button>
 
         
         <div className="bg-gray-750 px-6 py-4 border-t border-gray-700 mt-4 rounded-lg">
@@ -125,11 +195,10 @@ export default function RemoveLiquidity() {
         </div>
 
         {errorMsg && (
-  <div className="mt-4 p-4 bg-red-800 border border-red-600 text-white rounded-md">
-    ⚠️ {errorMsg}
-  </div>
-)}
-
+          <div className="mt-4 p-4 bg-red-800 border border-red-600 text-white rounded-md">
+            ⚠️ {errorMsg}
+          </div>
+        )}
 
         {reply && (
           <div className="mt-6 bg-gray-800 border border-gray-700 rounded-lg p-5 shadow-md">
@@ -180,16 +249,12 @@ export default function RemoveLiquidity() {
               </div>
               
               <div className="bg-gray-900 rounded-md p-4">
-                <p className="text-gray-400 text-sm mb-1">LP tokens to remove:</p>
+                <p className="text-gray-400 text-sm mb-1">LP tokens removed:</p>
                 <p className="text-white text-lg font-bold">
                   {formatTokenAmount(reply.remove_lp_token_amount)}
                 </p>
               </div>
             </div>
-{/*             
-            <button className="w-full mt-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors">
-              Confirm Removal
-            </button> */}
           </div>
         )}
       </div>

@@ -23,11 +23,11 @@ pub struct UserIdList(pub Vec<u64>);
 pub struct StorableString(pub String);
 
 impl Storable for StorableString {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(Encode!(&self.0).unwrap())
     }
 
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
         Self(Decode!(bytes.as_ref(), String).unwrap())
     }
 
@@ -41,11 +41,11 @@ impl Storable for StorableString {
 pub struct StorablePrincipal(pub Principal);
 
 impl Storable for StorablePrincipal {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(Encode!(&self.0).unwrap())
     }
 
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
         Self(Decode!(bytes.as_ref(), Principal).unwrap())
     }
 
@@ -72,11 +72,11 @@ thread_local! {
 
 // Implement Storable for our types
 impl Storable for User {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(Encode!(self).unwrap())
     }
 
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
         Decode!(bytes.as_ref(), Self).unwrap()
     }
 
@@ -87,11 +87,11 @@ impl Storable for User {
 }
 
 impl Storable for UserIdList {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(Encode!(self).unwrap())
     }
 
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
         Decode!(bytes.as_ref(), Self).unwrap()
     }
 

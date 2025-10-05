@@ -22,6 +22,7 @@ use crate::kyc::kyc_id::get_user_by_caller;
  use crate::stable_lp_token::lp_token_map;
  use crate::StableLPToken;
  use crate::lp_metadata::stable_lp_metadata::LP_DECIMALS;
+ use crate::pool_analytics::analytics_storage::record_pool_snapshot2;
 #[ic_cdk::update]
 pub async fn add_liquidity_transfer_from(
     args: AddLiquidityArgs,
@@ -30,7 +31,9 @@ pub async fn add_liquidity_transfer_from(
     let ts = get_time();
 
     let result = match process_add_liquidity(user_id,&pool, &add_amount_0, &add_amount_1,&token_0, tx_id_0.as_ref(), &token_1 ,tx_id_1.as_ref(),ts).await {
-        Ok(reply) => Ok(reply),
+        Ok(reply) => Ok({
+            let _ = record_pool_snapshot2(reply.pool_id).await;
+            reply}),
         Err(e) => Err(e),
     };
 

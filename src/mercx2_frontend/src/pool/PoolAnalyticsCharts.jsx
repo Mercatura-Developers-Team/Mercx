@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../use-auth-client';
 
-const PoolAnalyticsCharts = ({ poolId, token0, token1 }) => {
+const PoolAnalyticsCharts = ({ poolId, token0, token1, poolBalance0, poolBalance1 }) => {
   const { mercx_Actor } = useAuth();
   const [chartData, setChartData] = useState([]);
-  const [selectedMetric, setSelectedMetric] = useState('tvl'); // 'tvl' or 'volume'
-  const [timeFrame, setTimeFrame] = useState(24); // hours
+  const [selectedMetric, setSelectedMetric] = useState('tvl');
+  const [timeFrame, setTimeFrame] = useState(7);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [snapshotStatus, setSnapshotStatus] = useState('');
  
   // Format timestamp to readable date
   const formatTimestamp = (timestamp) => {
-    const date = new Date(Number(timestamp) / 1_000_000); // Convert from nanoseconds to milliseconds
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const date = new Date(Number(timestamp) / 1_000_000);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   // Format USD values for display
@@ -25,9 +25,7 @@ const PoolAnalyticsCharts = ({ poolId, token0, token1 }) => {
     return `$${(value / 1000000).toFixed(1)}M`;
   };
 
-  
-
-  // Fetch chart data from backend
+  // Fetch chart data from backend using daily chart function
   const fetchChartData = async () => {
     if (!mercx_Actor || !poolId) return;
     
@@ -35,21 +33,17 @@ const PoolAnalyticsCharts = ({ poolId, token0, token1 }) => {
     setError('');
     
     try {
-      // Call the backend function to get pool chart data
-      const rawData = await mercx_Actor.get_pool_chart_data(poolId, timeFrame);
+      const rawData = await mercx_Actor.get_pool_daily_chart(poolId, BigInt(timeFrame));
       
       if (rawData && rawData.length > 0) {
-        // Transform the data: (timestamp, tvl_usd, volume_24h_usd)
-        const formattedData = rawData.map(([timestamp, tvl_usd, volume_24h_usd]) => ({
+        const formattedData = rawData.map(([timestamp, day_number, tvl_usd, volume_24h_usd]) => ({
           timestamp: Number(timestamp),
+          day_number: Number(day_number),
           tvl_usd: Number(tvl_usd),
           volume_24h_usd: Number(volume_24h_usd),
-          formattedTime: formatTimestamp(timestamp),
-          displayValue: selectedMetric === 'tvl' ? Number(tvl_usd) : Number(volume_24h_usd)
+          formattedTime: formatTimestamp(timestamp)
         }));
         
-        // Sort by timestamp
-        formattedData.sort((a, b) => a.timestamp - b.timestamp);
         setChartData(formattedData);
       } else {
         setChartData([]);
@@ -64,94 +58,62 @@ const PoolAnalyticsCharts = ({ poolId, token0, token1 }) => {
     }
   };
 
-  // // Record snapshots for all pools
-  // const recordAllPoolsSnapshot = async () => {
-  //   if (!mercx_Actor) return;
-    
-  //   setSnapshotStatus('Recording snapshots...');
-  //   try {
-  //     const result = await mercx_Actor.record_all_pools_snapshot();
-  //     setSnapshotStatus("");
-      
-  //     // Refresh the chart data after recording snapshots
-  //     setTimeout(() => {
-  //       fetchChartData();
-  //     }, 1000);
-  //   } catch (err) {
-  //     console.error('Failed to record snapshots:', err);
-  //     setSnapshotStatus('Error recording snapshots');
-  //   }
-  // };
-
   // Record snapshot for this specific pool
-const recordPoolSnapshot = async () => {
-  if (!mercx_Actor || !poolId) return;
-  
-  setSnapshotStatus('Recording snapshot...');
-  setLoading(true);
-  
-  try {
-    // First get current pool metrics to record accurate data
-    const metricsResult = await mercx_Actor.get_pool_metrics(poolId);
+  const recordPoolSnapshot = async () => {
+    if (!mercx_Actor || !poolId) return;
     
-    if (metricsResult?.Ok) {
-      const metrics = metricsResult.Ok;
-      const tvl_usd = metrics.tvl.tvl_usd;
-      const volume_24h_usd = metrics.volume.volume_24h_usd;
+    setSnapshotStatus('Recording snapshot...');
+    setLoading(true);
+    
+    try {
+      const metricsResult = await mercx_Actor.get_pool_metrics(poolId);
       
-      // Record snapshot for this specific pool
-      const result = await mercx_Actor.record_pool_snapshot(poolId, tvl_usd, volume_24h_usd);
-      
-      console.log('Snapshot recording result:', result);
-      setSnapshotStatus("Snapshot recorded successfully");
-      
-      // Refresh the chart data after recording snapshot
-      setTimeout(() => {
-        fetchChartData();
-        setSnapshotStatus('');
-      }, 1500);
-      
-    } else {
-      throw new Error('Failed to get current pool metrics');
+      if (metricsResult?.Ok) {
+        const metrics = metricsResult.Ok;
+        const tvl_usd = metrics.tvl.tvl_usd;
+        const volume_24h_usd = metrics.volume.volume_24h_usd;
+        
+        const result = await mercx_Actor.record_pool_snapshot(poolId, tvl_usd, volume_24h_usd);
+        
+        console.log('Snapshot recording result:', result);
+        setSnapshotStatus("Snapshot recorded successfully");
+        
+        setTimeout(() => {
+          fetchChartData();
+          setSnapshotStatus('');
+        }, 1500);
+        
+      } else {
+        throw new Error('Failed to get current pool metrics');
+      }
+    } catch (err) {
+      console.error('Failed to record snapshot:', err);
+      setSnapshotStatus('Error recording snapshot');
+      setTimeout(() => setSnapshotStatus(''), 3000);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Failed to record snapshot:', err);
-    setSnapshotStatus('Error recording snapshot');
-    setTimeout(() => setSnapshotStatus(''), 3000);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-  // Fetch data when component mounts or parameters change
   useEffect(() => {
     fetchChartData();
-  }, [mercx_Actor, poolId, timeFrame]);
-
-  // Update display values when metric changes
-  useEffect(() => {
-    if (chartData.length > 0) {
-      const updatedData = chartData.map(item => ({
-        ...item,
-        displayValue: selectedMetric === 'tvl' ? item.tvl_usd : item.volume_24h_usd
-      }));
-      setChartData(updatedData);
-    }
-  }, [selectedMetric]);
+  }, [mercx_Actor, poolId, timeFrame, poolBalance0, poolBalance1]);
 
   const poolName = token0 && token1 ? `${token0.symbol}/${token1.symbol}` : 'Pool';
+  
+  // Get the current data key based on selected metric
+  const currentDataKey = selectedMetric === 'tvl' ? 'tvl_usd' : 'volume_24h_usd';
+  const currentColor = selectedMetric === 'tvl' ? '#3B82F6' : '#10B981';
+  const currentLabel = selectedMetric === 'tvl' ? 'TVL' : '24h Volume';
 
   return (
     <div className="w-full bg-[#1a1a2e] rounded-xl p-6 space-y-4">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h3 className="text-white text-lg font-semibold">
           {poolName} Analytics
         </h3>
         
-        {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-2">
-          {/* Metric Selector */}
           <select
             value={selectedMetric}
             onChange={(e) => setSelectedMetric(e.target.value)}
@@ -161,18 +123,16 @@ const recordPoolSnapshot = async () => {
             <option value="volume">24h Volume</option>
           </select>
           
-          {/* Time Frame Selector */}
           <select
             value={timeFrame}
             onChange={(e) => setTimeFrame(parseInt(e.target.value))}
             className="px-3 py-2 bg-gray-700 text-white rounded-lg text-sm border-0"
           >
-            <option value={24}>24 Hours</option>
-            <option value={168}>7 Days</option>
-            <option value={720}>30 Days</option>
+            <option value={7}>7 Days</option>
+            <option value={14}>14 Days</option>
+            <option value={30}>30 Days</option>
           </select>
           
-          {/* Refresh Button */}
           <button
             onClick={recordPoolSnapshot}
             disabled={loading}
@@ -183,7 +143,6 @@ const recordPoolSnapshot = async () => {
         </div>
       </div>
 
-      {/* Snapshot Status */}
       {snapshotStatus && (
         <div className={`p-2 rounded text-sm text-center ${
           snapshotStatus.includes('Error')
@@ -194,7 +153,6 @@ const recordPoolSnapshot = async () => {
         </div>
       )}
 
-      {/* Chart Container */}
       <div className="h-80 w-full">
         {loading ? (
           <div className="flex items-center justify-center h-full">
@@ -216,7 +174,7 @@ const recordPoolSnapshot = async () => {
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-400 text-center">
               <p>No data available</p>
-              <p className="text-sm">Chart data will appear after some trading activity</p>
+              <p className="text-sm">Record snapshots daily to see trends</p>
             </div>
           </div>
         ) : (
@@ -228,7 +186,6 @@ const recordPoolSnapshot = async () => {
                 stroke="#9CA3AF"
                 fontSize={12}
                 tick={{ fill: '#9CA3AF' }}
-                interval="preserveStartEnd"
               />
               <YAxis
                 stroke="#9CA3AF"
@@ -243,45 +200,42 @@ const recordPoolSnapshot = async () => {
                   borderRadius: '8px',
                   color: '#F3F4F6'
                 }}
-                formatter={(value) => [formatUSD(value), selectedMetric === 'tvl' ? 'TVL' : '24h Volume']}
+                formatter={(value) => [formatUSD(value), currentLabel]}
                 labelStyle={{ color: '#F3F4F6' }}
               />
-              <Legend
-                wrapperStyle={{ color: '#F3F4F6' }}
-              />
+              <Legend wrapperStyle={{ color: '#F3F4F6' }} />
               <Line
                 type="monotone"
-                dataKey="displayValue"
-                stroke={selectedMetric === 'tvl' ? '#3B82F6' : '#10B981'}
+                dataKey={currentDataKey}
+                stroke={currentColor}
                 strokeWidth={2}
-                dot={{ fill: selectedMetric === 'tvl' ? '#3B82F6' : '#10B981', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: selectedMetric === 'tvl' ? '#3B82F6' : '#10B981', strokeWidth: 2 }}
-                name={selectedMetric === 'tvl' ? 'TVL' : '24h Volume'}
+                dot={{ fill: currentColor, strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6 }}
+                name={currentLabel}
               />
             </LineChart>
           </ResponsiveContainer>
         )}
       </div>
 
-      {/* Chart Summary */}
       {chartData.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-700">
           <div className="text-center">
             <p className="text-gray-400 text-sm">Current</p>
             <p className="text-white font-semibold">
-              {formatUSD(chartData[chartData.length - 1]?.displayValue || 0)}
+              {formatUSD(chartData[chartData.length - 1]?.[currentDataKey] || 0)}
             </p>
           </div>
           <div className="text-center">
             <p className="text-gray-400 text-sm">Highest</p>
             <p className="text-white font-semibold">
-              {formatUSD(Math.max(...chartData.map(d => d.displayValue)))}
+              {formatUSD(Math.max(...chartData.map(d => d[currentDataKey])))}
             </p>
           </div>
           <div className="text-center">
             <p className="text-gray-400 text-sm">Lowest</p>
             <p className="text-white font-semibold">
-              {formatUSD(Math.min(...chartData.map(d => d.displayValue)))}
+              {formatUSD(Math.min(...chartData.map(d => d[currentDataKey])))}
             </p>
           </div>
         </div>

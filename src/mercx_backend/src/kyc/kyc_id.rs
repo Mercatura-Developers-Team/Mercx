@@ -2,6 +2,7 @@ use ic_cdk::call;
 use crate::ic::id::caller;
 use candid::{CandidType,Principal};
 use serde::{Deserialize, Serialize};
+use crate::ic::canister_address::KYC_CANISTER_ID;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct User {
@@ -22,7 +23,7 @@ pub struct User {
 }
 
 // Replace `your_kyc_canister_id` with actual canister ID or pass it dynamically
-const KYC_CANISTER_ID: &str = "ajuq4-ruaaa-aaaaa-qaaga-cai"; // example
+//const KYC_CANISTER_ID: &str = "ajuq4-ruaaa-aaaaa-qaaga-cai"; // example
 #[ic_cdk::update]
 pub async fn get_user_by_caller() -> Result<Option<User>, String> {
     let caller_principal = caller();

@@ -25,7 +25,10 @@ pub fn swap_amounts(pay_token: String, pay_amount: Nat, receive_token: String) -
         swap::swap_amounts::swap_amounts(&pay_token, Some(&pay_amount), &receive_token)?;
     let swap_amounts_tx_reply: Vec<_> = txs.iter().filter_map(to_swap_amounts_tx_reply).collect();
 
-    Ok(SwapAmountsReply {
+    Ok(
+        
+        
+        {SwapAmountsReply {
         pay_symbol,
         pay_amount,
         pay_address: pay_address.map(|p| p.to_text()).unwrap_or_default(),
@@ -36,5 +39,5 @@ pub fn swap_amounts(pay_token: String, pay_amount: Nat, receive_token: String) -
         mid_price,
         slippage,
         txs: swap_amounts_tx_reply,
-    })
+    }})
 }
