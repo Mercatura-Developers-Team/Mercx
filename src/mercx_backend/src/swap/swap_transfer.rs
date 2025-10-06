@@ -65,7 +65,10 @@ pub async fn swap_transfer(args: SwapArgs) -> Result<SwapReply, String> {
     )
     .await;
 
-
+  // Record snapshot for each pool involved in the swap
+  for swap_calc in &swaps {
+    let _ = crate::pool_analytics::analytics_storage::record_pool_snapshot2(swap_calc.pool_id).await;
+}
     Ok(result)
 }
 

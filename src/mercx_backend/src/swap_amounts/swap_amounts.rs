@@ -26,7 +26,7 @@ pub fn swap_amounts(pay_token: String, pay_amount: Nat, receive_token: String) -
     let swap_amounts_tx_reply: Vec<_> = txs.iter().filter_map(to_swap_amounts_tx_reply).collect();
 
     Ok(
-        
+      //  let _ = record_pool_snapshot2(swap_amounts_tx_reply.pool_id).await;
         
         {SwapAmountsReply {
         pay_symbol,

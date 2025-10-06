@@ -21,6 +21,7 @@ use crate::swap::swap_calc::SwapCalc;
 use crate::swap::send_receive_token::send_receive_token;
 use crate::swap::swap_reply::SwapReply; 
 //use crate::pool_analytics::analytics_storage::{record_all_pools_snapshot};
+use crate::pool_analytics::analytics_storage::record_pool_snapshot2;
 
 pub async fn swap_transfer_from(args: SwapArgs) -> Result<SwapReply, String> {
     let ( pay_token, pay_amount, receive_token, max_slippage, to_address) = check_arguments(&args).await?;
@@ -65,6 +66,11 @@ pub async fn swap_transfer_from(args: SwapArgs) -> Result<SwapReply, String> {
     // request_map::update_status(request_id, StatusCode::Success, None);
     // reset_consecutive_error(user_id);
     // let _ = archive_to_kong_data(request_id);
+
+      // Record snapshot for each pool involved in the swap
+      for swap_calc in &swaps {
+        let _ = record_pool_snapshot2(swap_calc.pool_id).await;
+    }
 
     Ok(result)
 }
