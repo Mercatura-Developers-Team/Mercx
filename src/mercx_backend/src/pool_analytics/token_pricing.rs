@@ -1,4 +1,3 @@
-// ==========================================
 //  Token Pricing Utilities
 //  ------------------------------------------
 //  Provides USD pricing for tokens using:
@@ -154,6 +153,7 @@ pub async fn get_anchor_usd(anchor: &str) -> Result<f64, String> {
 
 /// Try to price any token in USD by routing through pools and XRC.
 ///
+
 /// Flow:
 /// 1️⃣ Direct stablecoin pair (TKN/USDT or TKN/USDC)
 /// 2️⃣ Single-hop anchor (TKN → ICP/ETH/BTC)
@@ -162,16 +162,21 @@ pub async fn get_anchor_usd(anchor: &str) -> Result<f64, String> {
 #[ic_cdk::update]
 pub async fn get_usd_price_from_pools(raw_symbol: String) -> Result<f64, String> {
     let token = normalize(&raw_symbol);
-
+    ic_cdk::println!("🔍 [PRICE TRACE] Checking USD route for {}", token);
     // 0️⃣ Stablecoins → always 1.0 USD
     if is_stable(token.as_ref()) {
+              ic_cdk::println!("💵 {} is stable → 1.0 USD", token);
         return Ok(1.0);
     }
 
     // 1️⃣ Direct USD-pegged pair
-    for usd_sym in ["USDT", "USDC"] {
+    for usd_sym in ["USDT", "USDC", "CKUSDT" , "CKUSDC"] {
         if let Ok(p) = pool_price_a_in_b(token.as_ref(), usd_sym) {
             if p.is_finite() && p > 0.0 {
+                     ic_cdk::println!(
+                    "💠 Direct stable pair found: {} / {} → {:.6} USD",
+                    token, usd_sym, p
+                );
                 return Ok(p);
             }
         }
@@ -181,6 +186,11 @@ pub async fn get_usd_price_from_pools(raw_symbol: String) -> Result<f64, String>
     for anchor in ["ICP", "ETH", "BTC"] {
         if let Ok(price_tkn_in_anchor) = pool_price_a_in_b(token.as_ref(), anchor) {
             let anchor_usd = get_anchor_usd(anchor).await?;
+              let price = price_tkn_in_anchor * anchor_usd;
+            ic_cdk::println!(
+                "🌍 Anchor route found: {} / {} = {:.6} × {}_USD {:.6} → {:.6} USD",
+                token, anchor, price_tkn_in_anchor, anchor, anchor_usd, price
+            );
             return Ok(price_tkn_in_anchor * anchor_usd);
         }
     }
@@ -193,6 +203,11 @@ pub async fn get_usd_price_from_pools(raw_symbol: String) -> Result<f64, String>
         };
 
         let hop2 = get_anchor_usd(ref_sym).await?;
+             let final_price = hop1 * hop2;
+             ic_cdk::println!(
+                "🔗 Two-hop route: {} → {} → USD = {:.6} × {:.6} → {:.6} USD",
+                token, ref_sym, hop1, hop2, final_price
+            );
         return Ok(hop1 * hop2);
     }
 

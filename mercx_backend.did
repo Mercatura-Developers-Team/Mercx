@@ -383,7 +383,7 @@ service : {
   get_pool_metrics : (nat32) -> (Result_13);
   get_pool_price : (text, text) -> (Result_12) query;
   get_pool_snapshot_count : (nat32) -> (nat32) query;
-  get_protocol_stats : () -> (ProtocolStats) composite_query;
+  get_protocol_stats : () -> (ProtocolStats);
   get_rate_vs_usd : (text) -> (Result_12);
   get_transactions : (nat, nat) -> (Result_14);
   get_usd_price_from_pools : (text) -> (Result_12);
