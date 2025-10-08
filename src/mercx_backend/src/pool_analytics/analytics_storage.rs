@@ -37,11 +37,11 @@ pub fn record_pool_snapshot(pool_id: u32, tvl_usd: f64, volume_24h_usd: f64) -> 
 pub async fn record_all_pools_snapshot() -> Result<String, String> {
     use crate::pool_analytics::analytics::{get_all_pools_tvl, calculate_pool_volume};
     
-    let pools_tvl = get_all_pools_tvl();
+    let pools_tvl = get_all_pools_tvl().await;
     let mut recorded_count = 0;
 
     for pool_tvl in pools_tvl {
-        let volume_result = calculate_pool_volume(pool_tvl.pool_id, 24);
+        let volume_result = calculate_pool_volume(pool_tvl.pool_id, 24).await;
         let volume_24h_usd = match volume_result {
             Ok(vol) => vol.volume_24h_usd,
             Err(_) => 0.0,
@@ -61,7 +61,7 @@ pub async fn record_pool_snapshot2(pool_id: u32) -> Result<String, String> {
         .ok_or("Pool not found")?;
     
     // Calculate TVL from pool metrics
-    let metrics = get_pool_metrics(pool_id)?;
+    let metrics = get_pool_metrics(pool_id).await?;
     let tvl_usd = metrics.tvl.tvl_usd;
     let volume_24h_usd = metrics.volume.volume_24h_usd;
     

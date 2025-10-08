@@ -5,6 +5,7 @@ const ProtocolStats = () => {
   const { mercx_Actor } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
   // Format USD values for display
@@ -20,11 +21,28 @@ const ProtocolStats = () => {
     return new Intl.NumberFormat().format(value);
   };
 
-  // Fetch protocol statistics
-  const fetchProtocolStats = async () => {
+  // Load cached stats from localStorage immediately
+  useEffect(() => {
+    const cachedStats = localStorage.getItem('protocol_stats');
+    if (cachedStats) {
+      try {
+        setStats(JSON.parse(cachedStats));
+        setLoading(false); // Show cached data immediately
+      } catch (e) {
+        console.error('Error parsing cached stats:', e);
+      }
+    }
+  }, []);
+
+  // Fetch fresh data
+  const fetchProtocolStats = async (isRefresh = false) => {
     if (!mercx_Actor) return;
 
-    setLoading(true);
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError('');
 
     try {
@@ -32,6 +50,9 @@ const ProtocolStats = () => {
       
       if (result) {
         setStats(result);
+        // Cache the result
+        localStorage.setItem('protocol_stats', JSON.stringify(result));
+        localStorage.setItem('protocol_stats_timestamp', Date.now().toString());
       } else {
         setError('Failed to load protocol statistics');
       }
@@ -40,17 +61,27 @@ const ProtocolStats = () => {
       setError('Failed to load protocol statistics');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchProtocolStats();
+    if (!mercx_Actor) return;
+    
+    // Check if cached data is fresh (< 5 minutes old)
+    const cachedTimestamp = localStorage.getItem('protocol_stats_timestamp');
+    const isFresh = cachedTimestamp && (Date.now() - parseInt(cachedTimestamp)) < 5 * 60 * 1000;
+    
+    if (!isFresh) {
+      fetchProtocolStats();
+    }
   }, [mercx_Actor]);
 
-  if (loading) {
+  // Show loading skeleton only if no cached data
+  if (loading && !stats) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="bg-slate-800 rounded-xl p-6 animate-pulse">
             <div className="h-4 bg-slate-700 rounded w-20 mb-3"></div>
             <div className="h-8 bg-slate-700 rounded w-32 mb-2"></div>
@@ -61,12 +92,12 @@ const ProtocolStats = () => {
     );
   }
 
-  if (error || !stats) {
+  if (error && !stats) {
     return (
       <div className="bg-slate-800 rounded-xl p-6 mb-8 text-center">
         <p className="text-red-400">{error || 'No protocol data available'}</p>
         <button 
-          onClick={fetchProtocolStats}
+          onClick={() => fetchProtocolStats(false)}
           className="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm"
         >
           Retry
@@ -75,8 +106,24 @@ const ProtocolStats = () => {
     );
   }
 
+  if (!stats) {
+    return null;
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      {/* Show refreshing indicator */}
+      {refreshing && (
+        <div className="md:col-span-3 lg:col-span-6 flex justify-center mb-2">
+          <div className="bg-blue-500/20 text-blue-400 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+            <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Updating stats...
+          </div>
+        </div>
+      )}
+
       {/* Total TVL */}
       <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors">
         <div className="flex items-center justify-between">
@@ -176,14 +223,14 @@ const ProtocolStats = () => {
       {/* Refresh Button */}
       <div className="md:col-span-3 lg:col-span-6 flex justify-center mt-4">
         <button
-          onClick={fetchProtocolStats}
-          disabled={loading}
-          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          onClick={() => fetchProtocolStats(true)}
+          disabled={refreshing || loading}
+          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
         >
-          <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          {loading ? 'Refreshing...' : 'Refresh Stats'}
+          {refreshing ? 'Refreshing...' : 'Refresh Stats'}
         </button>
       </div>
     </div>

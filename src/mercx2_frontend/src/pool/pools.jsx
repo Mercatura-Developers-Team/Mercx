@@ -51,28 +51,33 @@ const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchPrices = async () => {
       if (!mercx_Actor || !pools.length) return;
-
+  
       try {
         const priceEntries = await Promise.all(
           pools.map(async (pool) => {
             try {
               const token0 = pool.symbol_0;
               const token1 = pool.symbol_1;
-              const key = `${token0}/${token1}`; // ✅ define key here
+              const key = `${token0}/${token1}`;
               const result = await mercx_Actor.get_pool_price(token0, token1);
-              console.log(result);
-              if (result && result.Ok !== undefined) {
+              
+              if (result?.Ok !== undefined) {
+                // ✅ Successfully got price
                 return [key, result.Ok];
-              } else if (result && result.Err) {
-                console.warn(`Price fetch error for  ${result.Err}`);
+              } else if (result?.Err) {
+                // ✅ Pool has no liquidity - don't log as error, just return null
+                console.log(`Pool ${key} has no liquidity yet`);
+                return null; // Return null so it gets filtered out
               }
+              return null;
             } catch (err) {
               console.warn(`Failed to get price for ${pool.symbol_0}/${pool.symbol_1}`, err);
               return null;
             }
           })
         );
-
+  
+        // ✅ Filter out null entries (pools without liquidity)
         const filtered = priceEntries.filter(Boolean);
         const priceMap = Object.fromEntries(filtered);
         setPrices(priceMap);

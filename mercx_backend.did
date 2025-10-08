@@ -339,10 +339,8 @@ service : {
   add_pool : (AddPoolArgs) -> (Result_2);
   add_to_whitelist : (principal) -> ();
   add_token : (principal) -> (Result_3);
-  calculate_pool_tvl : (nat32) -> (Result_4) query;
-  calculate_pool_volume : (nat32, nat64) -> (Result_5) query;
-  calculate_pool_volume_with_tx_grouping : (nat32, nat64) -> (Result_5) query;
-  calculate_total_tvl : () -> (float64) query;
+  calculate_pool_tvl : (nat32) -> (Result_4);
+  calculate_pool_volume : (nat32, nat64) -> (Result_5);
   check_balance : (Account, principal) -> (Result_6);
   check_balance_icp : (Account) -> (nat);
   check_balance_mercx : (Account) -> (nat);
@@ -359,8 +357,8 @@ service : {
   get_account_transactions : (Account, opt nat, nat) -> (Result_9);
   get_all_pool_snapshots : (nat32) -> (vec PoolSnapshot) query;
   get_all_pools : () -> (Result_10) query;
-  get_all_pools_metrics : () -> (vec PoolMetrics) query;
-  get_all_pools_tvl : () -> (vec PoolTVL) query;
+  get_all_pools_metrics : () -> (vec PoolMetrics);
+  get_all_pools_tvl : () -> (vec PoolTVL);
   get_all_tokens : () -> (vec StableToken) query;
   get_analytics_summary : () -> (
       vec record { nat32; nat32; float64; float64 },
@@ -382,10 +380,10 @@ service : {
   get_pool_daily_chart : (nat32, nat64) -> (
       vec record { nat64; nat64; float64; float64 },
     ) query;
-  get_pool_metrics : (nat32) -> (Result_13) query;
+  get_pool_metrics : (nat32) -> (Result_13);
   get_pool_price : (text, text) -> (Result_12) query;
   get_pool_snapshot_count : (nat32) -> (nat32) query;
-  get_protocol_stats : () -> (ProtocolStats) query;
+  get_protocol_stats : () -> (ProtocolStats) composite_query;
   get_rate_vs_usd : (text) -> (Result_12);
   get_transactions : (nat, nat) -> (Result_14);
   get_usd_price_from_pools : (text) -> (Result_12);

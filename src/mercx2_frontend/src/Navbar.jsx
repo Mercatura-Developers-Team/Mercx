@@ -9,8 +9,6 @@ import {
   HiCurrencyDollar,
   HiReceiptRefund,
   HiCollection,
-  HiUserGroup,
-  HiSparkles
 } from "react-icons/hi";
 import { NavLink } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
