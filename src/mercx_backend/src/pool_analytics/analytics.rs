@@ -3,7 +3,6 @@ use crate::pool::stable_pool::StablePool;
 use crate::pool::stable_pool::StablePoolId;
 use crate::token::stable_token::StableTokenId;
 use crate::token::stable_token::StableToken;
-use ic_stable_structures::StableBTreeMap;
 use crate::transfers::stable_transfer::StableTransfer;
 //use crate::transfers::tx_id::TxId;
 use crate::pool_analytics::analytics_storage::{record_pool_snapshot};
@@ -13,10 +12,9 @@ use crate::ic::general::get_time;
 use crate::transfers::stable_transfer::TransferType;
 use candid::{CandidType, Nat};
 use serde::{Deserialize, Serialize};
-use ic_cdk::{query,update};
+use ic_cdk::{update};
 use num::ToPrimitive;
-use ic_stable_structures::Memory; // <-- import the trait
- use crate::xrc_mock::get_rate_vs_usd;
+
 // Analytics response types
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct PoolTVL {

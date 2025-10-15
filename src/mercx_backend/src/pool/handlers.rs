@@ -5,7 +5,6 @@ use crate::StableToken;
 use crate::token::handlers;
 use crate::stable_mercx_settings;
 use crate::token::handlers::get_by_token;
-use crate::transfers::handlers as transfer_handlers;
 use crate::pool::add_pool_reply::to_add_pool_reply;
 use crate::token::handlers::get_by_token_id;
 use crate::stable_mercx_settings::mercx_settings_map::reset_pool_map_idx;
@@ -13,8 +12,7 @@ use crate::helpers::math_helpers::nat_zero;
 use candid::Nat;
 use candid::Principal;
 use crate::stable_lp_token::lp_token_map::{get_by_token_id_by_principal};
-use crate::xrc_mock::get_rate_vs_usd;
-use std::borrow::Cow;
+//use std::borrow::Cow;
 pub fn symbol(token_0: &StableToken, token_1: &StableToken) -> String {
     format!("{}_{}", token_0.symbol(), token_1.symbol())
 }
@@ -199,42 +197,42 @@ pub fn get_by_lp_token_id(lp_token_id: u32) -> Option<StablePool> {
 
 
 
-// ---------- Anchors & helpers ----------
-const ANCHORS: [&str; 5] = ["USDT", "USDC", "ICP", "ETH", "BTC"];
+// // ---------- Anchors & helpers ----------
+// const ANCHORS: [&str; 5] = ["USDT", "USDC", "ICP", "ETH", "BTC"];
 
-fn is_stable(sym: &str) -> bool {
-    matches!(sym, "USDT" | "USDC" | "CKUSDT" | "CKUSDC")
-}
+// fn is_stable(sym: &str) -> bool {
+//     matches!(sym, "USDT" | "USDC" | "CKUSDT" | "CKUSDC")
+// }
 
-fn normalize<'a>(sym: &'a str) -> Cow<'a, str> {
-    let s = sym.trim().to_uppercase();
-    let s = s.strip_suffix(".E").unwrap_or(&s).to_string();
-    match s.as_str() {
-        "CKBTC"  => Cow::from("BTC"),
-        "CKETH"  => Cow::from("ETH"),
-        "CKUSDT" => Cow::from("USDT"),
-        "CKUSDC" => Cow::from("USDC"),
-        _ => Cow::from(s),
-    }
-}
+// fn normalize<'a>(sym: &'a str) -> Cow<'a, str> {
+//     let s = sym.trim().to_uppercase();
+//     let s = s.strip_suffix(".E").unwrap_or(&s).to_string();
+//     match s.as_str() {
+//         "CKBTC"  => Cow::from("BTC"),
+//         "CKETH"  => Cow::from("ETH"),
+//         "CKUSDT" => Cow::from("USDT"),
+//         "CKUSDC" => Cow::from("USDC"),
+//         _ => Cow::from(s),
+//     }
+// }
 
-// POOL PRICE 
-fn pool_price_a_in_b(a: &str, b: &str) -> Result<f64, String> {
-    if let Ok(pool) = get_by_tokens(a.to_string(), b.to_string())
-        .or_else(|_| get_by_tokens(b.to_string(), a.to_string()))
-    {
-        if pool.symbol_0() == a && pool.symbol_1() == b {
-            pool.get_price_as_f64().ok_or("Price unavailable".to_string())
-        } else if pool.symbol_0() == b && pool.symbol_1() == a {
-            pool.get_price_as_f64()
-                .map(|p| if p > 0.0 { 1.0 / p } else { p })
-                .ok_or("Price unavailable".to_string())
-        } else {
-            Err("Pool symbols mismatch".to_string())
-        }
-    } else {
-        Err("Pool not found".to_string())
-    }
-}
+// // POOL PRICE 
+// fn pool_price_a_in_b(a: &str, b: &str) -> Result<f64, String> {
+//     if let Ok(pool) = get_by_tokens(a.to_string(), b.to_string())
+//         .or_else(|_| get_by_tokens(b.to_string(), a.to_string()))
+//     {
+//         if pool.symbol_0() == a && pool.symbol_1() == b {
+//             pool.get_price_as_f64().ok_or("Price unavailable".to_string())
+//         } else if pool.symbol_0() == b && pool.symbol_1() == a {
+//             pool.get_price_as_f64()
+//                 .map(|p| if p > 0.0 { 1.0 / p } else { p })
+//                 .ok_or("Price unavailable".to_string())
+//         } else {
+//             Err("Pool symbols mismatch".to_string())
+//         }
+//     } else {
+//         Err("Pool not found".to_string())
+//     }
+// }
 
 

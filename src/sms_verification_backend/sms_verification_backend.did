@@ -1,0 +1,14 @@
+type Response = record { message : text; success : bool };
+type TwilioConfig = record {
+  auth_token : text;
+  account_sid : text;
+  from_number : text;
+};
+service : {
+  configure_twilio : (TwilioConfig) -> ();
+  debug_print_otps : () -> (vec record { text; text; nat64 });
+  get_twilio_config : () -> (opt TwilioConfig) query;
+  get_verified_phones : () -> (vec text);
+  send_sms : (text) -> (Response);
+  verify_otp : (text, text) -> (Response);
+}

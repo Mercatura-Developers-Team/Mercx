@@ -16,6 +16,11 @@
         "icrc1_ledger_canister"
       ]
     },
+    "sms_verification_backend": {
+      "candid": "src/sms_verification_backend/sms_verification_backend.did",
+      "package": "sms_verification_backend",
+      "type": "rust"
+    },
     "xrc": {
       "type": "custom",
       "candid": "xrc/xrc.did",
